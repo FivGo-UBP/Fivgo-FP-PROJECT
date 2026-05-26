@@ -1,0 +1,180 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, forkJoin, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class TomtomService {
+  private apiKey = environment.tomtomApiKey;
+
+  constructor(private http: HttpClient) {}
+
+  // 1. Search TomTom — dioptimasi untuk Indonesia
+  // Radius 30km agar POI seperti "Resinda Hotel", "Resinda Mall" semua muncul
+  searchAddress(query: string, lon?: number, lat?: number): Observable<any> {
+    let url = `https://api.tomtom.com/search/2/search/${encodeURIComponent(query)}.json`
+      + `?key=${this.apiKey}`
+      + `&typeahead=true`
+      + `&limit=8`
+      + `&countrySet=ID`
+      + `&language=id-ID`
+      + `&idxSet=POI,PAD,Str,Xstr,Geo`;
+
+    // Radius 30km: cukup luas untuk menangkap semua POI sekitar (hotel, mall, dll)
+    if (lat && lon) {
+      url += `&lat=${lat}&lon=${lon}&radius=30000`;
+    }
+
+    return this.http.get(url);
+  }
+
+  // 2. Search Nominatim (OpenStreetMap) — gratis, data Indonesia lebih lengkap
+  // Viewbox lebar (±0.3 derajat ≈ 30km) agar semua varian nama muncul
+  searchNominatim(query: string, lat?: number, lon?: number): Observable<any[]> {
+    let url = `https://nominatim.openstreetmap.org/search`
+      + `?q=${encodeURIComponent(query)}`
+      + `&format=json`
+      + `&addressdetails=1`
+      + `&countrycodes=id`
+      + `&limit=8`
+      + `&accept-language=id`;
+
+    // Viewbox ±0.3 derajat (~33km) untuk temukan semua POI dengan keyword yang sama
+    if (lat && lon) {
+      url += `&viewbox=${lon - 0.3},${lat + 0.3},${lon + 0.3},${lat - 0.3}&bounded=0`;
+    }
+
+    const headers = new HttpHeaders({ 'Accept-Language': 'id' });
+    return this.http.get<any[]>(url, { headers }).pipe(
+      catchError(() => of([]))
+    );
+  }
+
+  // 3. Pencarian Hybrid: gabungkan TomTom + OpenStreetMap
+  // OSM duluan karena data universitas Indonesia lebih lengkap, lalu TomTom sebagai pelengkap
+  searchHybrid(query: string, lon?: number, lat?: number): Observable<any[]> {
+    const tomtom$ = this.searchAddress(query, lon, lat).pipe(
+      map((res: any) => {
+        if (!res?.results) return [];
+        return res.results.map((r: any) => {
+          const name = r.poi?.name
+            || r.address?.freeformAddress?.split(',')[0]?.trim()
+            || 'Lokasi';
+          const address = r.address?.freeformAddress || '';
+          const distance = r.dist;
+          let distanceStr = '';
+          if (distance !== undefined) {
+            distanceStr = distance >= 1000
+              ? (distance / 1000).toFixed(1) + ' km'
+              : Math.round(distance) + ' m';
+          }
+          return { name, address, distanceStr, source: 'tomtom', originalResult: r };
+        });
+      }),
+      catchError(() => of([]))
+    );
+
+    const osm$ = this.searchNominatim(query, lat, lon).pipe(
+      map((results: any[]) => {
+        return results.map((r: any) => {
+          const name = r.name || r.display_name?.split(',')[0]?.trim() || 'Lokasi';
+
+          // Susun alamat yang bersih dari komponen OSM
+          const addr = r.address || {};
+          const parts = [
+            addr.road,
+            addr.suburb || addr.village || addr.town,
+            addr.city || addr.county,
+          ].filter(Boolean);
+          const address = parts.length > 0 ? parts.join(', ') : r.display_name;
+
+          // Hitung jarak jika ada koordinat pengguna
+          let distanceStr = '';
+          if (lat && lon) {
+            const dLat = (parseFloat(r.lat) - lat) * 111000;
+            const dLon = (parseFloat(r.lon) - lon) * 111000 * Math.cos(lat * Math.PI / 180);
+            const dist = Math.sqrt(dLat * dLat + dLon * dLon);
+            distanceStr = dist >= 1000
+              ? (dist / 1000).toFixed(1) + ' km'
+              : Math.round(dist) + ' m';
+          }
+
+          return {
+            name,
+            address,
+            distanceStr,
+            source: 'osm',
+            originalResult: {
+              position: { lat: parseFloat(r.lat), lon: parseFloat(r.lon) },
+              poi: { name },
+              address: { freeformAddress: address }
+            }
+          };
+        });
+      }),
+      catchError(() => of([]))
+    );
+
+    return forkJoin([tomtom$, osm$]).pipe(
+      map(([tomtomResults, osmResults]) => {
+        // OSM duluan karena lebih akurat untuk universitas & tempat Indonesia
+        const combined = [...osmResults, ...tomtomResults];
+
+        // Deduplikasi menggunakan NAMA LENGKAP agar "Resinda Hotel" & "Resinda Mall"
+        // tidak terhapus hanya karena sama-sama mengandung "Resinda"
+        const seen = new Set<string>();
+        return combined.filter(item => {
+          // Key = nama lengkap + 3 huruf pertama alamat (untuk bedakan cabang berbeda)
+          const nameKey = item.name.toLowerCase().replace(/\s+/g, '');
+          const addrHint = (item.address || '').toLowerCase().slice(0, 15).replace(/\s+/g, '');
+          const key = `${nameKey}__${addrHint}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        }).slice(0, 8);
+      })
+    );
+  }
+
+  // 4. Geocoding API (Address to Coordinates)
+  geocode(address: string): Observable<any> {
+    return this.http.get(
+      `https://api.tomtom.com/search/2/geocode/${encodeURIComponent(address)}.json?key=${this.apiKey}`
+    );
+  }
+
+  // 5. Reverse Geocoding (Coordinates to Address)
+  reverseGeocode(lat: number, lon: number): Observable<any> {
+    return this.http.get(
+      `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lon}.json?key=${this.apiKey}`
+    );
+  }
+
+  // 6. Routing API
+  calculateRoute(
+    startLat: number, startLon: number,
+    destLat: number, destLon: number,
+    vehicleType: string = 'mobil'
+  ): Observable<any> {
+    const locations = `${startLat},${startLon}:${destLat},${destLon}`;
+    const travelMode = 'car';
+    const routeType = vehicleType === 'motor' ? 'eco' : 'fastest';
+    const maxAlternatives = vehicleType === 'motor' ? 2 : 0;
+
+    let url = `https://api.tomtom.com/routing/1/calculateRoute/${locations}/json`
+      + `?key=${this.apiKey}`
+      + `&maxAlternatives=${maxAlternatives}`
+      + `&routeType=${routeType}`
+      + `&traffic=true`
+      + `&travelMode=${travelMode}`;
+
+    if (vehicleType === 'motor') {
+      url += '&avoid=tollRoads';
+    }
+
+    return this.http.get(url);
+  }
+}

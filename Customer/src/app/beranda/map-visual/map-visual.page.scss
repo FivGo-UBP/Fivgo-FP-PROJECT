@@ -1,0 +1,873 @@
+ion-content.transparent-content {
+  --background: transparent;
+  pointer-events: none; /* Biarkan sentuhan tembus ke map di belakangnya */
+}
+
+.map-container {
+  width: 100%;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0; /* Di belakang ion-content */
+  background-color: #e5e5e5; /* Menutup background transparan saat animasi transisi halaman */
+}
+
+.floating-header {
+  pointer-events: auto; /* Agar tombol back masih bisa dipencet */
+  position: absolute;
+  top: 50px;
+  left: 20px;
+  right: 20px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .back-btn {
+    width: 40px;
+    height: 40px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #333;
+    
+    ion-icon {
+      font-size: 24px;
+    }
+  }
+
+  .dest-badge {
+    flex: 1;
+    background: white;
+    padding: 12px 16px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+    overflow: hidden;
+
+    .dot-icon {
+      min-width: 10px;
+      height: 10px;
+      background: #1a4fba;
+      border-radius: 50%;
+      border: 2px solid #e0e8f9;
+    }
+    
+    .dest-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+/* Modal 1: Bottom Sheet Styling */
+ion-modal.custom-bottom-sheet {
+  --background: transparent;
+  
+  &::part(content) {
+    background: white;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
+  }
+}
+
+.sheet-scroll-area {
+  --background: white;
+  --padding-top: 15px;
+  --padding-start: 20px;
+  --padding-end: 20px;
+}
+
+.vehicle-list {
+  .vehicle-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    transition: background 0.2s;
+    border: 1px solid transparent;
+
+    &.selected {
+      background: #f4f6fc;
+      border: 1px solid #dbe2f9;
+    }
+
+    .v-img-container {
+      width: 60px;
+      height: 40px;
+      margin-right: 15px;
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+    }
+
+    .v-details {
+      flex: 1;
+      h3 {
+        margin: 0 0 4px;
+        font-size: 15px;
+        font-weight: 700;
+        color: #222;
+      }
+      p {
+        margin: 0;
+        font-size: 12px;
+        color: #777;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        ion-icon {
+          font-size: 11px;
+        }
+      }
+    }
+
+    .v-price {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      h4 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: #222;
+      }
+    }
+  }
+}
+
+.add-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-top: 1px solid #f0f0f0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 10px;
+  
+  ion-icon {
+    font-size: 20px;
+  }
+}
+
+/* Modal 2: Fixed Footer Overlay */
+ion-modal.footer-overlay-modal {
+  --height: 130px; /* Paksa tinggi modal agar tidak menutupi seluruh layar */
+  --width: 100%;
+  --backdrop-opacity: 0;
+  --z-index: 99999; /* Pastikan footer selalu di paling depan */
+  align-items: flex-end; /* Posisi di paling bawah */
+  pointer-events: none; /* Host modal tidak boleh memblokir sentuhan */
+  
+  &::part(backdrop) {
+    display: none;
+    pointer-events: none;
+  }
+  
+  &::part(content) {
+    pointer-events: auto; /* Hanya isi footer yang bisa disentuh/diklik */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+}
+
+.page-footer {
+  background: white;
+  padding: 10px 20px 20px;
+  width: 100%;
+  height: 130px;
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
+  
+  .payment-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+
+    &:active {
+      opacity: 0.7;
+    }
+
+    .pay-method {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: #333;
+      
+      ion-icon {
+        font-size: 22px;
+      }
+    }
+  }
+
+  .btn-order {
+    --border-radius: 25px;
+    margin: 0;
+    font-weight: 700;
+    font-size: 16px;
+    text-transform: none;
+    letter-spacing: normal;
+    --box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+  }
+}
+
+::ng-deep .mapboxgl-marker {
+  cursor: pointer;
+}
+
+/* Modal 3: Note Modal Styling */
+ion-modal.note-modal {
+  --border-radius: 20px 20px 0 0;
+  
+  .note-modal-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
+    
+    .note-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: #111;
+      align-self: flex-start;
+    }
+  }
+
+  .note-input-container {
+    margin-bottom: 20px;
+    
+    textarea {
+      width: 100%;
+      height: 100px;
+      background: #f2f4f7;
+      border: 1px solid #ffb347; /* Sedikit outline warna kuning/orange sesuai screenshot */
+      border-radius: 12px;
+      padding: 15px;
+      font-size: 14px;
+      color: #333;
+      resize: none;
+      outline: none;
+      font-family: inherit;
+      
+      &::placeholder {
+        color: #999;
+      }
+    }
+    
+    .char-count {
+      font-size: 11px;
+      color: #666;
+      margin-top: 8px;
+    }
+  }
+
+  .save-note-btn {
+    --border-radius: 25px;
+    margin: 0;
+    font-weight: 700;
+    font-size: 15px;
+    text-transform: none;
+    letter-spacing: normal;
+    --box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+  }
+}
+
+.has-note {
+  color: #111;
+  font-weight: 600;
+}
+
+// ─── MODAL 4: MENCARI DRIVER ─────────────────────────────────────────────────
+ion-modal.searching-driver-modal {
+  --border-radius: 24px 24px 0 0;
+  align-items: flex-end;
+
+  &::part(content) {
+    background: white;
+    border-radius: 24px 24px 0 0;
+    max-height: 55vh;
+  }
+}
+
+.searching-container {
+  padding: 16px 24px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  .modal-handle {
+    width: 40px;
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    margin: 0 auto 20px;
+  }
+
+  .searching-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #111;
+    margin: 0 0 6px;
+  }
+
+  .searching-subtitle {
+    font-size: 13px;
+    color: #777;
+    margin: 0 0 20px;
+    line-height: 1.5;
+  }
+
+  // Progress bar
+  .search-progress-track {
+    width: 100%;
+    height: 8px;
+    background: #ebebeb;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+
+    .search-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #FF9800, #FFB347);
+      border-radius: 8px;
+      transition: width 0.8s ease;
+    }
+  }
+
+  // Kartu info kendaraan
+  .search-vehicle-card {
+    background: #f5f7ff;
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+
+    .search-vehicle-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .search-vehicle-img {
+        width: 56px;
+        height: 40px;
+        object-fit: contain;
+      }
+
+      .search-vehicle-text {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+
+        .search-vehicle-name {
+          font-size: 15px;
+          font-weight: 700;
+          color: #111;
+        }
+
+        .search-payment-badge {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 12px;
+          color: #555;
+          background: white;
+          padding: 3px 8px;
+          border-radius: 20px;
+          width: fit-content;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+      }
+    }
+
+    .search-vehicle-price {
+      font-size: 15px;
+      font-weight: 800;
+      color: #111;
+    }
+  }
+
+  // Tombol batalkan
+  .cancel-search-btn {
+    --border-radius: 25px;
+    --border-color: #ffcdd2;
+    --color: #e53935;
+    --background: #fff5f5;
+    --background-activated: #ffebee;
+    font-weight: 700;
+    font-size: 15px;
+    text-transform: none;
+    letter-spacing: normal;
+    margin: 0;
+  }
+}
+
+// ─── MODAL 5: DRIVER TIDAK DITEMUKAN ─────────────────────────────────────────
+ion-modal.driver-notfound-modal {
+  --border-radius: 24px 24px 0 0;
+  align-items: flex-end;
+
+  &::part(content) {
+    background: white;
+    border-radius: 24px 24px 0 0;
+    max-height: 65vh;
+  }
+}
+
+.notfound-container {
+  padding: 24px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  .notfound-img {
+    width: 160px;
+    height: 160px;
+    object-fit: contain;
+    margin-bottom: 20px;
+  }
+
+  .notfound-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #111;
+    margin: 0 0 10px;
+  }
+
+  .notfound-subtitle {
+    font-size: 13px;
+    color: #888;
+    line-height: 1.6;
+    margin: 0 0 28px;
+    max-width: 280px;
+  }
+
+  .retry-btn {
+    --border-radius: 25px;
+    width: 100%;
+    font-weight: 700;
+    font-size: 16px;
+    text-transform: none;
+    letter-spacing: normal;
+    --box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+    margin-bottom: 0;
+  }
+
+  .back-btn-notfound {
+    --border-radius: 25px;
+    width: 100%;
+    font-weight: 600;
+    font-size: 15px;
+    text-transform: none;
+    letter-spacing: normal;
+    --color: #555;
+    margin-top: 12px; // Jarak terpisah dari tombol Coba Lagi
+    border-top: 1px solid #f0f0f0;
+    padding-top: 4px;
+  }
+}
+
+// ─── TRACKING OVERLAYS (MELAYANG DI ATAS PETA) ───────────────────────────────
+
+.tracking-top-banner {
+  position: absolute;
+  top: 40px;
+  left: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: #27AE60;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+
+  .back-btn {
+    margin: 0;
+    width: 36px;
+    height: 36px;
+    background: white;
+    border-radius: 50%;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+
+  .success-banner-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+
+    ion-icon {
+      font-size: 24px;
+    }
+  }
+}
+
+.tracking-top-card {
+  position: absolute;
+  top: 40px;
+  left: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+
+  .back-btn.top-left {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    width: 36px;
+    height: 36px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    z-index: 10;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    
+    ion-icon {
+      font-size: 24px;
+      color: #333;
+    }
+  }
+
+  &.route-card {
+    padding-left: 60px; // space for back btn
+    .route-inputs {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+
+      .input-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 2;
+        background: white;
+
+        .hollow-circle-blue {
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          border: 3px solid #1a4fba;
+          background: white;
+        }
+
+        .hollow-circle-orange {
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          border: 3px solid #FF9800;
+          background: white;
+        }
+
+        .input-box {
+          flex: 1;
+          padding: 12px 16px;
+          border-radius: 12px;
+          border: 1px solid #e0e0e0;
+          font-size: 13px;
+          font-weight: 600;
+          color: #333;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+
+      .route-line-dashed {
+        position: absolute;
+        left: 6px;
+        top: 24px;
+        bottom: 24px;
+        width: 2px;
+        border-left: 2px dashed #ccc;
+        z-index: 1;
+      }
+    }
+  }
+
+  &.arrived-card {
+    padding-left: 60px;
+    .arrived-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .bell-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #E8EAF6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        ion-icon {
+          font-size: 24px;
+          color: #3F51B5;
+        }
+      }
+
+      .arrived-text {
+        flex: 1;
+
+        h3 {
+          font-size: 14px;
+          font-weight: 800;
+          color: #111;
+          margin: 0 0 4px;
+        }
+
+        p {
+          font-size: 11px;
+          color: #666;
+          margin: 0;
+          line-height: 1.4;
+        }
+      }
+    }
+  }
+}
+
+.map-controls-right {
+  position: absolute;
+  right: 20px;
+  bottom: calc(45vh + 60px); // Above ETA banner
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .control-btn {
+    width: 44px;
+    height: 44px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    ion-icon {
+      font-size: 20px;
+      color: #333;
+    }
+  }
+}
+
+.tracking-middle-banner {
+  position: absolute;
+  bottom: calc(40vh + 16px); // Just above the bottom sheet
+  left: 20px;
+  right: 20px;
+  z-index: 999;
+  background: #FFA000;
+  border-radius: 16px;
+  padding: 12px 20px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+
+  span {
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+
+    strong {
+      font-weight: 800;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-left: 8px;
+    }
+  }
+}
+
+// ─── MODAL 6: DRIVER DITEMUKAN (BOTTOM SHEET) ─────────────────────────────────
+
+ion-modal.driver-found-sheet {
+  --border-radius: 24px 24px 0 0;
+  --background: transparent;
+
+  &::part(content) {
+    background: white;
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
+  }
+}
+
+.driver-found-container {
+  padding: 16px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  .modal-handle {
+    width: 40px;
+    height: 4px;
+    background: #111;
+    border-radius: 4px;
+    margin: 0 auto 20px;
+  }
+
+  .driver-profile-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+
+    .driver-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .driver-info {
+      flex: 1;
+
+      .driver-name {
+        font-size: 17px;
+        font-weight: 800;
+        color: #111;
+        margin: 0 0 4px;
+      }
+
+      .driver-rating {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: #f0f0f0;
+        padding: 4px 8px;
+        border-radius: 12px;
+        width: fit-content;
+
+        .rating-val {
+          font-size: 12px;
+          font-weight: 700;
+          color: #333;
+        }
+
+        .star-icon-gold {
+          color: #FFC107;
+          font-size: 12px;
+        }
+      }
+    }
+
+    .driver-actions {
+      display: flex;
+      gap: 12px;
+
+      .action-btn {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+
+        &.call-btn {
+          background: #FFE0B2;
+          color: #E65100;
+        }
+
+        &.chat-btn {
+          background: #C5CAE9;
+          color: #283593;
+        }
+
+        ion-icon {
+          font-size: 24px;
+        }
+      }
+    }
+  }
+
+  .vehicle-info-grid {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+
+    .info-box {
+      flex: 1;
+      background: #EAEAEA;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+
+      .info-label {
+        font-size: 11px;
+        color: #555;
+        font-weight: 600;
+      }
+
+      .info-value {
+        font-size: 14px;
+        font-weight: 800;
+        color: #111;
+      }
+    }
+  }
+
+  .cancel-journey-btn {
+    --border-radius: 20px;
+    --background: #FFCDD2;
+    --background-activated: #EF9A9A;
+    --color: #C62828;
+    height: 52px;
+    font-weight: 700;
+    font-size: 15px;
+    margin: 0;
+    --box-shadow: none;
+  }
+}

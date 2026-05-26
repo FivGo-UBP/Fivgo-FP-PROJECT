@@ -1,0 +1,326 @@
+ion-content {
+  --background: transparent;
+}
+
+.map-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: auto;
+
+  iframe {
+    position: absolute;
+    top: -80px;
+    left: -80px;
+    width: calc(100% + 160px);
+    height: calc(100% + 160px);
+  }
+}
+
+.profile-icon {
+  position: absolute;
+  top: 48px;
+  right: 16px;
+  z-index: 999;
+  cursor: pointer;
+
+  ion-avatar {
+    width: 48px;
+    height: 48px;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.status-card-container {
+  position: absolute;
+  bottom: 100px;
+  left: 16px;
+  right: 16px;
+  z-index: 10;
+}
+
+.status-card {
+  background: #f2f3f5;
+  border-radius: 12px;
+  padding: 28px 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  gap: 8px;
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #f44336;
+    display: inline-block;
+
+    &.online {
+      background-color: #4caf50;
+    }
+  }
+
+  .status-text {
+    font-size: 14px;
+    color: #333;
+  }
+}
+
+.toggle-btn {
+  --border-radius: 16px;
+  --color: white;
+  margin: 0;
+  font-weight: bold;
+  height: 48px;
+
+  &.btn-online {
+    --background: #f44336;
+  }
+
+  &.btn-offline {
+    --background: #1a2b6d;
+  }
+}
+
+// ─── MODAL ORDERAN MASUK ──────────────────────────────────────────────────────
+
+.incoming-order-modal {
+  --border-radius: 24px 24px 0 0;
+  --height: auto;
+  --max-height: 85vh;
+  align-items: flex-end;
+}
+
+.incoming-order-container {
+  background: #ffffff;
+  border-radius: 24px 24px 0 0;
+  padding: 0 20px 32px;
+  width: 100%;
+}
+
+.modal-handle {
+  width: 40px;
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  margin: 12px auto 20px;
+}
+
+.customer-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 4px;
+}
+
+.customer-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f0f0f0;
+}
+
+.customer-info {
+  flex: 1;
+}
+
+.customer-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 4px;
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.star-icon {
+  color: #FFC107;
+  font-size: 15px;
+}
+
+.rating-text {
+  font-size: 14px;
+  color: #555;
+  font-weight: 600;
+}
+
+.timer-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF6B35, #F7C59F);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4);
+}
+
+.timer-number {
+  font-size: 16px;
+  font-weight: 800;
+  color: white;
+}
+
+.order-divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 16px 0;
+}
+
+// Route section
+.route-section {
+  padding: 4px 0;
+}
+
+.route-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 48px;
+}
+
+.route-icon-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 20px;
+  padding-top: 2px;
+  flex-shrink: 0;
+}
+
+.hollow-circle {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #FFC107;
+  background: white;
+  flex-shrink: 0;
+}
+
+.route-line {
+  width: 2px;
+  flex: 1;
+  background: #e0e0e0;
+  min-height: 24px;
+  margin: 2px 0;
+}
+
+.dest-pin {
+  color: #E53935;
+  font-size: 20px;
+}
+
+.route-content {
+  flex: 1;
+  padding-bottom: 12px;
+}
+
+.route-label {
+  font-size: 11px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.route-address {
+  font-size: 13px;
+  color: #333;
+  font-weight: 500;
+  margin: 2px 0 0;
+  line-height: 1.4;
+}
+
+// Payment & Income row
+.payment-income-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.payment-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFF8E1;
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+.payment-icon {
+  color: #FFC107;
+  font-size: 20px;
+}
+
+.payment-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+}
+
+.income-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.income-label {
+  font-size: 11px;
+  color: #999;
+  text-transform: lowercase;
+}
+
+.income-amount {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1565C0;
+}
+
+// Action Buttons
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn-tolak {
+  flex: 1;
+  --border-radius: 14px;
+  --color: #E53935;
+  --border-color: #E53935;
+  --border-width: 1.5px;
+  height: 52px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.btn-terima {
+  flex: 2;
+  --border-radius: 14px;
+  --background: #1a2b6d;
+  --color: white;
+  height: 52px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.btn-spinner {
+  width: 20px;
+  height: 20px;
+}

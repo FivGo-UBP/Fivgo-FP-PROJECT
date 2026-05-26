@@ -1,0 +1,129 @@
+ion-content {
+  --background: #fbfbfb;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 16px 24px;
+}
+
+.header-section {
+  text-align: center;
+  margin-top: 100px;
+  margin-bottom: 24px;
+
+  h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 16px;
+    margin-top: 0;
+  }
+
+  .subtitle {
+    font-size: 16px;
+    color: #1e293b;
+    line-height: 1.6;
+    margin: 0;
+
+    strong {
+      color: #0f172a;
+      font-weight: 800;
+    }
+  }
+}
+
+.otp-input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 40px;
+
+  .timer-text {
+    font-size: 14px;
+    color: #64748b;
+    margin: 8px 0 0 0;
+    font-weight: 500;
+
+    &.expired {
+      color: #ef4444;
+      font-weight: 600;
+    }
+  }
+
+  .attempt-text {
+    font-size: 13px;
+    color: #ef4444;
+    margin: -8px 0 0 0;
+    font-weight: 600;
+  }
+
+  .resend-section {
+    text-align: center;
+    margin-top: 8px;
+
+    p {
+      font-size: 14px;
+      color: #64748b;
+      margin: 0;
+
+      a {
+        color: #f59e0b;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: color 0.2s ease;
+
+        &:hover:not(.disabled) {
+          color: #d97706;
+        }
+
+        &.disabled {
+          color: #cbd5e1;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+
+  .otp-input {
+    width: 60px;
+    height: 60px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+    background: #ffffff;
+    outline: none;
+    transition: all 0.2s ease;
+
+    &:focus {
+      border-color: #f59e0b;
+      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+    }
+  }
+}
+
+.bottom-section {
+  margin-top: 80px;
+  text-align: center;
+
+  .verify-btn {
+    --background: #f59e0b;
+    --background-hover: #d97706;
+    --background-activated: #d97706;
+    --color: #ffffff;
+    --border-radius: 50px;
+    height: 56px;
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: normal;
+    margin: 0;
+  }
+}

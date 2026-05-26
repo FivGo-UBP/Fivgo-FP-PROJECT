@@ -1,0 +1,111 @@
+ion-content {
+  --background: #fbfbfb;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 16px 24px;
+  position: relative;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 50px;
+
+  .back-btn {
+    --padding-start: 0;
+    --padding-end: 0;
+    margin: 0;
+    height: auto;
+  }
+}
+
+.image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0;
+  
+  img {
+    width: 100%;
+    max-width: 340px;
+    object-fit: contain;
+  }
+}
+
+.bottom-content {
+  position: absolute;
+  top: 58%;
+  left: 24px;
+  right: 24px;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  padding: 0 10px;
+  
+  .social-btn {
+    --background: #ffffff;
+    --background-hover: #f3f4f6;
+    --background-activated: #f3f4f6;
+    --color: #111827;
+    --border-radius: 50px;
+    --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    height: 56px;
+    font-size: 14px; 
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: normal;
+    position: relative;
+    overflow: visible;
+
+    &::part(native) {
+      justify-content: center;
+    }
+
+    .btn-text {
+      padding-left: 42px;
+      padding-right: 16px; 
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+    }
+
+    .icon-container {
+      position: absolute;
+      left: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      ion-icon {
+        font-size: 20px;
+        color: #111827;
+      }
+    }
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 30px 0;
+    
+    .line {
+      width: 70px;
+      height: 1px;
+      background-color: #6b7280;
+    }
+    
+    .text {
+      padding: 0 16px;
+      color: #374151;
+      font-size: 14px;
+      font-weight: 400;
+    }
+  }
+}

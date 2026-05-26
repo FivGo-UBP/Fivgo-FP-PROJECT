@@ -1,0 +1,40 @@
+<ion-content [fullscreen]="true">
+  <div class="page-container">
+    <div class="header-section">
+      <h1>Masukkan Kode OTP</h1>
+      <p class="subtitle">
+        Kode 4 digit dikirim ke<br>
+        <strong>{{ maskPhone(phone) }}</strong> melalui WhatsApp
+      </p>
+    </div>
+
+    <div class="otp-input-container">
+      <ion-input-otp separators="all" fill="solid" [(ngModel)]="otp" [disabled]="isOtpExpired || isLockedOut"></ion-input-otp>
+      <br>
+      <p class="timer-text" [ngClass]="{'expired': isOtpExpired}">
+        {{ isOtpExpired ? 'Kode OTP sudah kadaluarsa' : 'Waktu: ' + formatTime(otpTimeLeft) }}
+      </p>
+      
+      <!-- Show attempt counter when there are invalid attempts -->
+      <p class="attempt-text" *ngIf="invalidAttempts > 0 && !isLockedOut">
+        Percobaan salah: {{ invalidAttempts }}/{{ maxAttempts }}
+      </p>
+
+      <div class="resend-section">
+        <p>Tidak dapat kode? 
+          <a href="#" 
+             (click)="resendOtp(); $event.preventDefault();"
+             [class.disabled]="resendTimeLeft > 0">
+            {{ resendTimeLeft > 0 ? 'Kirim ulang (' + resendTimeLeft + 's)' : 'Kirim ulang kode' }}
+          </a>
+        </p>
+      </div>
+    </div>
+
+    <div class="bottom-section">   
+      <ion-button class="verify-btn" expand="block" (click)="verifyOtp()" [disabled]="!otp || otp.length < 4 || isOtpExpired || isLockedOut">
+        Verifikasi
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

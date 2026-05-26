@@ -1,0 +1,159 @@
+.custom-bg {
+  --background: #ffffff;
+}
+
+/* Green Header Area */
+.green-header {
+  background-image: url('../../../assets/background-order.png');
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  padding: 16px 16px 140px 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.btn-back {
+  --color: #ffffff;
+  margin-left: -8px;
+}
+
+/* Floating Search Bar */
+.floating-search {
+  margin: -30px 16px 20px 16px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  position: relative;
+  z-index: 10;
+}
+
+.search-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.pin-icon {
+  color: #f59e0b; /* Orange color matching order page */
+  font-size: 22px;
+}
+
+.placeholder-text {
+  color: #8c8c8c;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.content-body {
+  padding: 0 16px 30px 16px;
+}
+
+/* Recent Locations */
+.recent-locations {
+  margin-bottom: 30px;
+}
+
+.location-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.icon-wrap {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f2f9f6;
+  border-radius: 50%;
+  margin-right: 16px;
+  flex-shrink: 0;
+  
+  ion-icon {
+    font-size: 20px;
+    color: #008740;
+  }
+}
+
+.dark-pin {
+  color: #111827 !important;
+}
+
+.loc-text {
+  flex: 1;
+  overflow: hidden;
+  
+  h4 {
+    margin: 0 0 4px 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: #6b7280;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* Sections */
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 16px 0;
+}
+
+/* Horizontal Promo */
+.horizontal-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.promo-img-card {
+  min-width: 200px;
+  height: 120px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}

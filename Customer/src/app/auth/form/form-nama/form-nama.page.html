@@ -1,0 +1,23 @@
+<ion-content [fullscreen]="true">
+  <div class="page-container">
+    <div class="header-section">
+      <h1>Buat Nama</h1>
+      <p class="subtitle">Masukkan nama yang akan ditampilkan di profil Anda.</p>
+    </div>
+
+    <div class="form-section">
+      <input
+        type="text"
+        class="custom-input"
+        placeholder="Nama lengkap"
+        [(ngModel)]="name"
+        maxlength="50" />
+    </div>
+
+    <div class="bottom-section">
+      <ion-button class="submit-btn" expand="block" (click)="onSubmit()">
+        Kirim
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

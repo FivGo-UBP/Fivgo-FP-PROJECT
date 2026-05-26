@@ -1,0 +1,36 @@
+<ion-content [fullscreen]="true">
+  <div class="page-container">
+    <div class="top-bar">
+      <ion-button fill="clear" routerLink="/login" color="dark" class="back-btn">
+        <ion-icon name="chevron-back" style="font-size: 28px;"></ion-icon>
+      </ion-button>
+    </div>
+
+    <div class="form-section">
+      <div class="input-label">Nomor Ponsel</div>
+      <div class="input-container">
+
+        <ion-select #countrySelect class="country-select" [(ngModel)]="countryCode" interface="popover">
+          <ion-select-option value="+62">Indonesia (+62)</ion-select-option>
+          <ion-select-option value="+60">Malaysia (+60)</ion-select-option>
+          <ion-select-option value="+65">Singapura (+65)</ion-select-option>
+          <ion-select-option value="+1">Amerika Serikat (+1)</ion-select-option>
+          <ion-select-option value="+44">Inggris Raya (+44)</ion-select-option>
+          <ion-select-option value="+61">Australia (+61)</ion-select-option>
+          <ion-select-option value="+81">Jepang (+81)</ion-select-option>
+          <ion-select-option value="+86">Tiongkok (+86)</ion-select-option>
+        </ion-select>
+        
+        <div class="divider"></div>
+        
+        <ion-input type="tel" inputmode="numeric" placeholder="8123456789" class="phone-input" [(ngModel)]="phoneNumber" (ionInput)="validateNumber($event)"></ion-input>
+      </div>
+    </div>
+
+    <div class="bottom-section">
+      <ion-button class="next-btn" shape="round" expand="block" (click)="onSubmit()" [disabled]="!phoneNumber">
+        Berikutnya
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

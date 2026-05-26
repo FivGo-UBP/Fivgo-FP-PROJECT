@@ -1,0 +1,175 @@
+ion-toolbar.bg-orange {
+  --background: #F79F1A;
+  --color: #ffffff;
+}
+
+.text-white {
+  --color: #ffffff;
+  font-weight: 600;
+}
+
+ion-content.bg-grey {
+  --background: #EAECEE;
+}
+
+// ── Info Banner ──────────────────────────────────────────────────────
+.info-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #d6dff5;
+  margin: 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #1c2f72;
+  font-weight: 500;
+
+  .info-icon {
+    font-size: 22px;
+    color: #27448A;
+    flex-shrink: 0;
+  }
+}
+
+// ── Section ──────────────────────────────────────────────────────────
+.section {
+  margin: 0 16px 16px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
+}
+
+.section-subtitle {
+  font-size: 12px;
+  color: #888;
+  margin: 0 0 12px 0;
+}
+
+// ── Payment List ─────────────────────────────────────────────────────
+.payment-list {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 0;
+}
+
+.payment-item {
+  --background: white;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --inner-padding-end: 0;
+  min-height: 64px;
+
+  &.selected {
+    --background: white;
+  }
+}
+
+.item-divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 0 16px;
+}
+
+.payment-icon-box {
+  width: 40px;
+  height: 40px;
+  background: #dce4f7;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+
+  &--blue {
+    background: #27448A;
+  }
+}
+
+.payment-icon {
+  font-size: 22px;
+  color: #27448A;
+
+  &--white {
+    color: #ffffff;
+  }
+}
+
+.payment-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+// ── Radio Button ────────────────────────────────────────────────────
+.radio-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.2s;
+
+  &.radio-active {
+    border-color: #27448A;
+    background: #27448A;
+  }
+}
+
+.radio-inner {
+  width: 10px;
+  height: 10px;
+  background: white;
+  border-radius: 50%;
+}
+
+// ── Expand Icon ──────────────────────────────────────────────────────
+.expand-icon {
+  font-size: 16px;
+  color: #888;
+  margin-left: 4px;
+  transition: transform 0.25s ease;
+
+  &.rotated {
+    transform: rotate(180deg);
+  }
+}
+
+// ── Non Tunai Sub Options ────────────────────────────────────────────
+.nontunai-options {
+  background: #f8f8f8;
+  border-top: 1px solid #f0f0f0;
+
+  .sub-item {
+    --background: #f8f8f8;
+    --padding-start: 24px;
+    --min-height: 48px;
+    font-size: 14px;
+    color: #333;
+
+    ion-label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
+}
+
+.sub-check {
+  font-size: 18px;
+  color: #27448A;
+  margin-right: 8px;
+
+  &--empty {
+    color: #ccc;
+  }
+}

@@ -1,0 +1,137 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="detail-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/activity" icon="chevron-back-outline" text="" (click)="goBack()"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detail Aktivitas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Loading & Error -->
+  <div class="center-content" *ngIf="isLoading">
+    <ion-spinner></ion-spinner>
+  </div>
+  <div class="center-content" *ngIf="!isLoading && hasError">
+    <p>Gagal memuat detail</p>
+  </div>
+
+  <div class="main-wrapper" *ngIf="!isLoading && detail">
+    
+    <!-- First Card: Invoice & Route -->
+    <div class="detail-card">
+      <div class="invoice-header">
+        <div class="invoice-text">
+          <span class="label-muted">INVOICE NUMBER</span>
+          <p class="invoice-num">INV/2023/10/FGO-001</p>
+        </div>
+        <div class="status-badge" [ngClass]="detail.status === 'completed' ? 'badge-selesai' : 'badge-dibatalkan'">
+          {{ detail.status === 'completed' ? 'Selesai' : 'Dibatalkan' }}
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <span class="stat-title">Jarak</span>
+          <div class="stat-value">
+            <ion-icon src="../../../assets/icon/route-path.svg" name="git-pull-request-outline" class="stat-icon blue-icon"></ion-icon>
+            <p>8.4 KM</p>
+          </div>
+        </div>
+        <div class="stat-box">
+          <span class="stat-title">Durasi</span>
+          <div class="stat-value">
+            <ion-icon name="time-outline" class="stat-icon blue-icon"></ion-icon>
+            <p>24 Menit</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="route-section">
+        <div class="route-item">
+          <div class="route-icon-wrapper">
+            <div class="hollow-circle"></div>
+            <div class="vertical-line"></div>
+          </div>
+          <div class="route-content">
+            <span class="route-label">Awal</span>
+            <p class="route-address">{{ detail.pickup_address }}</p>
+          </div>
+        </div>
+        <div class="route-item">
+          <div class="route-icon-wrapper">
+            <ion-icon name="location" class="solid-pin"></ion-icon>
+          </div>
+          <div class="route-content">
+            <span class="route-label">Tujuan</span>
+            <p class="route-address">{{ detail.dropoff_address }}</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="timestamp-text">{{ formatDateTime(detail.created_at) }}</p>
+    </div>
+
+    <!-- Second Card: Rincian Pendapatan -->
+    <div class="detail-card">
+      <div class="card-title-row">
+        <ion-icon name="wallet" class="wallet-icon"></ion-icon>
+        <span class="card-title-text">Rincian pendapatan</span>
+      </div>
+
+      <div class="income-row">
+        <span class="income-label">Dana (Non-Tunai)</span>
+        <span class="income-val-bold">{{ formatPrice(detail.final_price) }}</span>
+      </div>
+      <div class="income-row">
+        <span class="income-label">Potongan Komisi (10%)</span>
+        <span class="income-val-red">-{{ formatPrice(getCommission()) }}</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="income-row total-row">
+        <span class="total-label">PENDAPATAN</span>
+        <span class="total-val">{{ formatPrice(getIncome()) }}</span>
+      </div>
+    </div>
+
+    <!-- Third Card: Pelanggan & Review -->
+    <div class="detail-card">
+      <div class="customer-row">
+        <div class="customer-info">
+          <img [src]="detail.customer?.photo || 'https://i.pravatar.cc/150?u=customer'" class="avatar-img" />
+          <div class="customer-text">
+            <span class="label-muted">Pelanggan</span>
+            <p class="customer-name">{{ detail.customer?.name || 'Riski Ahmad Fauzan' }}</p>
+          </div>
+        </div>
+        <div class="rating-box" *ngIf="detail.rating">
+          <span class="rating-number">{{ detail.rating | number:'1.1-1' }}</span>
+          <ion-icon name="star" class="star-icon-gold"></ion-icon>
+        </div>
+      </div>
+
+      <div class="review-box" *ngIf="detail.rating">
+        <div class="stars-row">
+          <ion-icon name="star" class="star-icon-gold" *ngFor="let i of [1,2,3,4,5]" [ngStyle]="{'opacity': i <= detail.rating ? 1 : 0.3}"></ion-icon>
+        </div>
+        <p class="review-text">
+          "{{ detail.review || 'Driver sangat sopan, motor nya sangat bersih. Perjalanan terasa sangat aman meskipun sedang jam sibuk. Terima kasih!' }}"
+        </p>
+      </div>
+    </div>
+
+    <!-- Report Button -->
+    <button class="btn-report">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      Laporkan Customer
+    </button>
+    <p class="report-info">
+      Pelaporan hanya tersedia maksimal 3 hari setelah perjalanan selesai.
+    </p>
+
+  </div>
+</ion-content>

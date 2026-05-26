@@ -1,0 +1,79 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="header-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/profile" icon="chevron-back-outline" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title>Kinerja Driver</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="main-wrapper">
+    
+    <!-- Rating Keseluruhan -->
+    <div class="card-rating">
+      <p class="rating-label">RATING KESELURUHAN</p>
+      
+      <div class="rating-score">
+        <span class="score-big">{{ performance.average_rating | number:'1.1-1' }}</span>
+        <span class="score-max"> / 5.0</span>
+      </div>
+      
+      <div class="stars-container">
+        <!-- Render 5 stars, coloring them based on average rating if needed, but since the design is static stars, we keep 5 gold stars -->
+        <ion-icon name="star" class="star-icon"></ion-icon>
+        <ion-icon name="star" class="star-icon"></ion-icon>
+        <ion-icon name="star" class="star-icon"></ion-icon>
+        <ion-icon name="star" class="star-icon"></ion-icon>
+        <ion-icon name="star" class="star-icon"></ion-icon>
+      </div>
+      
+      <p class="rating-desc">
+        Dari total {{ performance.total_reviews }} ulasan penumpang yang masuk.
+      </p>
+    </div>
+
+    <!-- Ringkasan Feedback -->
+    <div class="card-feedback">
+      <div class="feedback-header">
+        <h3 class="feedback-title">Ringkasan Feedback</h3>
+        <ion-icon name="stats-chart" class="chart-icon"></ion-icon>
+      </div>
+
+      <!-- Item 1 -->
+      <div class="feedback-item">
+        <div class="feedback-text-row">
+          <span class="feedback-label">SANGAT PUAS</span>
+          <span class="feedback-percent">{{ performance.sangat_puas }}%</span>
+        </div>
+        <div class="progress-bg">
+          <div class="progress-fill" [style.width.%]="performance.sangat_puas"></div>
+        </div>
+      </div>
+
+      <!-- Item 2 -->
+      <div class="feedback-item">
+        <div class="feedback-text-row">
+          <span class="feedback-label">PUAS</span>
+          <span class="feedback-percent">{{ performance.puas }}%</span>
+        </div>
+        <div class="progress-bg">
+          <div class="progress-fill" [style.width.%]="performance.puas"></div>
+        </div>
+      </div>
+
+      <!-- Item 3 -->
+      <div class="feedback-item">
+        <div class="feedback-text-row">
+          <span class="feedback-label">PERLU DI TINGKATKAN</span>
+          <span class="feedback-percent">{{ performance.perlu_ditingkatkan }}%</span>
+        </div>
+        <div class="progress-bg">
+          <div class="progress-fill" [style.width.%]="performance.perlu_ditingkatkan"></div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</ion-content>

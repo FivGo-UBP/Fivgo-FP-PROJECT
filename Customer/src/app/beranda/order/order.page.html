@@ -1,0 +1,114 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="header-toolbar">
+    <div class="header-content">
+      <ion-icon name="chevron-back-outline" class="custom-back-btn" (click)="goBack()"></ion-icon>
+      <div class="header-title">Cari Lokasi</div>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="bg-light">
+  <div class="location-container">
+    <div class="location-timeline">
+      <div class="dot-icon blue-dot">
+        <div class="inner-dot"></div>
+      </div>
+      <div class="dotted-line"></div>
+      <ion-icon name="location" class="pin-icon orange-pin"></ion-icon>
+    </div>
+    
+    <div class="location-inputs">
+      <div class="input-box" [class.active-box]="activeField === 'jemput'">
+        <ion-searchbar search-icon="search-outline" placeholder="Jemput dimana?" [(ngModel)]="jemputKeyword" (ionInput)="onSearchJemput($event)" (ionFocus)="activeField = 'jemput'"></ion-searchbar>
+      </div>
+      <div class="input-box" [class.active-box]="activeField === 'tujuan'">
+        <ion-searchbar search-icon="search-outline" placeholder="Mau pergi kemana?" [(ngModel)]="tujuanKeyword" (ionInput)="onSearchTujuan($event)" (ionFocus)="activeField = 'tujuan'"></ion-searchbar>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Results (Tampil saat mengetik) -->
+  <div class="location-list" *ngIf="isSearching">
+    <div class="loc-item" *ngFor="let result of searchResults" (click)="selectLocation(result)">
+      <div class="icon-wrap">
+        <ion-icon name="location-outline" style="font-size: 24px; color: #6b7280;"></ion-icon>
+      </div>
+      <div class="text-wrap">
+        <h4 style="margin: 0; font-size: 15px; font-weight: 600; color: #333;">{{ result.name }}</h4>
+        <p style="margin: 4px 0 0; font-size: 13px; color: #6b7280;">
+          <span *ngIf="result.distanceStr">{{ result.distanceStr }} &bull; </span>{{ result.address }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs (Hanya tampil jika tidak sedang mencari) -->
+  <div class="tabs-row" *ngIf="!isSearching">
+    <ion-chip class="tab-chip" [class.active]="segmentValue === 'terakhir'" (click)="segmentValue = 'terakhir'">
+      <ion-label>Terakhir</ion-label>
+    </ion-chip>
+    <ion-chip class="tab-chip" [class.active]="segmentValue === 'tersimpan'" (click)="segmentValue = 'tersimpan'">
+      <ion-label>Tersimpan</ion-label>
+    </ion-chip>
+  </div>
+
+  <!-- Recent Locations (Terakhir) -->
+  <div class="location-list" *ngIf="!isSearching && segmentValue === 'terakhir'">
+    
+    <!-- Lokasi Saat Ini: HANYA tampil jika activeField === 'jemput' -->
+    <div class="loc-item" *ngIf="activeField === 'jemput'" (click)="selectCurrentLocation()">
+      <div class="icon-wrap">
+        <ion-icon name="navigate-circle" style="font-size: 24px; color: #2a4175;"></ion-icon>
+      </div>
+      <div class="text-wrap">
+        <h4>Lokasi Saat Ini</h4>
+        <p *ngIf="currentAddress">{{ currentAddress }}</p>
+        <p *ngIf="!currentAddress">Mencari lokasi...</p>
+      </div>
+    </div>
+
+    <!-- Riwayat Pencarian -->
+    <ng-container *ngIf="activeField === 'jemput'">
+      <div class="loc-item" *ngFor="let loc of historyJemput" (click)="selectLocation(loc)">
+        <div class="icon-wrap">
+          <ion-icon name="time-outline" style="font-size: 24px; color: #6b7280;"></ion-icon>
+        </div>
+        <div class="text-wrap">
+          <h4 style="margin: 0; font-size: 15px; font-weight: 600; color: #333;">{{ loc.name }}</h4>
+          <p style="margin: 4px 0 0; font-size: 13px; color: #6b7280;">{{ loc.address }}</p>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="activeField === 'tujuan'">
+      <div class="loc-item" *ngFor="let loc of historyTujuan" (click)="selectLocation(loc)">
+        <div class="icon-wrap">
+          <ion-icon name="time-outline" style="font-size: 24px; color: #6b7280;"></ion-icon>
+        </div>
+        <div class="text-wrap">
+          <h4 style="margin: 0; font-size: 15px; font-weight: 600; color: #333;">{{ loc.name }}</h4>
+          <p style="margin: 4px 0 0; font-size: 13px; color: #6b7280;">{{ loc.address }}</p>
+        </div>
+      </div>
+      
+      <div *ngIf="historyTujuan.length === 0" style="padding: 20px; text-align: center; color: #888; font-size: 14px;">
+        Belum ada riwayat pencarian tujuan.
+      </div>
+    </ng-container>
+
+  </div>
+
+  <!-- Saved Locations (Tersimpan) -->
+  <div class="location-list" *ngIf="!isSearching && segmentValue === 'tersimpan'">
+    <!-- Tambah baru -->
+    <div class="loc-item" routerLink="/simpan-lokasi">
+      <div class="icon-wrap">
+        <ion-icon name="add-circle" style="font-size: 24px; color: #f05214;"></ion-icon>
+      </div>
+      <div class="text-wrap" style="display: flex; align-items: center;">
+        <h4 style="margin: 0; font-size: 15px; font-weight: 600; color: #66340b;">Tambah baru</h4>
+      </div>
+    </div>
+  </div>
+
+</ion-content>

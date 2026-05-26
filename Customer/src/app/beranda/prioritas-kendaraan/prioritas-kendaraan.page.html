@@ -1,0 +1,88 @@
+<ion-content [fullscreen]="true" class="custom-bg">
+  <!-- Header Area (Green Background) -->
+  <div class="green-header">
+    <div class="header-top">
+      <ion-back-button defaultHref="/home" icon="arrow-back" text="" color="dark" class="btn-back"></ion-back-button>
+    </div>
+
+    <div class="header-content">
+    </div>
+  </div>
+
+  <!-- Floating Search Bar -->
+  <div class="floating-search">
+    <div class="search-left" (click)="goToOrder()">
+      <ion-icon name="location" class="pin-icon"></ion-icon>
+      <span class="placeholder-text">Mau ke mana?</span>
+    </div>
+  </div>
+
+  <div class="content-body">
+    <!-- Recent Locations -->
+    <div class="recent-locations">
+      <div class="location-item">
+        <div class="icon-wrap">
+          <ion-icon name="time-outline"></ion-icon>
+        </div>
+        <div class="loc-text">
+          <h4>Universitas Buana Perjuangan Karawang</h4>
+          <p>Jl. Ronggo Waluyo, Puseurjaya, Telukjambe Timur, Kara...</p>
+        </div>
+      </div>
+      <div class="location-item">
+        <div class="icon-wrap">
+          <ion-icon name="time-outline"></ion-icon>
+        </div>
+        <div class="loc-text">
+          <h4>110 Jalan Wirasaba</h4>
+          <p>Jl. Wirasaba 110, Adiarsa Timur, Karawang Timur, Kara...</p>
+        </div>
+      </div>
+      <div class="location-item">
+        <div class="icon-wrap">
+          <ion-icon name="location" class="dark-pin"></ion-icon>
+        </div>
+        <div class="loc-text">
+          <h4>No.110 Jalan Wirasaba RT.1/RW.21</h4>
+          <p>Jl. Wirasaba No.110 RT.1/RW.21, Adiarsa Timur, Karawa...</p>
+        </div>
+      </div>
+    </div>
+    <h3 class="section-title">buat setiap perjalanan selalu</h3>
+    <div class="horizontal-scroll">
+      <div class="promo-img-card">
+        <img src="https://i.pinimg.com/736x/eb/64/9d/eb649d28c347f75d5b746ea5efdddd33.jpg" alt="keamanan 1" />
+      </div>
+      <div class="promo-img-card">
+        <img src="https://i.pinimg.com/736x/eb/64/9d/eb649d28c347f75d5b746ea5efdddd33.jpg" alt="keamanan 2" />
+      </div>
+      <div class="promo-img-card">
+        <img src="https://i.pinimg.com/736x/eb/64/9d/eb649d28c347f75d5b746ea5efdddd33.jpg" alt="keamanan 3" />
+      </div>
+      <div class="promo-img-card">
+        <img src="https://i.pinimg.com/736x/eb/64/9d/eb649d28c347f75d5b746ea5efdddd33.jpg" alt="keamanan 4" />
+      </div>
+      <div class="promo-img-card">
+        <img src="https://i.pinimg.com/736x/3f/82/ee/3f82ee0a7af7ebce1bc9fb94c25eb4f3.jpg" alt="keamanan 5" />
+      </div>
+    </div>
+    <h3 class="section-title">Promo</h3>
+    <div class="horizontal-scroll">
+      <div class="promo-img-card">
+        <img src="https://i.pinimg.com/736x/eb/64/9d/eb649d28c347f75d5b746ea5efdddd33.jpg" alt="promo 1" />
+      </div>
+      <div class="promo-img-card">
+        <img src="https://i.pinimg.com/736x/eb/64/9d/eb649d28c347f75d5b746ea5efdddd33.jpg" alt="promo 2" />
+      </div>
+      <div class="promo-img-card">
+        <img src="https://i.pinimg.com/736x/eb/64/9d/eb649d28c347f75d5b746ea5efdddd33.jpg" alt="promo 3" />
+      </div>
+      <div class="promo-img-card">
+        <img src="https://i.pinimg.com/736x/eb/64/9d/eb649d28c347f75d5b746ea5efdddd33.jpg" alt="promo 4" />
+      </div>
+      <div class="promo-img-card">
+        <img src="https://i.pinimg.com/736x/3f/82/ee/3f82ee0a7af7ebce1bc9fb94c25eb4f3.jpg" alt="promo 5" />
+      </div>
+    </div>
+  </div>
+</ion-content>

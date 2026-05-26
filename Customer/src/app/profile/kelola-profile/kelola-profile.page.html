@@ -1,0 +1,94 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="bg-orange">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" [text]="t('profile.title')" icon="chevron-back-outline" class="text-white"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="bg-light-grey">
+  <div class="profile-header bg-orange">
+    <div class="avatar-container">
+      <!-- Menggunakan foto dari desain jika ada, atau foto placeholder -->
+      <img [src]="user?.photo || 'https://i.pinimg.com/736x/6e/80/c1/6e80c11f8b13904ee1319ed0f85637c4.jpg'" alt="Profile" referrerpolicy="no-referrer" />
+    </div>
+    <h2 class="profile-name">{{ user?.name || '...' }}</h2>
+    <p class="profile-phone">
+      {{ user?.phone || t('profile.phone.empty') }}
+      <ion-icon *ngIf="!user?.phone" name="alert-circle-outline" style="vertical-align: text-bottom; margin-left: 4px; color: #ff0000; font-size: 16px;"></ion-icon>
+    </p>
+    <p class="profile-email">
+      {{ user?.email || t('profile.email.empty') }}
+      <ion-icon *ngIf="!user?.email" name="alert-circle-outline" style="vertical-align: text-bottom; margin-left: 4px; color: #ff0000; font-size: 16px;"></ion-icon>
+    </p>
+    
+    <ion-button class="edit-btn" routerLink="/edit-profile" expand="block">{{ t('profile.edit') }}</ion-button>
+  </div>
+
+  <div class="menu-container">
+    <ion-list class="menu-list" lines="none">
+      <ion-item button detail="true" class="menu-item" routerLink="/keamanan">
+        <div class="icon-box" slot="start">
+          <ion-icon name="shield"></ion-icon>
+        </div>
+        <ion-label>{{ t('menu.security') }}</ion-label>
+      </ion-item>
+      <div class="divider"></div>
+
+      <ion-item button detail="true" class="menu-item" routerLink="/tabs/aktivitas">
+        <div class="icon-box" slot="start">
+          <ion-icon name="time"></ion-icon>
+        </div>
+        <ion-label>{{ t('menu.activity') }}</ion-label>
+      </ion-item>
+      <div class="divider"></div>
+
+      <ion-item button detail="true" class="menu-item" routerLink="/metode-pembayaran">
+        <div class="icon-box" slot="start">
+          <ion-icon name="card"></ion-icon>
+        </div>
+        <ion-label>Metode Pembayaran</ion-label>
+      </ion-item>
+      <div class="divider"></div>
+
+      <ion-item button detail="true" class="menu-item" routerLink="/alamat">
+        <div class="icon-box" slot="start">
+          <ion-icon name="location"></ion-icon>
+        </div>
+        <ion-label>{{ t('menu.address') }}</ion-label>
+      </ion-item>
+      <div class="divider"></div>
+
+      <ion-item button detail="true" class="menu-item" routerLink="/promo">
+        <div class="icon-box" slot="start">
+          <ion-icon name="pricetag"></ion-icon>
+        </div>
+        <ion-label>{{ t('menu.promo') }}</ion-label>
+      </ion-item>
+      <div class="divider"></div>
+
+      <ion-item button detail="true" class="menu-item" routerLink="/bahasa">
+        <div class="icon-box" slot="start">
+          <ion-icon name="globe"></ion-icon>
+        </div>
+        <ion-label>{{ t('menu.language') }}</ion-label>
+        <span class="item-value" slot="end">{{ currentLanguageLabel }}</span>
+      </ion-item>
+      <div class="divider"></div>
+
+      <ion-item button detail="true" class="menu-item" routerLink="/bantuan">
+        <div class="icon-box" slot="start">
+          <ion-icon name="help-circle"></ion-icon>
+        </div>
+        <ion-label>{{ t('menu.help') }}</ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <div class="logout-container">
+    <ion-button class="logout-btn" expand="block" (click)="confirmLogout()">
+      <ion-icon slot="start" name="log-out-outline"></ion-icon>
+      {{ t('menu.logout') }}
+    </ion-button>
+  </div>
+</ion-content>

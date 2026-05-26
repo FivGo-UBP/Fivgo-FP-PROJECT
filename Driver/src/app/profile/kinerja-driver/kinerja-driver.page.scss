@@ -1,0 +1,177 @@
+ion-content {
+  --background: #e6ebf2; // Warna abu-abu kebiruan sesuai desain
+}
+
+.header-toolbar {
+  --background: #233b81; // Biru tua
+  --color: #ffffff;
+  
+  ion-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding-left: 0;
+  }
+
+  ion-back-button {
+    color: #ffffff;
+  }
+}
+
+.main-wrapper {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// ─── RATING CARD ────────────────────────────────────────────────────────
+.card-rating {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 2px solid #0ea5e9; // Border biru muda
+  padding: 24px 20px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+
+  .rating-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #334155;
+    margin: 0 0 16px 0;
+    letter-spacing: 0.5px;
+  }
+
+  .rating-score {
+    margin-bottom: 12px;
+
+    .score-big {
+      font-size: 56px;
+      font-weight: 800;
+      color: #1e3a8a; // Biru tua
+    }
+
+    .score-max {
+      font-size: 22px;
+      font-weight: 500;
+      color: #1e3a8a;
+    }
+  }
+
+  .stars-container {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+
+    .star-icon {
+      font-size: 26px;
+      color: #f59e0b; // Emas/Kuning
+    }
+  }
+
+  .rating-desc {
+    font-size: 12px;
+    color: #1e293b;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0 16px;
+  }
+}
+
+// ─── FEEDBACK CARD ──────────────────────────────────────────────────────
+.card-feedback {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+
+  .feedback-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    .feedback-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0;
+    }
+
+    .chart-icon {
+      font-size: 22px;
+      color: #1e3a8a;
+    }
+  }
+
+  .feedback-item {
+    margin-bottom: 18px;
+
+    &:last-of-type {
+      margin-bottom: 0;
+    }
+
+    .feedback-text-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+
+      .feedback-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #1e293b;
+      }
+
+      .feedback-percent {
+        font-size: 11px;
+        font-weight: 700;
+        color: #1e293b;
+      }
+    }
+
+    .progress-bg {
+      width: 100%;
+      height: 12px;
+      background: #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+
+      .progress-fill {
+        height: 100%;
+        background: #1e3a8a;
+        border-radius: 12px;
+      }
+    }
+  }
+
+  .feedback-footer {
+    display: flex;
+    align-items: center;
+    margin-top: 32px;
+    gap: 8px;
+
+    .avatars-group {
+      display: flex;
+      
+      .avatar-circle {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #cbd5e1; // Abu-abu
+        border: 2px solid #ffffff;
+        
+        &:nth-child(2) {
+          margin-left: -12px;
+          background: #e2e8f0; // Abu-abu muda
+        }
+      }
+    }
+
+    .footer-text {
+      font-size: 12px;
+      font-weight: 500;
+      color: #0f172a;
+    }
+  }
+}

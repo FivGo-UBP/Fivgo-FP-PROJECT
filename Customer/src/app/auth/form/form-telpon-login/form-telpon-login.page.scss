@@ -1,0 +1,97 @@
+ion-content {
+  --background: #fbfbfb;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 16px 24px;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 50px;
+  margin-bottom: 40px;
+
+  .back-btn {
+    --padding-start: 0;
+    --padding-end: 0;
+    margin: 0;
+    height: auto;
+  }
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  margin-top: 30px;
+  
+  .input-label {
+    font-size: 15px;
+    font-weight: 500;
+    color: #1f2937;
+    margin-bottom: 8px;
+    padding-left: 16px;
+  }
+  
+  .input-container {
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 50px;
+    height: 56px;
+    padding: 0 20px;
+    
+    .country-select {
+      font-weight: 800;
+      font-size: 18px;
+      color: #0f172a;
+      --padding-start: 0;
+      --padding-end: 0;
+      width: auto;
+      margin-right: 12px;
+      
+
+      &::part(icon) {
+        display: none;
+      }
+    }
+    
+    .divider {
+      width: 1px;
+      height: 30px;
+      background-color: #0f172a;
+      margin-right: 16px;
+    }
+    
+    .phone-input {
+      --padding-start: 0;
+      --padding-end: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+  }
+}
+
+.bottom-section {
+  margin-top: 160px; 
+  padding-bottom: 30px;
+  
+  .next-btn {
+    --background: #f59e0b;
+    --background-hover: #d97706;
+    --background-activated: #d97706;
+    --color: #ffffff;
+    --border-radius: 50px;
+    height: 56px;
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: normal;
+    margin: 0;
+  }
+}

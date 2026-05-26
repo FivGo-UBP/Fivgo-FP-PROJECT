@@ -1,0 +1,361 @@
+ion-content {
+  --background: #e6ebf2; // Light gray/blue background
+}
+
+.detail-toolbar {
+  --background: #233b81; // Dark blue header
+  --color: #ffffff;
+  
+  ion-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+  
+  ion-back-button {
+    --color: #ffffff;
+  }
+}
+
+.center-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #64748b;
+}
+
+.main-wrapper {
+  padding: 16px;
+}
+
+.detail-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+
+  .divider {
+    height: 1px;
+    background-color: #e2e8f0;
+    margin: 16px 0;
+  }
+}
+
+// First Card: Invoice
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+
+  .label-muted {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 500;
+    display: block;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+  .invoice-num {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+  }
+}
+
+.status-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 12px;
+
+  &.badge-selesai {
+    background: #22c55e;
+    color: #ffffff;
+  }
+  &.badge-dibatalkan {
+    background: #ef4444;
+    color: #ffffff;
+  }
+}
+
+.stats-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+
+  .stat-box {
+    flex: 1;
+    background: #f1f5f9;
+    border-radius: 12px;
+    padding: 12px 16px;
+
+    .stat-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1e293b;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .stat-value {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      .stat-icon {
+        font-size: 16px;
+        &.blue-icon { color: #3b82f6; }
+      }
+      p {
+        margin: 0;
+        font-size: 13px;
+        color: #475569;
+      }
+    }
+  }
+}
+
+.route-section {
+  position: relative;
+  padding-left: 8px;
+  margin-bottom: 24px;
+
+  .route-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    position: relative;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .route-icon-wrapper {
+      width: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-right: 12px;
+      position: relative;
+
+      .hollow-circle {
+        width: 12px;
+        height: 12px;
+        border: 2px solid #f59e0b; // Orange outline
+        border-radius: 50%;
+        background: #ffffff;
+        z-index: 2;
+      }
+
+      .solid-pin {
+        font-size: 16px;
+        color: #1e3a8a; // Dark blue pin
+        z-index: 2;
+      }
+
+      .vertical-line {
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 1.5px;
+        height: 40px; // Connects circle to pin
+        background-color: #94a3b8;
+        z-index: 1;
+      }
+    }
+
+    .route-content {
+      flex: 1;
+      margin-top: -2px;
+
+      .route-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #1e293b;
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .route-address {
+        font-size: 11px;
+        color: #475569;
+        margin: 0;
+        line-height: 1.4;
+      }
+    }
+  }
+}
+
+.timestamp-text {
+  font-size: 11px;
+  color: #000000;
+  text-align: center;
+  margin: 0;
+  font-weight: 500;
+}
+
+
+// Second Card: Pendapatan
+.card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+
+  .wallet-icon {
+    color: #f59e0b;
+    font-size: 20px;
+  }
+  .card-title-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+  }
+}
+
+.income-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .income-label {
+    font-size: 12px;
+    color: #64748b;
+  }
+  .income-val-bold {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+  }
+  .income-val-red {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ef4444;
+  }
+}
+
+.total-row {
+  margin-top: 16px;
+  .total-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e3a8a;
+  }
+  .total-val {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e3a8a;
+  }
+}
+
+
+// Third Card: Pelanggan
+.customer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  .customer-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .avatar-img {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .customer-text {
+      .label-muted {
+        font-size: 11px;
+        color: #64748b;
+        margin-bottom: 2px;
+        display: block;
+      }
+      .customer-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+      }
+    }
+  }
+
+  .rating-box {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .rating-number {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1e293b;
+    }
+  }
+}
+
+.star-icon-gold {
+  color: #f59e0b;
+  font-size: 16px;
+}
+
+.review-box {
+  background: #d1d5db; // Matching the gray in screenshot
+  border-radius: 12px;
+  padding: 16px;
+
+  .stars-row {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+
+  .review-text {
+    font-size: 12px;
+    color: #374151;
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+
+// Action Button
+.btn-report {
+  width: 100%;
+  background: #f59e0b; // Orange button
+  color: #ffffff;
+  border-radius: 30px;
+  padding: 16px;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  margin-bottom: 16px;
+  border: none;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 18px;
+  }
+}
+
+.report-info {
+  font-size: 11px;
+  color: #475569;
+  text-align: center;
+  margin: 0 16px 24px 16px;
+  line-height: 1.4;
+}

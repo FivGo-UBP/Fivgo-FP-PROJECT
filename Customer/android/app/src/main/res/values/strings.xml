@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">FivGo</string>
+    <string name="title_activity_main">FivGo</string>
+    <string name="package_name">com.fivgo.app</string>
+    <string name="custom_url_scheme">com.fivgo.app</string>
+</resources>

@@ -1,0 +1,44 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="bg-orange">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/kelola-profile" [text]="t('menu.language')" icon="chevron-back-outline" class="text-white"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="bg-light-grey">
+  <div class="content-container">
+    <h2 class="page-title">{{ t('bahasa.title') }}</h2>
+    <p class="page-subtitle">{{ t('bahasa.subtitle') }}</p>
+
+    <div class="language-card" (click)="selectLanguage('id')">
+      <div class="flag-container">
+        <img src="https://flagcdn.com/w80/id.png" alt="Indonesia Flag">
+      </div>
+      <div class="language-info">
+        <h3>indonesia</h3>
+        <p>Bahasa indonesia</p>
+      </div>
+      <div class="check-circle" [class.active]="selectedLanguage === 'id'">
+        <ion-icon name="checkmark" *ngIf="selectedLanguage === 'id'"></ion-icon>
+      </div>
+    </div>
+
+    <div class="language-card" (click)="selectLanguage('en')">
+      <div class="flag-container">
+        <img src="https://flagcdn.com/w80/gb.png" alt="UK Flag">
+      </div>
+      <div class="language-info">
+        <h3>English</h3>
+        <p>English(united kingdom)</p>
+      </div>
+      <div class="check-circle" [class.active]="selectedLanguage === 'en'">
+        <ion-icon name="checkmark" *ngIf="selectedLanguage === 'en'"></ion-icon>
+      </div>
+    </div>
+
+    <ion-button expand="block" class="save-btn" (click)="saveChanges()">
+      {{ t('bahasa.save') }}
+    </ion-button>
+  </div>
+</ion-content>

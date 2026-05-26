@@ -1,0 +1,64 @@
+<ion-content [fullscreen]="true" class="custom-bg">
+  
+  <!-- Custom Header -->
+  <div class="custom-header">
+    <ion-back-button defaultHref="/home" icon="arrow-back" text="" class="back-btn"></ion-back-button>
+    <div class="location-selector" routerLink="/pilih-penjemputan">
+      <span class="label">Lokasimu</span>
+      <div class="current-loc">
+        <span class="value">{{ currentLocation }}</span>
+        <ion-icon name="chevron-down-outline"></ion-icon>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-container">
+    <ion-searchbar class="custom-search" searchIcon="search-outline" placeholder="cari lokasi" (ionInput)="onSearch($event)" [value]="searchKeyword"></ion-searchbar>
+  </div>
+
+
+  <div class="content-body">
+    <!-- Hasil Pencarian -->
+    <div *ngIf="isSearching || searchResults.length > 0" class="search-results">
+      <div *ngIf="isSearching && searchResults.length === 0" class="loading-text">
+        <p>Mencari...</p>
+      </div>
+      <div class="loc-item" *ngFor="let result of searchResults" (click)="selectResult(result)">
+        <div class="icon-col">
+          <ion-icon name="location" class="pin-icon"></ion-icon>
+        </div>
+        <div class="text-col">
+          <h3>{{ result.name }}</h3>
+          <p>{{ result.address }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pesan Perjalanan Section (Tampil saat tidak mencari) -->
+    <ng-container *ngIf="!isSearching && searchKeyword === ''">
+      <h2 class="section-title">Pesan perjalanan</h2>
+    <div class="location-list">
+      
+      <!-- Dynamic Items -->
+      <div class="loc-item" *ngFor="let loc of recentLocations" (click)="selectResult(loc)">
+        <div class="icon-col">
+          <div class="circle-icon" *ngIf="loc.icon === 'time-outline'">
+            <ion-icon [name]="loc.icon"></ion-icon>
+          </div>
+          <ion-icon *ngIf="loc.icon === 'location'" [name]="loc.icon" class="pin-icon"></ion-icon>
+        </div>
+        <div class="text-col">
+          <h3>{{ loc.name }}</h3>
+          <p>{{ loc.address }}</p>
+          <div class="badge" *ngIf="loc.isRecent">
+            <ion-icon name="star"></ion-icon>
+            <span>Baru Digunakan</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    </ng-container>
+  </div>
+</ion-content>

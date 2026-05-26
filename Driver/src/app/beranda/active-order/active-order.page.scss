@@ -1,0 +1,341 @@
+ion-content {
+  --background: #f5f6fa;
+  height: 100%;
+}
+
+// ─── Loading / Error ───────────────────────────────────────────────────────
+
+.center-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 16px;
+
+  .loading-text,
+  .error-text {
+    color: #666;
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .error-icon {
+    font-size: 48px;
+    color: #E53935;
+  }
+}
+
+// ─── Layout ────────────────────────────────────────────────────────────────
+
+.active-order-wrapper {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+// ─── Map ──────────────────────────────────────────────────────────────────
+
+.map-container {
+  flex: 1;
+  overflow: hidden;
+  pointer-events: auto;
+  min-height: 280px;
+  position: relative;
+}
+
+:host ::ng-deep #driver-active-map {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+:host ::ng-deep .mapboxgl-canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+// Custom marker styles (gambar kendaraan dari assets)
+.driver-vehicle-marker {
+  img {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));
+  }
+}
+
+.pickup-pin-marker {
+  .pin-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #FF9800;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.6);
+  }
+}
+
+.dropoff-pin-marker {
+  .pin-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #27AE60;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(39, 174, 96, 0.6);
+  }
+}
+
+// ─── Bottom Card ─────────────────────────────────────────────────────────
+
+.bottom-card-wrapper {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.bottom-card {
+  background: #ffffff;
+  border-radius: 24px 24px 0 0;
+  padding: 0 20px 40px;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+.card-handle {
+  width: 40px;
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  margin: 12px auto 18px;
+}
+
+// ─── Customer Header ─────────────────────────────────────────────────────
+
+.customer-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.customer-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.customer-info-block {
+  flex: 1;
+}
+
+.customer-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 4px;
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.star-icon {
+  color: #FFC107;
+  font-size: 14px;
+}
+
+.rating-text {
+  font-size: 13px;
+  color: #555;
+  font-weight: 600;
+}
+
+.action-icons {
+  display: flex;
+  gap: 10px;
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f5f6fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 18px;
+    color: #555;
+  }
+}
+
+// ─── Divider ─────────────────────────────────────────────────────────────
+
+.card-divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 14px 0;
+}
+
+// ─── Info Rows ───────────────────────────────────────────────────────────
+
+.info-row {
+  margin-bottom: 10px;
+}
+
+.info-label {
+  font-size: 11px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.info-value {
+  font-size: 14px;
+  color: #1a1a1a;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.notes-text {
+  color: #666;
+  font-weight: 400;
+  font-style: italic;
+}
+
+// ─── Payment Row ─────────────────────────────────────────────────────────
+
+.payment-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.payment-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFF8E1;
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+.payment-icon {
+  color: #FFC107;
+  font-size: 20px;
+}
+
+.payment-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+}
+
+.price-text {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1565C0;
+}
+
+// ─── Action Section ──────────────────────────────────────────────────────
+
+.action-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.phase-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #EEF2FF;
+  border-radius: 10px;
+  margin-bottom: 4px;
+
+  &.arrived-info {
+    background: #E8F5E9;
+  }
+
+  &.journey-info {
+    background: #FFF3E0;
+  }
+}
+
+.phase-icon {
+  font-size: 20px;
+  color: #1a2b6d;
+
+  &.arrived-icon {
+    color: #2E7D32;
+  }
+
+  &.journey-icon {
+    color: #E65100;
+  }
+}
+
+.phase-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+// ─── Primary Action Button ────────────────────────────────────────────────
+
+.btn-primary-action {
+  --background: #1a2b6d;
+  --color: white;
+  --border-radius: 14px;
+  height: 52px;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.3px;
+}
+
+// ─── Complete Action Button ───────────────────────────────────────────────
+
+.btn-complete-action {
+  --background: #2E7D32;
+  --color: white;
+  --border-radius: 14px;
+  height: 52px;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.3px;
+}
+
+// ─── Cancel Button ────────────────────────────────────────────────────────
+
+.btn-cancel-action {
+  --border-radius: 14px;
+  --color: #E53935;
+  --border-color: #E53935;
+  --border-width: 1.5px;
+  height: 48px;
+  font-weight: 600;
+  font-size: 14px;
+}

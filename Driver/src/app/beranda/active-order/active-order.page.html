@@ -1,0 +1,160 @@
+<ion-content [fullscreen]="true" scrollY="false">
+
+  <!-- Loading -->
+  <div class="center-content" *ngIf="isLoading">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p class="loading-text">Memuat data order...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="center-content" *ngIf="!isLoading && hasError">
+    <ion-icon name="alert-circle-outline" class="error-icon"></ion-icon>
+    <p class="error-text">Gagal memuat order</p>
+    <ion-button fill="outline" (click)="loadOrder()">Coba Lagi</ion-button>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && order" class="active-order-wrapper">
+
+    <!-- Map Background (Mapbox GL) -->
+    <div class="map-container">
+      <div id="driver-active-map"></div>
+    </div>
+
+    <!-- Bottom Card -->
+    <div class="bottom-card-wrapper">
+      <div class="bottom-card">
+        <!-- Handle -->
+        <div class="card-handle"></div>
+
+        <!-- Customer Header -->
+        <div class="customer-header">
+          <img [src]="getCustomerPhoto()" alt="Customer" class="customer-avatar" />
+          <div class="customer-info-block">
+            <h2 class="customer-name">{{ getCustomerName() }}</h2>
+            <div class="rating-row">
+              <ion-icon name="star" class="star-icon"></ion-icon>
+              <span class="rating-text">{{ getCustomerRating() }}</span>
+            </div>
+          </div>
+          <!-- Action Icons (Phone + Chat) -->
+          <div class="action-icons">
+            <div class="icon-btn">
+              <ion-icon name="call-outline"></ion-icon>
+            </div>
+            <div class="icon-btn">
+              <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-divider"></div>
+
+        <!-- Phase 1 & 2: Pickup info -->
+        <div *ngIf="getPhase() === 'accepted' || getPhase() === 'arrived'">
+          <div class="info-row">
+            <span class="info-label">Alamat jemput</span>
+            <p class="info-value">{{ order.pickup_address }}</p>
+          </div>
+          <div class="info-row" *ngIf="order.notes">
+            <span class="info-label">Catatan</span>
+            <p class="info-value notes-text">{{ order.notes }}</p>
+          </div>
+        </div>
+
+        <!-- Phase 3: In journey, show dropoff -->
+        <div *ngIf="getPhase() === 'started'">
+          <div class="info-row">
+            <span class="info-label">Tujuan Pemberhentian</span>
+            <p class="info-value">{{ order.dropoff_address }}</p>
+          </div>
+        </div>
+
+        <div class="card-divider"></div>
+
+        <!-- Payment -->
+        <div class="payment-row">
+          <div class="payment-badge">
+            <ion-icon name="wallet-outline" class="payment-icon"></ion-icon>
+            <span class="payment-label">{{ getPaymentLabel() }}</span>
+          </div>
+          <span class="price-text">{{ formatPrice(order.estimated_price) }}</span>
+        </div>
+
+        <div class="card-divider"></div>
+
+        <!-- ─── PHASE 1: accepted — Menuju titik jemput ─────────────────── -->
+        <div *ngIf="getPhase() === 'accepted'" class="action-section">
+          <div class="phase-info">
+            <ion-icon name="navigate-circle-outline" class="phase-icon"></ion-icon>
+            <span class="phase-text">Menuju titik penjemputan...</span>
+          </div>
+          <ion-button
+            expand="block"
+            class="btn-primary-action"
+            (click)="onArrivedAtPickup()"
+            [disabled]="isArriving">
+            <ion-spinner *ngIf="isArriving" name="crescent" slot="start"></ion-spinner>
+            <ion-icon *ngIf="!isArriving" name="location-outline" slot="start"></ion-icon>
+            Sudah di Titik Penjemputan
+          </ion-button>
+          <ion-button
+            expand="block"
+            fill="outline"
+            class="btn-cancel-action"
+            (click)="confirmCancel()"
+            [disabled]="isCancelling">
+            <ion-icon name="close-outline" slot="start"></ion-icon>
+            Batalkan Pesanan
+          </ion-button>
+        </div>
+
+        <!-- ─── PHASE 2: arrived — Sudah di titik, tunggu customer ────────── -->
+        <div *ngIf="getPhase() === 'arrived'" class="action-section">
+          <div class="phase-info arrived-info">
+            <ion-icon name="checkmark-circle-outline" class="phase-icon arrived-icon"></ion-icon>
+            <span class="phase-text">Sudah di titik penjemputan</span>
+          </div>
+          <ion-button
+            expand="block"
+            class="btn-primary-action"
+            (click)="onStartJourney()"
+            [disabled]="isStarting">
+            <ion-spinner *ngIf="isStarting" name="crescent" slot="start"></ion-spinner>
+            <ion-icon *ngIf="!isStarting" name="people-outline" slot="start"></ion-icon>
+            Sudah sama Pelanggan
+          </ion-button>
+          <ion-button
+            expand="block"
+            fill="outline"
+            class="btn-cancel-action"
+            (click)="confirmCancel()"
+            [disabled]="isCancelling">
+            <ion-icon name="close-outline" slot="start"></ion-icon>
+            Batalkan Pesanan
+          </ion-button>
+        </div>
+
+        <!-- ─── PHASE 3: started — Dalam perjalanan ──────────────────────── -->
+        <div *ngIf="getPhase() === 'started'" class="action-section">
+          <div class="phase-info journey-info">
+            <ion-icon name="car-outline" class="phase-icon journey-icon"></ion-icon>
+            <span class="phase-text">Sedang dalam perjalanan...</span>
+          </div>
+          <ion-button
+            expand="block"
+            class="btn-complete-action"
+            (click)="onCompleteJourney()"
+            [disabled]="isCompleting">
+            <ion-spinner *ngIf="isCompleting" name="crescent" slot="start"></ion-spinner>
+            <ion-icon *ngIf="!isCompleting" name="flag-outline" slot="start"></ion-icon>
+            Selesaikan Perjalanan
+          </ion-button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</ion-content>

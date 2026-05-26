@@ -1,0 +1,78 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="bg-orange">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/kelola-profile" text="Metode Pembayaran" icon="chevron-back-outline" class="text-white"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="bg-grey">
+
+  <!-- Banner Info -->
+  <div class="info-banner">
+    <ion-icon name="information-circle-outline" class="info-icon"></ion-icon>
+    <span>Bayar lebih praktis tanpa uang tunai</span>
+  </div>
+
+  <!-- Pilihan Pembayaran -->
+  <div class="section">
+    <h2 class="section-title">Pilihan pembayaranmu</h2>
+    <p class="section-subtitle">Geser kiri untuk jadikan pilihan utama</p>
+
+    <ion-list class="payment-list" lines="none">
+
+      <!-- Tunai -->
+      <ion-item-sliding>
+        <ion-item class="payment-item" [class.selected]="selectedPayment === 'tunai'">
+          <div class="payment-icon-box" slot="start">
+            <ion-icon name="cash-outline" class="payment-icon"></ion-icon>
+          </div>
+          <ion-label class="payment-label">Tunai</ion-label>
+          <div slot="end" class="radio-circle" [class.radio-active]="selectedPayment === 'tunai'" (click)="selectPayment('tunai')">
+            <div class="radio-inner" *ngIf="selectedPayment === 'tunai'"></div>
+          </div>
+        </ion-item>
+        <ion-item-options side="start">
+          <ion-item-option color="primary" (click)="setUtama('tunai')">
+            <ion-icon name="star-outline" slot="icon-only"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+
+      <div class="item-divider"></div>
+
+      <!-- Non Tunai -->
+      <ion-item-sliding>
+        <ion-item class="payment-item" [class.selected]="selectedPayment === 'nontunai'" (click)="toggleNonTunai()">
+          <div class="payment-icon-box payment-icon-box--blue" slot="start">
+            <ion-icon name="card-outline" class="payment-icon payment-icon--white"></ion-icon>
+          </div>
+          <ion-label class="payment-label">
+            <span *ngIf="selectedPayment !== 'nontunai'">Qris/VA/E-Wallet</span>
+            <span *ngIf="selectedPayment === 'nontunai'">Non Tunai : {{ selectedNonTunai }}</span>
+          </ion-label>
+          <div slot="end" class="radio-circle" [class.radio-active]="selectedPayment === 'nontunai'" (click)="selectPayment('nontunai'); $event.stopPropagation()">
+            <div class="radio-inner" *ngIf="selectedPayment === 'nontunai'"></div>
+          </div>
+          <ion-icon name="chevron-down-outline" slot="end" class="expand-icon" [class.rotated]="showNonTunaiOptions"></ion-icon>
+        </ion-item>
+        <ion-item-options side="start">
+          <ion-item-option color="primary" (click)="setUtama('nontunai')">
+            <ion-icon name="star-outline" slot="icon-only"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+
+      <!-- Sub-opsi Non Tunai -->
+      <div class="nontunai-options" *ngIf="showNonTunaiOptions">
+        <ion-item class="sub-item" *ngFor="let opt of nonTunaiOptions" (click)="selectNonTunai(opt)">
+          <ion-icon name="checkmark-outline" slot="start" class="sub-check" *ngIf="selectedNonTunai === opt"></ion-icon>
+          <ion-icon name="ellipse-outline" slot="start" class="sub-check sub-check--empty" *ngIf="selectedNonTunai !== opt"></ion-icon>
+          <ion-label>{{ opt }}</ion-label>
+        </ion-item>
+      </div>
+
+    </ion-list>
+  </div>
+
+</ion-content>

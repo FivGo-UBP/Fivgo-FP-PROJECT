@@ -1,0 +1,101 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="bg-orange">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/kelola-profile" [text]="t('editprofile.title')" icon="chevron-back-outline" class="text-white"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="bg-light-grey">
+  <div class="profile-edit-header">
+    <div class="avatar-wrapper">
+      <div class="avatar-container">
+        <!-- Menggunakan foto dari desain -->
+        <img [src]="profileImage" alt="Profile" referrerpolicy="no-referrer" />
+      </div>
+      <div class="edit-badge" (click)="fileInput.click(); onInteraction()">
+        <ion-icon name="camera"></ion-icon>
+      </div>
+      <!-- Input file tersembunyi untuk memilih gambar -->
+      <input type="file" #fileInput accept="image/*" style="display: none;" (change)="onFileSelected($event)">
+    </div>
+  </div>
+
+  <div class="form-container">
+    <div class="input-group">
+      <ion-label class="input-label">{{ t('editprofile.fullname') }}</ion-label>
+      <div class="input-wrapper">
+        <ion-icon name="person-outline" class="field-icon"></ion-icon>
+        <ion-input type="text" [(ngModel)]="name" (ngModelChange)="onInteraction()" [placeholder]="t('editprofile.fullname')"></ion-input>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <ion-label class="input-label">{{ t('editprofile.email') }}</ion-label>
+      <div class="input-wrapper">
+        <ion-icon name="mail-outline" class="field-icon"></ion-icon>
+        <ion-input type="email" [(ngModel)]="email" (ngModelChange)="onInteraction()" [placeholder]="t('editprofile.email')"></ion-input>
+        <ion-icon *ngIf="isEmailVerified" name="checkmark-circle-outline" class="verified-icon"></ion-icon>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <div class="phone-label-row">
+        <ion-label class="input-label">{{ t('editprofile.phone') }}</ion-label>
+        <span class="locked-badge">
+          <ion-icon name="lock-closed-outline"></ion-icon>
+          {{ t('editprofile.locked') }}
+        </span>
+      </div>
+      <div class="input-wrapper phone-locked">
+        <ion-icon name="call-outline" class="phone-prefix-icon"></ion-icon>
+        <ion-input type="tel" [value]="phone" readonly [placeholder]="t('editprofile.empty.phone')"></ion-input>
+        <button class="btn-ganti-nomor" (click)="goToGantiNomor()">
+          {{ t('editprofile.change') }}
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </button>
+      </div>
+      <p class="phone-hint">{{ t('editprofile.otp_hint') }}</p>
+    </div>
+    <div class="input-group">
+      <ion-label class="input-label">{{ t('editprofile.gender') }}</ion-label>
+      <div class="input-wrapper" (click)="setGenderModalOpen(true); onInteraction()">
+        <ion-icon name="male-female-outline" class="field-icon"></ion-icon>
+        <ion-input type="text" [value]="getTranslatedGender()" readonly></ion-input>
+        <ion-icon name="caret-down" class="dropdown-icon"></ion-icon>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-buttons" *ngIf="showSaveButton">
+    <ion-button expand="block" class="btn-simpan" (click)="saveChanges()">{{ t('editprofile.save') }}</ion-button>
+  </div>
+
+  <ion-modal [isOpen]="isGenderModalOpen" (didDismiss)="setGenderModalOpen(false)" [initialBreakpoint]="0.5" [breakpoints]="[0, 0.5]" handleBehavior="cycle">
+    <ng-template>
+      <div class="modal-content">
+        <h2 class="modal-title">{{ t('editprofile.modal.title') }}</h2>
+        <p class="modal-desc">{{ t('editprofile.modal.desc') }}</p>
+
+        <ion-radio-group [(ngModel)]="selectedGender" (ionChange)="setGenderModalOpen(false)" mode="md">
+          <ion-item lines="full" class="gender-item">
+            <ion-label>{{ t('editprofile.gender.female') }}</ion-label>
+            <ion-radio slot="end" value="Perempuan"></ion-radio>
+          </ion-item>
+          <ion-item lines="full" class="gender-item">
+            <ion-label>{{ t('editprofile.gender.male') }}</ion-label>
+            <ion-radio slot="end" value="Laki-laki"></ion-radio>
+          </ion-item>
+          <ion-item lines="none" class="gender-item">
+            <ion-label>{{ t('editprofile.gender.other') }}</ion-label>
+            <ion-radio slot="end" value="Tidak ingin menyebutkan"></ion-radio>
+          </ion-item>
+        </ion-radio-group>
+
+        <p class="modal-footer-text">
+          {{ t('editprofile.modal.footer') }}
+        </p>
+      </div>
+    </ng-template>
+  </ion-modal>
+</ion-content>

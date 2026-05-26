@@ -1,0 +1,212 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="activity-toolbar">
+    <ion-title class="activity-title">{{ t('activity.title') }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="activity-content">
+  <div class="main-wrapper">
+
+
+    <!-- Area Konten (Skeleton, Empty, atau List) -->
+    <div class="content-body">
+      <div class="header-elements" *ngIf="!isLoading && !hasError && allTrips.length > 0">
+        <div class="search-container">
+          <ion-searchbar 
+            [placeholder]="t('activity.search.placeholder')" 
+            class="custom-searchbar"
+            mode="ios"
+            [(ngModel)]="searchQuery"
+            (ionInput)="onSearchChange($event)">
+          </ion-searchbar>
+        </div>
+  
+        <div class="filter-area-unified">
+          <div class="filter-row">
+            <!-- Chip: Kendaraan -->
+            <ion-chip id="vehicle-trigger" class="filter-chip" [class.chip-active]="activeVehicle !== 'semua'">
+              <ion-label>{{ activeVehicle === 'semua' ? t('activity.filter.vehicle') : (activeVehicle === 'Mobil' ? t('activity.vehicle.car') : t('activity.vehicle.motor')) }}</ion-label>
+              <ion-icon name="chevron-down-outline" class="chip-arrow"></ion-icon>
+            </ion-chip>
+        
+            <ion-popover trigger="vehicle-trigger" triggerAction="click" [dismissOnSelect]="true" class="filter-popover">
+              <ng-template>
+                <ion-list lines="none" class="popover-list">
+                  <ion-item button lines="full" class="popover-item" [class.item-active]="activeVehicle === 'Motor'"
+                    (click)="setVehicle('Motor')">
+                    <ion-label>{{ t('activity.vehicle.motor') }}</ion-label>
+                    <ion-icon *ngIf="activeVehicle === 'Motor'" name="checkmark-outline" slot="end" class="check-icon"></ion-icon>
+                  </ion-item>
+                  <ion-item button [lines]="activeVehicle !== 'semua' ? 'full' : 'none'" class="popover-item" [class.item-active]="activeVehicle === 'Mobil'"
+                    (click)="setVehicle('Mobil')">
+                    <ion-label>{{ t('activity.vehicle.car') }}</ion-label>
+                    <ion-icon *ngIf="activeVehicle === 'Mobil'" name="checkmark-outline" slot="end" class="check-icon"></ion-icon>
+                  </ion-item>
+                  <ion-item button class="popover-item reset-item" *ngIf="activeVehicle !== 'semua'"
+                    (click)="setVehicle('semua')">
+                    <ion-label>{{ t('activity.filter.reset') }} {{ t('activity.filter.vehicle') }}</ion-label>
+                  </ion-item>
+                </ion-list>
+              </ng-template>
+            </ion-popover>
+        
+            <!-- Chip: Status -->
+            <ion-chip id="status-trigger" class="filter-chip" [class.chip-active]="activeStatus !== 'semua'">
+              <ion-label>{{ activeStatus === 'semua' ? t('activity.filter.status') : (activeStatus === 'Selesai' ? t('activity.status.completed') : t('activity.status.cancelled')) }}</ion-label>
+              <ion-icon name="chevron-down-outline" class="chip-arrow"></ion-icon>
+            </ion-chip>
+        
+            <ion-popover trigger="status-trigger" triggerAction="click" [dismissOnSelect]="true" class="filter-popover">
+              <ng-template>
+                <ion-list lines="none" class="popover-list">
+                  <ion-item button lines="full" class="popover-item" [class.item-active]="activeStatus === 'Selesai'"
+                    (click)="setStatus('Selesai')">
+                    <div class="dot-badge dot-green" slot="start"></div>
+                    <ion-label>{{ t('activity.status.completed') }}</ion-label>
+                    <ion-icon *ngIf="activeStatus === 'Selesai'" name="checkmark-outline" slot="end" class="check-icon"></ion-icon>
+                  </ion-item>
+                  <ion-item button [lines]="activeStatus !== 'semua' ? 'full' : 'none'" class="popover-item" [class.item-active]="activeStatus === 'Dibatalkan'"
+                    (click)="setStatus('Dibatalkan')">
+                    <div class="dot-badge dot-red" slot="start"></div>
+                    <ion-label>{{ t('activity.status.cancelled') }}</ion-label>
+                    <ion-icon *ngIf="activeStatus === 'Dibatalkan'" name="checkmark-outline" slot="end" class="check-icon"></ion-icon>
+                  </ion-item>
+                  <ion-item button class="popover-item reset-item" *ngIf="activeStatus !== 'semua'"
+                    (click)="setStatus('semua')">
+                    <ion-label>{{ t('activity.filter.reset') }} {{ t('activity.filter.status') }}</ion-label>
+                  </ion-item>
+                </ion-list>
+              </ng-template>
+            </ion-popover>
+        
+            <ion-chip id="time-trigger" class="filter-chip" [class.chip-active]="activeTime !== 'semua'">
+              <ion-label>{{ activeTime === 'semua' ? t('activity.filter.time') : getTimeLabel(activeTime) }}</ion-label>
+              <ion-icon name="chevron-down-outline" class="chip-arrow"></ion-icon>
+            </ion-chip>
+        
+            <ion-popover trigger="time-trigger" triggerAction="click" [dismissOnSelect]="true" class="filter-popover">
+              <ng-template>
+                <ion-list lines="none" class="popover-list">
+                  <ion-item button lines="full" class="popover-item" [class.item-active]="activeTime === 'Hari ini'"
+                    (click)="setTime('Hari ini')">
+                    <ion-label>{{ t('activity.time.today') }}</ion-label>
+                    <ion-icon *ngIf="activeTime === 'Hari ini'" name="checkmark-outline" slot="end" class="check-icon"></ion-icon>
+                  </ion-item>
+                  <ion-item button lines="full" class="popover-item" [class.item-active]="activeTime === 'Minggu ini'"
+                    (click)="setTime('Minggu ini')">
+                    <ion-label>{{ t('activity.time.week') }}</ion-label>
+                    <ion-icon *ngIf="activeTime === 'Minggu ini'" name="checkmark-outline" slot="end" class="check-icon"></ion-icon>
+                  </ion-item>
+                  <ion-item button [lines]="activeTime !== 'semua' ? 'full' : 'none'" class="popover-item" [class.item-active]="activeTime === 'Bulan ini'"
+                    (click)="setTime('Bulan ini')">
+                    <ion-label>{{ t('activity.time.month') }}</ion-label>
+                    <ion-icon *ngIf="activeTime === 'Bulan ini'" name="checkmark-outline" slot="end" class="check-icon"></ion-icon>
+                  </ion-item>
+                  <ion-item button class="popover-item reset-item" *ngIf="activeTime !== 'semua'"
+                    (click)="setTime('semua')">
+                    <ion-label>{{ t('activity.filter.reset') }} {{ t('activity.filter.time') }}</ion-label>
+                  </ion-item>
+                </ion-list>
+              </ng-template>
+            </ion-popover>
+          </div>
+        </div>
+      </div>
+      <!-- Loading Skeleton -->
+      <div class="skeleton-list" *ngIf="isLoading">
+        <div class="trip-card skeleton-card" *ngFor="let i of [1,2,3]">
+          <div class="skeleton-row">
+            <div class="skeleton-box sk-icon"></div>
+            <div class="skeleton-lines">
+              <div class="skeleton-box sk-title"></div>
+              <div class="skeleton-box sk-sub"></div>
+            </div>
+            <div class="skeleton-box sk-price"></div>
+          </div>
+          <div class="skeleton-box sk-divider"></div>
+          <div class="skeleton-box sk-addr"></div>
+          <div class="skeleton-box sk-addr sk-addr-short"></div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div class="empty-state" *ngIf="!isLoading && hasError">
+        <ion-icon name="wifi-outline" class="empty-icon error-icon"></ion-icon>
+        <h2 class="empty-title">Gagal Memuat Data</h2>
+        <p class="empty-desc">Periksa koneksi internet Anda lalu coba lagi.</p>
+        <button class="btn-retry" (click)="loadHistory()">
+          <ion-icon name="refresh-outline"></ion-icon> Coba Lagi
+        </button>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="!isLoading && !hasError && filteredTrips.length === 0">
+        <div class="illustration-card">
+          <img
+            src="assets/aktivitas.png"
+            alt="Tidak ada aktivitas"
+            class="illustration-img"
+            referrerpolicy="no-referrer" />
+        </div>
+        <h2 class="empty-title">{{ allTrips.length > 0 ? t('activity.notfound.title') : t('activity.empty.title') }}</h2>
+        <p class="empty-desc">
+          {{ allTrips.length > 0 ? t('activity.notfound.desc') : t('activity.empty.desc') }}
+        </p>
+        <button class="btn-reset" *ngIf="allTrips.length > 0" (click)="resetFilters()">
+          <ion-icon name="close-circle-outline"></ion-icon> {{ t('alert.cancel') }} {{ t('activity.filter.reset') }}
+        </button>
+      </div>
+
+      <!-- Actual Trip List -->
+      <ng-container *ngIf="!isLoading && !hasError && filteredTrips.length > 0">
+        <div class="date-group" *ngFor="let group of groupedTrips">
+          <div class="trip-card" *ngFor="let trip of group.trips" (click)="openDetail(trip)">
+            <div class="card-top">
+              <div class="vehicle-icon-wrap">
+                <img src="assets/motor.png" alt="Motor" *ngIf="trip.vehicle_type.toLowerCase() === 'motor'" />
+                <img src="assets/mobil.png" alt="Mobil" *ngIf="trip.vehicle_type.toLowerCase() === 'mobil'" />
+              </div>
+              <div class="card-top-info">
+                <p class="vehicle-label">{{ getVehicleLabel(trip.vehicle_type) }}</p>
+                <p class="card-datetime">{{ formatDate(trip.created_at) }} • {{ formatTime(trip.created_at) }}</p>
+              </div>
+              <div class="card-top-right">
+                <p class="trip-price">{{ formatPrice(trip.final_price) }}</p>
+                <span class="status-badge" [ngClass]="trip.status === 'completed' ? 'badge-selesai' : 'badge-dibatalkan'">
+                  {{ getStatusLabel(trip.status) }}
+                </span>
+              </div>
+            </div>
+            <div class="card-divider"></div>
+            <div class="route-section">
+              <div class="route-item">
+                <div class="route-icon-box">
+                  <div class="dot-icon blue-dot"><div class="inner-dot"></div></div>
+                  <div class="dotted-line"></div>
+                </div>
+                <div class="route-info-box">
+                <p class="route-label">{{ langService.getLanguage() === 'id' ? 'Awal' : 'Start' }}</p>
+                  <p class="route-address">{{ trip.pickup_address }}</p>
+                </div>
+              </div>
+              <div class="route-item">
+                <div class="route-icon-box">
+                  <ion-icon name="location" class="pin-icon orange-pin"></ion-icon>
+                </div>
+                <div class="route-info-box">
+                <p class="route-label">{{ langService.getLanguage() === 'id' ? 'Tujuan' : 'Destination' }}</p>
+                  <p class="route-address">{{ trip.dropoff_address }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="card-actions" *ngIf="trip.status === 'completed'">
+              <button class="btn-pesan-lagi" (click)="pesanLagi(trip, $event)">
+              {{ t('activity.order_again') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</ion-content>

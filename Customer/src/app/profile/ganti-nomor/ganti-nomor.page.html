@@ -1,0 +1,127 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="bg-orange">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/edit-profile" text="Ganti Nomor" icon="chevron-back-outline" class="text-white"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page-container">
+
+    <!-- Step indicator -->
+    <div class="step-indicator">
+      <div class="step" [class.active]="step === 1" [class.done]="step === 2">
+        <div class="step-circle">
+          <ion-icon name="checkmark" *ngIf="step === 2"></ion-icon>
+          <span *ngIf="step === 1">1</span>
+        </div>
+        <span class="step-label">Nomor Baru</span>
+      </div>
+      <div class="step-line" [class.done]="step === 2"></div>
+      <div class="step" [class.active]="step === 2">
+        <div class="step-circle">
+          <span>2</span>
+        </div>
+        <span class="step-label">Verifikasi OTP</span>
+      </div>
+    </div>
+
+    <!-- ─── STEP 1: Input nomor baru ─── -->
+    <div *ngIf="step === 1" class="content-section">
+      <div class="header-section">
+        <div class="icon-wrapper">
+          <ion-icon name="phone-portrait-outline"></ion-icon>
+        </div>
+        <h1>Nomor Telepon Baru</h1>
+        <p class="subtitle">Masukkan nomor telepon baru yang ingin kamu gunakan. Kami akan mengirim kode verifikasi ke nomor tersebut.</p>
+      </div>
+
+      <div class="form-section">
+        <ion-label class="field-label">Nomor Telepon Baru</ion-label>
+        <div class="input-wrapper">
+          <ion-icon name="call-outline" class="prefix-icon"></ion-icon>
+          <ion-input
+            id="new-phone-input"
+            type="tel"
+            [(ngModel)]="newPhone"
+            placeholder="Contoh: 08123456789"
+            inputmode="tel">
+          </ion-input>
+        </div>
+        <p class="hint-text">Masukkan nomor aktif yang bisa menerima WhatsApp</p>
+      </div>
+
+      <div class="bottom-section">
+        <ion-button
+          id="btn-kirim-otp"
+          expand="block"
+          class="primary-btn"
+          [disabled]="!newPhone || newPhone.length < 9"
+          (click)="requestOtp()">
+          Kirim Kode OTP
+          <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- ─── STEP 2: Verifikasi OTP ─── -->
+    <div *ngIf="step === 2" class="content-section">
+      <div class="header-section">
+        <div class="icon-wrapper">
+          <ion-icon name="shield-checkmark-outline"></ion-icon>
+        </div>
+        <h1>Masukkan Kode OTP</h1>
+        <p class="subtitle">
+          Kode 4 digit telah dikirim ke<br>
+          <strong>{{ maskPhone(newPhone) }}</strong> melalui WhatsApp
+        </p>
+      </div>
+
+      <div class="otp-section">
+        <ion-input-otp
+          separators="all"
+          fill="solid"
+          [(ngModel)]="otp"
+          [disabled]="isOtpExpired || isLockedOut">
+        </ion-input-otp>
+
+        <p class="timer-text" [class.expired]="isOtpExpired">
+          {{ isOtpExpired ? 'Kode OTP sudah kadaluarsa' : 'Berlaku: ' + formatTime(otpTimeLeft) }}
+        </p>
+
+        <p class="attempt-text" *ngIf="invalidAttempts > 0 && !isLockedOut">
+          Percobaan salah: {{ invalidAttempts }}/{{ maxAttempts }}
+        </p>
+
+        <div class="resend-section">
+          <p>Tidak dapat kode?
+            <a href="#"
+               (click)="resendOtp(); $event.preventDefault();"
+               [class.disabled]="resendTimeLeft > 0">
+              {{ resendTimeLeft > 0 ? 'Kirim ulang (' + resendTimeLeft + 's)' : 'Kirim ulang kode' }}
+            </a>
+          </p>
+        </div>
+
+        <button class="change-phone-link" (click)="step = 1; clearTimers()">
+          <ion-icon name="pencil-outline"></ion-icon>
+          Ganti nomor telepon
+        </button>
+      </div>
+
+      <div class="bottom-section">
+        <ion-button
+          id="btn-verifikasi"
+          expand="block"
+          class="primary-btn"
+          [disabled]="!otp || otp.length < 4 || isOtpExpired || isLockedOut"
+          (click)="verifyAndChange()">
+          Verifikasi &amp; Simpan
+          <ion-icon name="checkmark-circle-outline" slot="end"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+  </div>
+</ion-content>

@@ -1,0 +1,176 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="detail-toolbar">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()" class="back-btn">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="detail-title">Detail Order</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="detail-content">
+
+  <!-- Loading Skeleton -->
+  <div class="skeleton-wrap" *ngIf="isLoading">
+    <div class="detail-card">
+      <div class="sk sk-w60 sk-h12 sk-mb8"></div>
+      <div class="sk sk-w40 sk-h20 sk-mb16"></div>
+      <div class="sk sk-full sk-h1 sk-mb16"></div>
+      <div class="sk sk-w80 sk-h12 sk-mb8"></div>
+      <div class="sk sk-w90 sk-h12 sk-mb4"></div>
+      <div class="sk sk-w70 sk-h12 sk-mb0"></div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="!isLoading && hasError">
+    <ion-icon name="alert-circle-outline"></ion-icon>
+    <p>Gagal memuat detail order</p>
+  </div>
+
+  <!-- Content -->
+  <ng-container *ngIf="!isLoading && !hasError && order">
+
+    <!-- ── Card 1: Invoice + Info Perjalanan ── -->
+    <div class="detail-card">
+
+      <!-- Invoice Header -->
+      <div class="invoice-row">
+        <div>
+          <p class="invoice-label">INVOICE NUMBER</p>
+          <p class="invoice-number">{{ getInvoiceNumber(order.id, order.created_at) }}</p>
+        </div>
+        <span class="status-pill" [ngClass]="order.status === 'completed' ? 'pill-selesai' : 'pill-dibatalkan'">
+          {{ getStatusLabel(order.status) }}
+        </span>
+      </div>
+
+      <div class="card-divider"></div>
+
+      <!-- Jarak + Durasi (placeholder — bisa diisi dari tracking nanti) -->
+      <div class="info-grid">
+        <div class="info-box">
+          <ion-icon name="git-branch-outline" class="info-icon"></ion-icon>
+          <p class="info-value">— KM</p>
+          <p class="info-label">Jarak</p>
+        </div>
+        <div class="info-box">
+          <ion-icon name="time-outline" class="info-icon"></ion-icon>
+          <p class="info-value">— Menit</p>
+          <p class="info-label">Durasi</p>
+        </div>
+      </div>
+
+      <div class="card-divider"></div>
+
+      <!-- Route -->
+      <div class="route-section">
+        <!-- Point 1 -->
+        <div class="route-item">
+          <div class="route-icon-box">
+            <div class="dot-icon blue-dot">
+              <div class="inner-dot"></div>
+            </div>
+            <div class="dotted-line"></div>
+          </div>
+          <div class="route-info-box">
+            <p class="route-label">Awal</p>
+            <p class="route-address">{{ order.pickup_address }}</p>
+          </div>
+        </div>
+        <!-- Point 2 -->
+        <div class="route-item">
+          <div class="route-icon-box">
+            <ion-icon name="location" class="pin-icon orange-pin"></ion-icon>
+          </div>
+          <div class="route-info-box">
+            <p class="route-label">Tujuan</p>
+            <p class="route-address">{{ order.dropoff_address }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alasan Cancel -->
+      <div class="cancel-reason" *ngIf="order.status !== 'completed' && order.cancel_reason">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <p>{{ order.cancel_reason }}</p>
+      </div>
+
+      <div class="card-divider"></div>
+
+      <!-- Waktu -->
+      <div class="datetime-row">
+        <ion-icon name="calendar-outline" class="dt-icon"></ion-icon>
+        <p class="dt-text">{{ formatDateTime(order.created_at) }}</p>
+      </div>
+
+      <div class="card-divider"></div>
+
+      <!-- Tarif + Metode -->
+      <div class="tarif-row">
+        <div>
+          <p class="tarif-label">Total Tarif</p>
+          <p class="tarif-value">{{ formatPrice(order.final_price) }}</p>
+        </div>
+        <div class="tarif-right">
+          <p class="tarif-label">Metode</p>
+          <p class="tarif-method">{{ formatPayment(order.payment_method) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Card 2: Driver Info ── -->
+    <div class="detail-card driver-card" *ngIf="order.driver">
+      <div class="driver-row">
+        <img
+          [src]="order.driver.photo || 'assets/default-avatar.png'"
+          [alt]="order.driver.name"
+          class="driver-photo"
+          referrerpolicy="no-referrer"
+          onerror="this.src='assets/default-avatar.png'" />
+        <div class="driver-info">
+          <p class="driver-name">{{ order.driver.name }}</p>
+          <p class="driver-meta">
+            {{ order.driver.vehicle_type | titlecase }} •
+            {{ order.driver.plate_number || '— — —' }}
+          </p>
+          <p class="driver-plate">{{ order.driver.plate_number }}</p>
+        </div>
+        <div class="driver-rating" *ngIf="order.driver.rating">
+          <span class="rating-value">{{ order.driver.rating | number:'1.1-1' }}</span>
+          <ion-icon name="star" class="star-icon"></ion-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Card 3: Ulasan ── -->
+    <div class="detail-card review-card" *ngIf="order.status === 'completed'">
+      <p class="review-title">Ulasan Anda</p>
+      <div class="stars-row">
+        <ion-icon
+          *ngFor="let filled of getStarArray(order.rating)"
+          [name]="filled ? 'star' : 'star-outline'"
+          class="star-review"
+          [class.star-filled]="filled">
+        </ion-icon>
+      </div>
+      <div class="review-bubble" *ngIf="order.review">
+        <p class="review-text">"{{ order.review }}"</p>
+      </div>
+      <p class="review-empty" *ngIf="!order.review && !order.rating">
+        Belum ada ulasan
+      </p>
+    </div>
+
+    <!-- ── Laporkan Driver Button ── -->
+    <div class="bottom-action" *ngIf="order.driver && order.status === 'completed'">
+      <button class="btn-laporkan">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        Laporkan Driver
+      </button>
+    </div>
+
+  </ng-container>
+
+</ion-content>

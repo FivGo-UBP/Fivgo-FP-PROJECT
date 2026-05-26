@@ -1,0 +1,241 @@
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { AlertController, LoadingController } from '@ionic/angular';
+
+@Component({
+  selector: 'app-kode-otp-login',
+  templateUrl: './kode-otp-login.page.html',
+  styleUrls: ['./kode-otp-login.page.scss'],
+  standalone: false,
+})
+export class KodeOtpLoginPage implements OnInit, OnDestroy {
+  phone: string = '';
+  role: string = 'driver';
+  purpose: 'login' | 'register' = 'login';
+  otp: string = '';
+  private readonly otpValiditySeconds = 300;
+  private readonly resendCooldownSeconds = 60;
+  
+  // Timer properties
+  otpTimeLeft: number = 300; // 5 minutes in seconds
+  resendTimeLeft: number = 0;
+  isOtpExpired: boolean = false;
+  private otpTimer: any;
+  private resendTimer: any;
+
+  // OTP attempt tracking
+  invalidAttempts: number = 0;
+  maxAttempts: number = 5;
+  isLockedOut: boolean = false;
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private authService: AuthService,
+    private loadingCtrl: LoadingController,
+    private alertCtrl: AlertController
+  ) { }
+
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      if (params['phone']) {
+        this.phone = params['phone'];
+        this.role = params['role'] || 'driver';
+        this.purpose = params['purpose'] === 'register' ? 'register' : 'login';
+        this.startOtpTimer();
+        this.restoreResendTimer();
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.clearTimers();
+  }
+
+  private getOtpStorageKey(): string {
+    return `otp_expires_at_${this.role}_${this.phone}`;
+  }
+
+  private getResendStorageKey(): string {
+    return `otp_resend_available_at_${this.role}_${this.phone}`;
+  }
+
+  private getSecondsLeft(targetTime: number): number {
+    return Math.max(0, Math.ceil((targetTime - Date.now()) / 1000));
+  }
+
+  startOtpTimer(reset: boolean = false) {
+    let expiresAt = Number(localStorage.getItem(this.getOtpStorageKey()));
+
+    if (reset || !expiresAt) {
+      expiresAt = Date.now() + this.otpValiditySeconds * 1000;
+      localStorage.setItem(this.getOtpStorageKey(), String(expiresAt));
+    }
+
+    this.otpTimeLeft = this.getSecondsLeft(expiresAt);
+    this.isOtpExpired = this.otpTimeLeft <= 0;
+    if (this.isOtpExpired) {
+      return;
+    }
+
+    if (this.otpTimer) clearInterval(this.otpTimer);
+    this.otpTimer = setInterval(() => {
+      this.otpTimeLeft = this.getSecondsLeft(expiresAt);
+      if (this.otpTimeLeft <= 0) {
+        this.isOtpExpired = true;
+        clearInterval(this.otpTimer);
+      }
+    }, 1000);
+  }
+
+  startResendTimer(reset: boolean = false) {
+    let resendAvailableAt = Number(localStorage.getItem(this.getResendStorageKey()));
+
+    if (reset || !resendAvailableAt) {
+      resendAvailableAt = Date.now() + this.resendCooldownSeconds * 1000;
+      localStorage.setItem(this.getResendStorageKey(), String(resendAvailableAt));
+    }
+
+    this.resendTimeLeft = this.getSecondsLeft(resendAvailableAt);
+    if (this.resendTimeLeft <= 0) {
+      return;
+    }
+
+    if (this.resendTimer) clearInterval(this.resendTimer);
+    this.resendTimer = setInterval(() => {
+      this.resendTimeLeft = this.getSecondsLeft(resendAvailableAt);
+      if (this.resendTimeLeft <= 0) {
+        clearInterval(this.resendTimer);
+      }
+    }, 1000);
+  }
+
+  restoreResendTimer() {
+    const resendAvailableAt = Number(localStorage.getItem(this.getResendStorageKey()));
+    if (resendAvailableAt && this.getSecondsLeft(resendAvailableAt) > 0) {
+      this.startResendTimer();
+    }
+  }
+
+  clearTimers() {
+    if (this.otpTimer) clearInterval(this.otpTimer);
+    if (this.resendTimer) clearInterval(this.resendTimer);
+  }
+
+  clearOtpSession() {
+    localStorage.removeItem(this.getOtpStorageKey());
+    localStorage.removeItem(this.getResendStorageKey());
+  }
+
+  formatTime(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  }
+
+  maskPhone(phone: string): string {
+    if (!phone) return '';
+    if (phone.length <= 4) return phone;
+    const prefix = phone.substring(0, phone.length - 4);
+    return prefix + ' ***';
+  }
+
+  async verifyOtp() {
+    if (this.isOtpExpired) {
+      await this.showAlert('Peringatan', 'Kode OTP sudah kadaluarsa. Silakan minta kode baru.');
+      return;
+    }
+
+    if (this.isLockedOut) {
+      await this.showAlert('Terlalu Banyak Percobaan', 'Anda telah mencoba terlalu banyak kali. Silakan minta kode OTP baru.');
+      return;
+    }
+
+    // Konversi ke string dan hapus separator dari OTP (untuk ion-input-otp dengan separators="all")
+    let cleanOtp = String(this.otp || '').replace(/[^\d]/g, '');
+    
+    if (!cleanOtp || cleanOtp.length < 4) {
+      await this.showAlert('Peringatan', 'Harap masukkan 4 digit kode OTP.');
+      return;
+    }
+
+    const loading = await this.loadingCtrl.create({
+      message: 'Memverifikasi...',
+    });
+    await loading.present();
+
+    this.authService.verifyOtp(this.phone, this.role, cleanOtp, this.purpose).subscribe({
+      next: async (res: any) => {
+        console.log('OTP Verification Success:', res);
+        await loading.dismiss();
+        this.clearTimers();
+        this.clearOtpSession();
+        this.invalidAttempts = 0; // Reset counter on success
+        await this.router.navigate(['/tabs/beranda']);
+      },
+      error: async (err: any) => {
+        console.error('OTP Verification Error:', err);
+        await loading.dismiss();
+        
+        // Increase invalid attempt counter
+        this.invalidAttempts++;
+        const remainingAttempts = this.maxAttempts - this.invalidAttempts;
+
+        // Check if user exceeded max attempts
+        if (this.invalidAttempts >= this.maxAttempts) {
+          this.isLockedOut = true;
+          await this.showAlert('Terlalu Banyak Percobaan', 'Anda telah mencoba 5 kali. Silakan minta kode OTP baru untuk mencoba lagi.');
+          return;
+        }
+
+        // Show specific error message based on remaining attempts
+        let message = err.error?.message || 'Kode OTP salah.';
+        if (remainingAttempts <= 2) {
+          message += ` Anda memiliki ${remainingAttempts} percobaan lagi.`;
+        }
+        await this.showAlert(err.status === 404 ? 'Nomor Belum Terdaftar' : 'Kode OTP Salah', message);
+      }
+    });
+  }
+
+  async resendOtp() {
+    if (this.resendTimeLeft > 0) {
+      await this.showAlert('Peringatan', `Silakan tunggu ${this.resendTimeLeft} detik sebelum mengirim ulang OTP.`);
+      return;
+    }
+
+    const loading = await this.loadingCtrl.create({
+      message: 'Mengirim ulang OTP...',
+    });
+    await loading.present();
+
+    this.authService.requestOtp(this.phone, this.role, this.purpose).subscribe({
+      next: async () => {
+        console.log('OTP Request Success');
+        await loading.dismiss();
+        this.startOtpTimer(true); // Reset OTP timer
+        this.startResendTimer(true); // Start resend cooldown
+        this.invalidAttempts = 0; // Reset invalid attempts counter
+        this.isLockedOut = false; // Unlock input
+        this.otp = ''; // Clear OTP input
+        await this.showAlert('Sukses', 'Kode OTP baru telah dikirim.');
+      },
+      error: async (err: any) => {
+        console.error('OTP Request Error:', err);
+        await loading.dismiss();
+        await this.showAlert('Gagal', err.error?.message || 'Gagal mengirim ulang OTP.');
+      }
+    });
+  }
+
+  async showAlert(header: string, message: string) {
+    console.log(`Alert: ${header} - ${message}`);
+    const alert = await this.alertCtrl.create({
+      header,
+      message,
+      buttons: ['OK']
+    });
+    await alert.present();
+  }
+}

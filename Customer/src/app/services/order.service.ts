@@ -1,0 +1,98 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
+import { Observable } from 'rxjs';
+
+export interface OrderDriver {
+  id: string;
+  name: string;
+  photo: string | null;
+  vehicle_type: string | null;
+  plate_number: string | null;
+  rating: number | null;
+  phone?: string | null;
+  current_lat?: number | null;
+  current_lng?: number | null;
+}
+
+export interface ActiveOrder {
+  id: string;
+  status: 'pending' | 'accepted' | 'arrived' | 'started' | 'completed' | 'cancelled' | 'rejected';
+  vehicle_type: string | null;
+  pickup_address: string;
+  pickup_lat: number;
+  pickup_lng: number;
+  dropoff_address: string;
+  dropoff_lat: number;
+  dropoff_lng: number;
+  estimated_price: number;
+  final_price: number | null;
+  payment_method: string | null;
+  notes: string | null;
+  created_at: string;
+  customer: any | null;
+  driver: OrderDriver | null;
+}
+
+export interface OrderHistory {
+  id: string;
+  status: 'completed' | 'cancelled' | 'rejected';
+  vehicle_type: string;
+  pickup_address: string;
+  dropoff_address: string;
+  final_price: number;
+  payment_method: string;
+  rating: number | null;
+  review: string | null;
+  created_at: string;
+  driver: OrderDriver | null;
+}
+
+export interface OrderDetail extends OrderHistory {
+  estimated_price: number;
+  cancel_reason: string | null;
+}
+
+@Injectable({ providedIn: 'root' })
+export class OrderService {
+  constructor(private http: HttpClient) {}
+
+  // ─── Active Order ──────────────────────────────────────────────────────────
+
+  createOrder(data: {
+    pickup_address: string;
+    pickup_lat: number;
+    pickup_lng: number;
+    dropoff_address: string;
+    dropoff_lat: number;
+    dropoff_lng: number;
+    payment_method: string;
+    vehicle_type: string;
+    notes?: string;
+    estimated_price?: number;
+  }): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/orders`, data);
+  }
+
+  getActiveOrder(): Observable<ActiveOrder | null> {
+    return this.http.get<ActiveOrder | null>(`${environment.apiUrl}/orders/active`);
+  }
+
+  cancelOrder(id: string, reason: string = 'Customer cancelled'): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/orders/${id}/cancel`, { reason });
+  }
+
+  rateOrder(id: string, rating: number, review: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/orders/${id}/rating`, { rating, review });
+  }
+
+  // ─── History ──────────────────────────────────────────────────────────────
+
+  getHistory(): Observable<{ data: OrderHistory[] }> {
+    return this.http.get<{ data: OrderHistory[] }>(`${environment.apiUrl}/customers/history`);
+  }
+
+  getHistoryDetail(id: string): Observable<{ data: OrderDetail }> {
+    return this.http.get<{ data: OrderDetail }>(`${environment.apiUrl}/customers/history/${id}`);
+  }
+}

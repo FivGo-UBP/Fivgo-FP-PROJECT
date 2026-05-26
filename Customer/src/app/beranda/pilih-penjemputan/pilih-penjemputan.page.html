@@ -1,0 +1,84 @@
+<ion-content [fullscreen]="true" class="custom-bg">
+  
+  <!-- Header / Search Area -->
+  <div class="search-header">
+    <div class="header-row">
+      <ion-back-button defaultHref="/cari-lokasi" icon="arrow-back" text="" class="back-btn"></ion-back-button>
+      <div class="blue-dot"><div class="inner-dot"></div></div>
+      <div class="search-input-wrap">
+        <input type="text" placeholder="Cari Lokasi penjemputan" (input)="onSearch($event)" [value]="searchKeyword" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-row">
+    <ion-chip class="tab-chip" [class.active]="activeTab === 'terakhir'" (click)="setTab('terakhir')">
+      <ion-label>Terakhir</ion-label>
+    </ion-chip>
+    <ion-chip class="tab-chip" [class.active]="activeTab === 'tersimpan'" (click)="setTab('tersimpan')">
+      <ion-label>Tersimpan</ion-label>
+    </ion-chip>
+  </div>
+
+
+  <!-- Hasil Pencarian -->
+  <div class="location-list" *ngIf="isSearching || searchResults.length > 0">
+    <div *ngIf="isSearching && searchResults.length === 0" style="padding: 16px; color: #666; text-align: center;">
+      <p>Mencari...</p>
+    </div>
+    
+    <div class="loc-item" *ngFor="let result of searchResults" (click)="selectResult(result)">
+      <div class="icon-wrap">
+        <ion-icon name="location" class="target-icon"></ion-icon>
+      </div>
+      <div class="text-wrap">
+        <h4>{{ result.name }}</h4>
+        <p>{{ result.address }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Location List (Terakhir) -->
+  <div class="location-list" *ngIf="activeTab === 'terakhir' && !isSearching && searchKeyword === ''">
+    
+    <!-- Item Lokasi Saat Ini -->
+    <div class="loc-item" (click)="selectCurrentLocation()">
+      <div class="icon-wrap">
+        <ion-icon name="locate" class="target-icon"></ion-icon>
+      </div>
+      <div class="text-wrap">
+        <h4>Lokasi saat ini</h4>
+        <p>{{ currentLocationName }}</p>
+      </div>
+    </div>
+
+    <!-- Riwayat Penjemputan Dinamis -->
+    <div class="loc-item" *ngFor="let loc of recentLocations" (click)="selectResult(loc)">
+      <div class="icon-wrap">
+        <div class="circle-icon" *ngIf="loc.icon === 'time-outline'">
+          <ion-icon [name]="loc.icon"></ion-icon>
+        </div>
+      </div>
+      <div class="text-wrap">
+        <h4>{{ loc.name }}</h4>
+        <p>{{ loc.address }}</p>
+      </div>
+    </div>
+    
+  </div>
+
+  <!-- Saved Locations (Tersimpan) -->
+  <div class="location-list" *ngIf="activeTab === 'tersimpan' && !isSearching && searchKeyword === ''">
+    
+    <!-- Tambah baru -->
+    <div class="loc-item" routerLink="/simpan-lokasi">
+      <div class="icon-wrap">
+        <ion-icon name="add-circle" style="font-size: 24px; color: #f05214;"></ion-icon>
+      </div>
+      <div class="text-wrap" style="display: flex; align-items: center;">
+        <h4 style="margin: 0; font-size: 15px; font-weight: 600; color: #66340b;">Tambah baru</h4>
+      </div>
+    </div>
+  </div>
+</ion-content>

@@ -1,0 +1,181 @@
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Router } from '@angular/router';
+import { Geolocation } from '@capacitor/geolocation';
+import { TomtomService } from '../../services/tomtom.service';
+
+@Component({
+  selector: 'app-pilih-penjemputan',
+  templateUrl: './pilih-penjemputan.page.html',
+  styleUrls: ['./pilih-penjemputan.page.scss'],
+  standalone: false,
+})
+export class PilihPenjemputanPage implements OnInit {
+
+  activeTab: string = 'terakhir';
+  
+  // Variabel untuk riwayat dan API
+  recentLocations: any[] = [];
+  searchKeyword: string = '';
+  searchResults: any[] = [];
+  isSearching: boolean = false;
+  searchTimeout: any;
+  currentLat: number = 0;
+  currentLng: number = 0;
+  currentLocationName: string = 'Mencari lokasi...';
+
+  constructor(
+    private tomtomService: TomtomService,
+    private cdr: ChangeDetectorRef,
+    private router: Router
+  ) { }
+
+  ngOnInit() {
+    this.getCurrentLocation();
+    this.loadHistory();
+  }
+
+  setTab(tab: string) {
+    this.activeTab = tab;
+  }
+  
+  async getCurrentLocation() {
+    try {
+      const position = await Geolocation.getCurrentPosition();
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      
+      this.currentLat = lat;
+      this.currentLng = lng;
+      
+      this.tomtomService.reverseGeocode(lat, lng).subscribe({
+        next: (res: any) => {
+          if (res && res.addresses && res.addresses.length > 0) {
+            const addr = res.addresses[0];
+            if (addr.poi && addr.poi.name) {
+              this.currentLocationName = addr.poi.name;
+            } else if (addr.address && addr.address.streetName) {
+              this.currentLocationName = addr.address.streetName;
+            } else if (addr.address && addr.address.freeformAddress) {
+              const parts = addr.address.freeformAddress.split(',');
+              this.currentLocationName = parts[0].trim();
+            } else {
+              this.currentLocationName = 'Lokasi saat ini';
+            }
+          }
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.currentLocationName = 'Lokasi saat ini';
+          this.cdr.detectChanges();
+        }
+      });
+      
+    } catch (error) {
+      this.currentLocationName = 'Lokasi saat ini';
+      this.cdr.detectChanges();
+    }
+  }
+
+  loadHistory() {
+    // Karena ini halaman pilih penjemputan, ambil riwayat jemput
+    const storedHistory = localStorage.getItem('historyJemput');
+    if (storedHistory) {
+      this.recentLocations = JSON.parse(storedHistory).map((item: any) => {
+        return {
+          name: item.name,
+          address: item.address,
+          originalResult: item.originalResult,
+          icon: 'time-outline'
+        };
+      });
+    }
+  }
+
+  onSearch(event: any) {
+    const query = event.target.value;
+    this.searchKeyword = query;
+    this.performSearch(query);
+  }
+
+  performSearch(query: string) {
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+    
+    if (query && query.trim() !== '') {
+      this.isSearching = true;
+      
+      this.searchTimeout = setTimeout(() => {
+        const searchLat = this.currentLat !== 0 ? this.currentLat : undefined;
+        const searchLng = this.currentLng !== 0 ? this.currentLng : undefined;
+        
+        this.tomtomService.searchAddress(query, searchLng, searchLat).subscribe({
+          next: (res: any) => {
+            if (res && res.results) {
+              this.searchResults = res.results.map((result: any) => {
+                let name = '';
+                if (result.poi && result.poi.name) {
+                  name = result.poi.name;
+                } else if (result.address && result.address.freeformAddress) {
+                  const parts = result.address.freeformAddress.split(',');
+                  name = parts[0].trim();
+                } else {
+                  name = result.address.localName || 'Lokasi tidak diketahui';
+                }
+                const address = result.address.freeformAddress;
+                return { name, address, originalResult: result };
+              });
+            } else {
+              this.searchResults = [];
+            }
+          },
+          error: (err) => {
+            this.searchResults = [];
+          }
+        });
+      }, 500);
+    } else {
+      this.isSearching = false;
+      this.searchResults = [];
+    }
+  }
+
+  selectResult(loc: any) {
+    // Menyimpan riwayat pencarian penjemputan
+    const historyItem = {
+      name: loc.name,
+      address: loc.address,
+      originalResult: loc.originalResult
+    };
+    
+    let historyJemput: any[] = [];
+    const storedHistory = localStorage.getItem('historyJemput');
+    if (storedHistory) {
+      historyJemput = JSON.parse(storedHistory);
+    }
+    historyJemput = [historyItem, ...historyJemput.filter((i: any) => i.name !== historyItem.name)].slice(0, 5);
+    localStorage.setItem('historyJemput', JSON.stringify(historyJemput));
+    
+    // Karena ini milih penjemputan (origin), navigasi kembali ke 'cari-lokasi' atau ke mana?
+    // Biasanya navigasi kembali ke cari-lokasi dan set nilai jemput-nya jika ada local state,
+    // Atau bisa ke /map-visual? Jika ini flow order manual, kita bisa pass via Router state/queryParams,
+    // Atau simpan ke variable global/localStorage bahwa pick-up location sudah diubah.
+    
+    localStorage.setItem('tempJemputName', loc.name);
+    const jLat = loc.originalResult?.position?.lat || this.currentLat;
+    const jLng = loc.originalResult?.position?.lon || this.currentLng;
+    localStorage.setItem('tempJemputLat', jLat.toString());
+    localStorage.setItem('tempJemputLng', jLng.toString());
+    
+    this.router.navigate(['/cari-lokasi']);
+  }
+
+  selectCurrentLocation() {
+    localStorage.setItem('tempJemputName', 'Lokasi Saat Ini');
+    localStorage.setItem('tempJemputLat', this.currentLat.toString());
+    localStorage.setItem('tempJemputLng', this.currentLng.toString());
+    
+    this.router.navigate(['/cari-lokasi']);
+  }
+
+}

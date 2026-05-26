@@ -1,0 +1,6711 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "FivGo",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "Auth"
+    },
+    {
+      "name": "Costumer"
+    },
+    {
+      "name": "Driver"
+    },
+    {
+      "name": "Order"
+    },
+    {
+      "name": "Tracking"
+    },
+    {
+      "name": "Payment"
+    },
+    {
+      "name": "Promo"
+    },
+    {
+      "name": "Chat"
+    },
+    {
+      "name": "Notification"
+    },
+    {
+      "name": "Admin"
+    }
+  ],
+  "paths": {
+    "/auth/request-otp": {
+      "post": {
+        "summary": "Request OTP",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "phone",
+                  "role"
+                ]
+              },
+              "example": {
+                "phone": "08123456789",
+                "role": "customer"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "phone": {
+                      "type": "string"
+                    },
+                    "otp_sent": {
+                      "type": "boolean"
+                    },
+                    "via": {
+                      "type": "string"
+                    },
+                    "expired_in_seconds": {
+                      "type": "integer"
+                    },
+                    "retry_after_seconds": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "phone",
+                    "otp_sent",
+                    "via",
+                    "expired_in_seconds",
+                    "retry_after_seconds"
+                  ]
+                },
+                "example": {
+                  "phone": "08123456789",
+                  "otp_sent": true,
+                  "via": "whatsapp",
+                  "expired_in_seconds": 60,
+                  "retry_after_seconds": 30
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Format nomor tidak valid"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "retry_after_seconds": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "retry_after_seconds"
+                  ]
+                },
+                "example": {
+                  "message": "Terlalu banyak permintaan OTP",
+                  "retry_after_seconds": 60
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/verify-otp": {
+      "post": {
+        "summary": "Verify OTP",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "string"
+                  },
+                  "otp": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "phone",
+                  "otp"
+                ]
+              },
+              "example": {
+                "phone": "08123456789",
+                "otp": "123456"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    },
+                    "refresh_token": {
+                      "type": "string"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "is_new_user": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "role",
+                        "name",
+                        "is_new_user"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "token",
+                    "refresh_token",
+                    "user"
+                  ]
+                },
+                "example": {
+                  "token": "jwt_token",
+                  "refresh_token": "refresh_token",
+                  "user": {
+                    "id": "uuid",
+                    "role": "customer",
+                    "name": "Budi",
+                    "is_new_user": false
+                  }
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "OTP salah atau kadaluarsa"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Terlalu banyak percobaan OTP"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/google-login": {
+      "post": {
+        "summary": "Login with Google",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "google_token": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "google_token"
+                ]
+              },
+              "example": {
+                "google_token": "token_dari_google"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string"
+                        },
+                        "phone_verified": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "email",
+                        "role",
+                        "phone_verified"
+                      ]
+                    },
+                    "next_step": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "token",
+                    "user",
+                    "next_step"
+                  ]
+                },
+                "example": {
+                  "token": "jwt_token",
+                  "user": {
+                    "id": "uuid",
+                    "email": "user@gmail.com",
+                    "role": "customer",
+                    "phone_verified": false
+                  },
+                  "next_step": "verify_phone"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Login Google gagal"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/admin-login": {
+      "post": {
+        "summary": "Admin Login",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ]
+              },
+              "example": {
+                "email": "admin@email.com",
+                "password": "password123"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    },
+                    "admin": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "role"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "token",
+                    "admin"
+                  ]
+                },
+                "example": {
+                  "token": "jwt_token",
+                  "admin": {
+                    "id": "uuid",
+                    "name": "Admin",
+                    "role": "admin"
+                  }
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Email atau password salah"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Akun admin dinonaktifkan"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Logout",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Berhasil logout"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/refresh-token": {
+      "post": {
+        "summary": "Refresh Access Token",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refresh_token": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "refresh_token"
+                ]
+              },
+              "example": {
+                "refresh_token": "refresh_token"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    },
+                    "expired_in": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "token",
+                    "expired_in"
+                  ]
+                },
+                "example": {
+                  "token": "new_jwt_token",
+                  "expired_in": 3600
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Refresh token tidak valid"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/admin/forgot-password": {
+      "post": {
+        "summary": "Admin Forgot Password (Request OTP)",
+        "deprecated": false,
+        "description": "Mengirimkan OTP ke email admin untuk reset password.",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "admin@fivgo.com"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP terkirim",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "expired_in_seconds": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "OTP berhasil dikirim ke email admin",
+                  "expired_in_seconds": 300
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/admin/reset-password": {
+      "post": {
+        "summary": "Admin Reset Password",
+        "deprecated": false,
+        "description": "Memverifikasi OTP dan mengganti password admin.",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "admin@fivgo.com"
+                  },
+                  "otp": {
+                    "type": "string",
+                    "example": "123456"
+                  },
+                  "new_password": {
+                    "type": "string",
+                    "example": "passwordbaru123"
+                  }
+                },
+                "required": [
+                  "email",
+                  "otp",
+                  "new_password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Password admin berhasil direset. Silakan login kembali."
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/customers/me": {
+      "get": {
+        "summary": "Get My Profile",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Costumer"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "phone": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "rating": {
+                      "type": "number"
+                    },
+                    "created_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "phone",
+                    "email",
+                    "rating",
+                    "created_at"
+                  ]
+                },
+                "example": {
+                  "id": "uuid",
+                  "name": "Budi",
+                  "phone": "08123456789",
+                  "email": "budi@email.com",
+                  "rating": 4.8,
+                  "created_at": "2026-04-20T10:00:00Z"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "put": {
+        "summary": "Update My Profile",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Costumer"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "email"
+                ]
+              },
+              "example": {
+                "name": "Budi Santoso",
+                "email": "budi@email.com"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "updated_fields": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "updated_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "updated_fields",
+                    "updated_at"
+                  ]
+                },
+                "example": {
+                  "message": "Profil berhasil diperbarui",
+                  "updated_fields": [
+                    "name",
+                    "email"
+                  ],
+                  "updated_at": "2026-04-25T10:00:00Z"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Email tidak valid"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/customers/addresses": {
+      "get": {
+        "summary": "List Saved Addresses",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Costumer"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "label": {
+                        "type": "string"
+                      },
+                      "address": {
+                        "type": "string"
+                      },
+                      "lat": {
+                        "type": "number"
+                      },
+                      "lng": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "label",
+                      "address",
+                      "lat",
+                      "lng"
+                    ]
+                  }
+                },
+                "examples": {
+                  "1": {
+                    "summary": "Success",
+                    "value": {
+                      "id": "uuid",
+                      "label": "Rumah",
+                      "address": "Jl. Sudirman No.1",
+                      "lat": -6.2,
+                      "lng": 106.8
+                    }
+                  },
+                  "2": {
+                    "summary": "Success",
+                    "value": {
+                      "id": "uuid",
+                      "label": "Kampus",
+                      "address": "Jl. Thamrin No.5",
+                      "lat": -6.21,
+                      "lng": 106.82
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "summary": "Create Address",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Costumer"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "address": {
+                    "type": "string"
+                  },
+                  "lat": {
+                    "type": "number"
+                  },
+                  "lng": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "label",
+                  "address",
+                  "lat",
+                  "lng"
+                ]
+              },
+              "example": {
+                "label": "Rumah",
+                "address": "Jl. Sudirman No.1",
+                "lat": -6.2,
+                "lng": 106.8
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "id": "uuid",
+                  "message": "Alamat berhasil ditambahkan"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Data alamat tidak lengkap"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/customers/addresses/{id}": {
+      "put": {
+        "summary": "Update Address",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Costumer"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "address": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "label",
+                  "address"
+                ]
+              },
+              "example": {
+                "label": "Rumah Baru",
+                "address": "Jl. Baru No.10"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Alamat berhasil diperbarui"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "delete": {
+        "summary": "Delete Address",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Costumer"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Alamat berhasil dihapus"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/customers/history": {
+      "get": {
+        "summary": "List Order History",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Costumer"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "status",
+            "required": false,
+            "example": "completed|cancelled",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "order_id": {
+                        "type": "string"
+                      },
+                      "order_code": {
+                        "type": "string"
+                      },
+                      "pickup": {
+                        "type": "string"
+                      },
+                      "destination": {
+                        "type": "string"
+                      },
+                      "price": {
+                        "type": "integer"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "date": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "order_id": "uuid",
+                  "order_code": "ORD123",
+                  "pickup": "Jl. A",
+                  "destination": "Jl. B",
+                  "price": 20000,
+                  "status": "completed",
+                  "date": "2026-04-25"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/customers/history/{id}": {
+      "get": {
+        "summary": "Get Order History Detail",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Costumer"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "order_code": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "date": {
+                      "type": "string"
+                    },
+                    "pickup": {
+                      "type": "string"
+                    },
+                    "destination": {
+                      "type": "string"
+                    },
+                    "distance_km": {
+                      "type": "integer"
+                    },
+                    "duration_min": {
+                      "type": "integer"
+                    },
+                    "driver": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "rating": {
+                          "type": "number"
+                        },
+                        "vehicle": {
+                          "type": "string"
+                        },
+                        "plate": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "rating",
+                        "vehicle",
+                        "plate"
+                      ]
+                    },
+                    "payment": {
+                      "type": "object",
+                      "properties": {
+                        "method": {
+                          "type": "string"
+                        },
+                        "total": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "method",
+                        "total"
+                      ]
+                    },
+                    "rating": {
+                      "type": "object",
+                      "properties": {
+                        "score": {
+                          "type": "integer"
+                        },
+                        "review": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "score",
+                        "review"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "order_code",
+                    "status",
+                    "date",
+                    "pickup",
+                    "destination",
+                    "distance_km",
+                    "duration_min",
+                    "driver",
+                    "payment",
+                    "rating"
+                  ]
+                },
+                "example": {
+                  "order_code": "ORD123",
+                  "status": "completed",
+                  "date": "2026-04-25",
+                  "pickup": "Jl. A",
+                  "destination": "Jl. B",
+                  "distance_km": 5,
+                  "duration_min": 15,
+                  "driver": {
+                    "name": "Joko",
+                    "rating": 4.9,
+                    "vehicle": "motor",
+                    "plate": "B1234XYZ"
+                  },
+                  "payment": {
+                    "method": "non_cash",
+                    "total": 22000
+                  },
+                  "rating": {
+                    "score": 5,
+                    "review": "Mantap"
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/customers/report-driver": {
+      "post": {
+        "summary": "Report Driver",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Costumer"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "order_id": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "evidence_url": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "order_id",
+                  "reason",
+                  "evidence_url"
+                ]
+              },
+              "example": {
+                "order_id": "uuid",
+                "reason": "driver tidak sopan",
+                "evidence_url": "https://image.com/bukti.jpg"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "report_id": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "report_id",
+                    "message",
+                    "status"
+                  ]
+                },
+                "example": {
+                  "report_id": "uuid",
+                  "message": "Laporan berhasil dikirim",
+                  "status": "pending_review"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Order tidak valid atau sudah melewati batas pelaporan"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/customers/change-phone": {
+      "post": {
+        "summary": "Change Phone Number",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Costumer"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "old_phone": {
+                    "type": "string"
+                  },
+                  "new_phone": {
+                    "type": "string"
+                  },
+                  "otp": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "old_phone",
+                  "new_phone",
+                  "otp"
+                ]
+              },
+              "example": {
+                "old_phone": "0812xxx",
+                "new_phone": "0813xxx",
+                "otp": "123456"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Nomor berhasil diperbarui"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/drivers/register": {
+      "post": {
+        "summary": "Register Driver",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Driver"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "city": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "phone",
+                  "city"
+                ]
+              },
+              "example": {
+                "name": "Joko",
+                "phone": "08123456789",
+                "city": "Jakarta"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "driver_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "driver_id",
+                    "status",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "driver_id": "uuid",
+                  "status": "otp_verification_required",
+                  "message": "Silakan verifikasi OTP"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Nomor sudah terdaftar"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/drivers/documents": {
+      "post": {
+        "summary": "Upload Driver Documents",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Driver"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ktp": {
+                    "type": "object",
+                    "properties": {
+                      "number": {
+                        "type": "string"
+                      },
+                      "image_url": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "number",
+                      "image_url"
+                    ]
+                  },
+                  "sim": {
+                    "type": "object",
+                    "properties": {
+                      "number": {
+                        "type": "string"
+                      },
+                      "expired_at": {
+                        "type": "string"
+                      },
+                      "image_url": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "number",
+                      "expired_at",
+                      "image_url"
+                    ]
+                  },
+                  "stnk": {
+                    "type": "object",
+                    "properties": {
+                      "plate_number": {
+                        "type": "string"
+                      },
+                      "vehicle_type": {
+                        "type": "string"
+                      },
+                      "image_url": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "plate_number",
+                      "vehicle_type",
+                      "image_url"
+                    ]
+                  },
+                  "bank": {
+                    "type": "object",
+                    "properties": {
+                      "bank_name": {
+                        "type": "string"
+                      },
+                      "account_number": {
+                        "type": "string"
+                      },
+                      "account_name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "bank_name",
+                      "account_number",
+                      "account_name"
+                    ]
+                  }
+                },
+                "required": [
+                  "ktp",
+                  "sim",
+                  "stnk",
+                  "bank"
+                ]
+              },
+              "example": {
+                "ktp": {
+                  "number": "1234567890",
+                  "image_url": "https://..."
+                },
+                "sim": {
+                  "number": "SIM123",
+                  "expired_at": "2030-01-01",
+                  "image_url": "https://..."
+                },
+                "stnk": {
+                  "plate_number": "B1234XYZ",
+                  "vehicle_type": "motor",
+                  "image_url": "https://..."
+                },
+                "bank": {
+                  "bank_name": "BCA",
+                  "account_number": "12345678",
+                  "account_name": "Joko"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "status"
+                  ]
+                },
+                "example": {
+                  "message": "Dokumen berhasil diupload",
+                  "status": "pending_verification"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Dokumen tidak lengkap atau tidak valid"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/drivers/me": {
+      "get": {
+        "summary": "Get Driver Profile",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Driver"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "phone": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "verification_status": {
+                      "type": "string"
+                    },
+                    "rating": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "phone",
+                    "status",
+                    "verification_status",
+                    "rating"
+                  ]
+                },
+                "example": {
+                  "id": "uuid",
+                  "name": "Joko",
+                  "phone": "08123456789",
+                  "status": "offline",
+                  "verification_status": "approved",
+                  "rating": 4.9
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/drivers/status": {
+      "patch": {
+        "summary": "Update Driver Status",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Driver"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "example": {
+                "status": "online"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "status": "online",
+                  "message": "Driver siap menerima order"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "GPS / internet tidak aktif"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Akun belum diverifikasi"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/drivers/location": {
+      "post": {
+        "summary": "Send Driver Location Update",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Driver"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "lat": {
+                    "type": "number"
+                  },
+                  "lng": {
+                    "type": "number"
+                  },
+                  "timestamp": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "lat",
+                  "lng",
+                  "timestamp"
+                ]
+              },
+              "example": {
+                "lat": -6.2,
+                "lng": 106.8,
+                "timestamp": "2026-04-25T10:00:00Z"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "received": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "received"
+                  ]
+                },
+                "example": {
+                  "received": true
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/drivers/history": {
+      "get": {
+        "summary": "List Driver Order History",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Driver"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "order_id": {
+                        "type": "string"
+                      },
+                      "order_code": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "price": {
+                        "type": "integer"
+                      },
+                      "date": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "order_id": "uuid",
+                  "order_code": "ORD123",
+                  "status": "completed",
+                  "price": 20000,
+                  "date": "2026-04-25"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/drivers/history/{id}": {
+      "get": {
+        "summary": "Get Driver Trip Detail",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Driver"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "order_code": {
+                      "type": "string"
+                    },
+                    "customer": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "rating": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "rating"
+                      ]
+                    },
+                    "distance_km": {
+                      "type": "integer"
+                    },
+                    "duration_min": {
+                      "type": "integer"
+                    },
+                    "payment": {
+                      "type": "object",
+                      "properties": {
+                        "method": {
+                          "type": "string"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "commission": {
+                          "type": "integer"
+                        },
+                        "net_income": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "method",
+                        "total",
+                        "commission",
+                        "net_income"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "order_code",
+                    "customer",
+                    "distance_km",
+                    "duration_min",
+                    "payment"
+                  ]
+                },
+                "example": {
+                  "order_code": "ORD123",
+                  "customer": {
+                    "name": "Budi",
+                    "rating": 4.8
+                  },
+                  "distance_km": 5,
+                  "duration_min": 15,
+                  "payment": {
+                    "method": "cash",
+                    "total": 20000,
+                    "commission": 2000,
+                    "net_income": 18000
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/drivers/wallet": {
+      "get": {
+        "summary": "Get Driver Wallet",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Driver"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "balance": {
+                      "type": "integer"
+                    },
+                    "commission_debt": {
+                      "type": "integer"
+                    },
+                    "today_earning": {
+                      "type": "integer"
+                    },
+                    "weekly_earning": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "balance",
+                    "commission_debt",
+                    "today_earning",
+                    "weekly_earning"
+                  ]
+                },
+                "example": {
+                  "balance": 500000,
+                  "commission_debt": 20000,
+                  "today_earning": 100000,
+                  "weekly_earning": 600000
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/drivers/withdraw": {
+      "post": {
+        "summary": "Request Withdrawal",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Driver"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "amount"
+                ]
+              },
+              "example": {
+                "amount": 100000
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "withdraw_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "withdraw_id",
+                    "status",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "withdraw_id": "uuid",
+                  "status": "pending",
+                  "message": "Permintaan penarikan diproses"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Saldo tidak cukup"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/drivers/report-customer": {
+      "post": {
+        "summary": "Report Customer",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Driver"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "report_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "report_id",
+                    "status"
+                  ]
+                },
+                "example": {
+                  "report_id": "uuid",
+                  "status": "submitted"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/orders": {
+      "post": {
+        "summary": "Create Order",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pickup_lat": {
+                    "type": "number"
+                  },
+                  "pickup_lng": {
+                    "type": "number"
+                  },
+                  "destination_lat": {
+                    "type": "number"
+                  },
+                  "destination_lng": {
+                    "type": "number"
+                  },
+                  "service_type": {
+                    "type": "string"
+                  },
+                  "payment_method": {
+                    "type": "string"
+                  },
+                  "voucher_code": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "pickup_lat",
+                  "pickup_lng",
+                  "destination_lat",
+                  "destination_lng",
+                  "service_type",
+                  "payment_method",
+                  "voucher_code"
+                ]
+              },
+              "example": {
+                "pickup_lat": -6.2,
+                "pickup_lng": 106.816,
+                "destination_lat": -6.21,
+                "destination_lng": 106.82,
+                "service_type": "motor",
+                "payment_method": "non_cash",
+                "voucher_code": "HEMAT10"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "order_id": {
+                      "type": "string"
+                    },
+                    "order_code": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "estimated_price": {
+                      "type": "integer"
+                    },
+                    "estimated_distance_km": {
+                      "type": "number"
+                    },
+                    "estimated_duration_min": {
+                      "type": "integer"
+                    },
+                    "created_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "order_id",
+                    "order_code",
+                    "status",
+                    "estimated_price",
+                    "estimated_distance_km",
+                    "estimated_duration_min",
+                    "created_at"
+                  ]
+                },
+                "example": {
+                  "order_id": "uuid",
+                  "order_code": "ORD123",
+                  "status": "pending",
+                  "estimated_price": 20000,
+                  "estimated_distance_km": 4.5,
+                  "estimated_duration_min": 10,
+                  "created_at": "2026-04-25T10:00:00Z"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Kamu masih memiliki order aktif"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "summary": "Get Order Detail",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "order_id": {
+                      "type": "string"
+                    },
+                    "order_code": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "customer": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name"
+                      ]
+                    },
+                    "driver": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "rating": {
+                          "type": "number"
+                        },
+                        "vehicle_type": {
+                          "type": "string"
+                        },
+                        "plate_number": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "rating",
+                        "vehicle_type",
+                        "plate_number"
+                      ]
+                    },
+                    "pickup": {
+                      "type": "object",
+                      "properties": {
+                        "lat": {
+                          "type": "number"
+                        },
+                        "lng": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "lat",
+                        "lng"
+                      ]
+                    },
+                    "destination": {
+                      "type": "object",
+                      "properties": {
+                        "lat": {
+                          "type": "number"
+                        },
+                        "lng": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "lat",
+                        "lng"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "order_id",
+                    "order_code",
+                    "status",
+                    "customer",
+                    "driver",
+                    "pickup",
+                    "destination"
+                  ]
+                },
+                "example": {
+                  "order_id": "uuid",
+                  "order_code": "ORD123",
+                  "status": "accepted",
+                  "customer": {
+                    "name": "Budi"
+                  },
+                  "driver": {
+                    "id": "uuid",
+                    "name": "Joko",
+                    "rating": 4.9,
+                    "vehicle_type": "motor",
+                    "plate_number": "B1234XYZ"
+                  },
+                  "pickup": {
+                    "lat": -6.2,
+                    "lng": 106.8
+                  },
+                  "destination": {
+                    "lat": -6.21,
+                    "lng": 106.82
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/orders/active": {
+      "get": {
+        "summary": "Get Active Order",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "order_id": {
+                      "type": "string"
+                    },
+                    "order_code": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "pickup": {
+                      "type": "object",
+                      "properties": {
+                        "lat": {
+                          "type": "number"
+                        },
+                        "lng": {
+                          "type": "number"
+                        },
+                        "address": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "lat",
+                        "lng",
+                        "address"
+                      ]
+                    },
+                    "destination": {
+                      "type": "object",
+                      "properties": {
+                        "lat": {
+                          "type": "number"
+                        },
+                        "lng": {
+                          "type": "number"
+                        },
+                        "address": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "lat",
+                        "lng",
+                        "address"
+                      ]
+                    },
+                    "driver": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "rating": {
+                          "type": "number"
+                        },
+                        "vehicle": {
+                          "type": "string"
+                        },
+                        "plate_number": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "rating",
+                        "vehicle",
+                        "plate_number"
+                      ]
+                    },
+                    "payment_method": {
+                      "type": "string"
+                    },
+                    "estimated_price": {
+                      "type": "integer"
+                    },
+                    "created_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "order_id",
+                    "order_code",
+                    "status",
+                    "pickup",
+                    "destination",
+                    "driver",
+                    "payment_method",
+                    "estimated_price",
+                    "created_at"
+                  ]
+                },
+                "example": {
+                  "order_id": "uuid",
+                  "order_code": "ORD123",
+                  "status": "on-going",
+                  "pickup": {
+                    "lat": -6.2,
+                    "lng": 106.816,
+                    "address": "Jl. A"
+                  },
+                  "destination": {
+                    "lat": -6.21,
+                    "lng": 106.82,
+                    "address": "Jl. B"
+                  },
+                  "driver": {
+                    "id": "uuid",
+                    "name": "Joko",
+                    "rating": 4.9,
+                    "vehicle": "motor",
+                    "plate_number": "B1234XYZ"
+                  },
+                  "payment_method": "non_cash",
+                  "estimated_price": 20000,
+                  "created_at": "2026-04-25T10:00:00Z"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Tidak ada order aktif"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/orders/{id}/accept": {
+      "post": {
+        "summary": "Accept Order",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "accepted_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "status",
+                    "accepted_at"
+                  ]
+                },
+                "example": {
+                  "message": "Order berhasil diterima",
+                  "status": "accepted",
+                  "accepted_at": "2026-04-25T10:02:00Z"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Order sudah diambil driver lain"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/orders/{id}/start": {
+      "post": {
+        "summary": "Start Trip",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "started_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "status",
+                    "started_at"
+                  ]
+                },
+                "example": {
+                  "message": "Perjalanan dimulai",
+                  "status": "on-going",
+                  "started_at": "2026-04-25T10:05:00Z"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Belum sampai lokasi jemput"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/orders/{id}/complete": {
+      "post": {
+        "summary": "Complete Trip",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "final_price": {
+                      "type": "integer"
+                    },
+                    "distance_km": {
+                      "type": "integer"
+                    },
+                    "duration_min": {
+                      "type": "integer"
+                    },
+                    "completed_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "status",
+                    "final_price",
+                    "distance_km",
+                    "duration_min",
+                    "completed_at"
+                  ]
+                },
+                "example": {
+                  "message": "Perjalanan selesai",
+                  "status": "completed",
+                  "final_price": 22000,
+                  "distance_km": 5,
+                  "duration_min": 15,
+                  "completed_at": "2026-04-25T10:20:00Z"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Order belum dimulai"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/orders/{id}/cancel": {
+      "post": {
+        "summary": "Cancel Order",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "reason"
+                ]
+              },
+              "example": {
+                "reason": "Driver terlalu lama"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "cancelled_by": {
+                      "type": "string"
+                    },
+                    "penalty_fee": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "status",
+                    "cancelled_by",
+                    "penalty_fee"
+                  ]
+                },
+                "example": {
+                  "message": "Order dibatalkan",
+                  "status": "cancelled",
+                  "cancelled_by": "customer",
+                  "penalty_fee": 5000
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Tidak bisa cancel saat perjalanan berlangsung"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/orders/{id}/reject": {
+      "post": {
+        "summary": "Reject Order",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "next_action": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "next_action"
+                  ]
+                },
+                "example": {
+                  "message": "Order ditolak",
+                  "next_action": "broadcast_ke_driver_lain"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/orders/{id}/rating": {
+      "post": {
+        "summary": "Submit Rating & Review",
+        "deprecated": false,
+        "description": "Menyimpan rating bintang dan ulasan untuk driver setelah order selesai.",
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID Order",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rating": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "example": 5
+                  },
+                  "comment": {
+                    "type": "string",
+                    "example": "Driver sangat ramah dan perjalanan cepat!"
+                  }
+                },
+                "required": [
+                  "rating"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rating saved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Rating dan ulasan berhasil disimpan. Terima kasih!"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/orders/{id}/tracking": {
+      "get": {
+        "summary": "Get Order Tracking",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Tracking"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "order_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "driver": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "vehicle": {
+                          "type": "string"
+                        },
+                        "plate_number": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "vehicle",
+                        "plate_number"
+                      ]
+                    },
+                    "driver_location": {
+                      "type": "object",
+                      "properties": {
+                        "lat": {
+                          "type": "number"
+                        },
+                        "lng": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "lat",
+                        "lng"
+                      ]
+                    },
+                    "route": {
+                      "type": "object",
+                      "properties": {
+                        "polyline": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "polyline"
+                      ]
+                    },
+                    "eta_to_pickup_min": {
+                      "type": "integer"
+                    },
+                    "eta_to_destination_min": {
+                      "type": "integer"
+                    },
+                    "last_updated_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "order_id",
+                    "status",
+                    "driver",
+                    "driver_location",
+                    "route",
+                    "eta_to_pickup_min",
+                    "eta_to_destination_min",
+                    "last_updated_at"
+                  ]
+                },
+                "example": {
+                  "order_id": "uuid",
+                  "status": "on-going",
+                  "driver": {
+                    "name": "Joko",
+                    "vehicle": "motor",
+                    "plate_number": "B1234XYZ"
+                  },
+                  "driver_location": {
+                    "lat": -6.25,
+                    "lng": 106.85
+                  },
+                  "route": {
+                    "polyline": "encoded_string_optional"
+                  },
+                  "eta_to_pickup_min": 3,
+                  "eta_to_destination_min": 10,
+                  "last_updated_at": "2026-04-25T10:10:00Z"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Tracking tidak tersedia"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/drivers/nearby": {
+      "get": {
+        "summary": "List Nearby Drivers",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Tracking"
+        ],
+        "parameters": [
+          {
+            "name": "lat",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "radius_km",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "driver_id": {
+                        "type": "string"
+                      },
+                      "distance_km": {
+                        "type": "number"
+                      },
+                      "rating": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "driver_id",
+                      "distance_km",
+                      "rating"
+                    ]
+                  }
+                },
+                "examples": {
+                  "1": {
+                    "summary": "Success",
+                    "value": {
+                      "driver_id": "uuid",
+                      "distance_km": 1.2,
+                      "rating": 4.8
+                    }
+                  },
+                  "2": {
+                    "summary": "Success",
+                    "value": {
+                      "driver_id": "uuid",
+                      "distance_km": 2,
+                      "rating": 4.7
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/payments/pre-auth": {
+      "post": {
+        "summary": "Authorize Payment",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Payment"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "order_id": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "integer"
+                  },
+                  "payment_method": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "order_id",
+                  "amount",
+                  "payment_method"
+                ]
+              },
+              "example": {
+                "order_id": "uuid",
+                "amount": 20000,
+                "payment_method": "dana"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "payment_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "amount": {
+                      "type": "integer"
+                    },
+                    "payment_method": {
+                      "type": "string"
+                    },
+                    "expired_at": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "payment_id",
+                    "status",
+                    "amount",
+                    "payment_method",
+                    "expired_at",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "payment_id": "uuid",
+                  "status": "authorized",
+                  "amount": 20000,
+                  "payment_method": "dana",
+                  "expired_at": "2026-04-25T10:30:00Z",
+                  "message": "Saldo berhasil ditahan"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "402": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Saldo tidak cukup"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Payment sudah pernah dibuat"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/payments/capture": {
+      "post": {
+        "summary": "Capture Payment",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Payment"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "order_id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "order_id"
+                ]
+              },
+              "example": {
+                "order_id": "uuid"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "payment_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "amount": {
+                      "type": "integer"
+                    },
+                    "paid_at": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "payment_id",
+                    "status",
+                    "amount",
+                    "paid_at",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "payment_id": "uuid",
+                  "status": "paid",
+                  "amount": 22000,
+                  "paid_at": "2026-04-25T10:20:00Z",
+                  "message": "Pembayaran berhasil"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Order belum selesai"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Pembayaran sudah diproses"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/payments/cancel": {
+      "post": {
+        "summary": "Cancel Payment",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Payment"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "order_id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "order_id"
+                ]
+              },
+              "example": {
+                "order_id": "uuid"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "payment_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "payment_id",
+                    "status",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "payment_id": "uuid",
+                  "status": "cancelled",
+                  "message": "Saldo dikembalikan"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/payments/{order_id}": {
+      "get": {
+        "summary": "Get Payment Status",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Payment"
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "order_id": {
+                      "type": "string"
+                    },
+                    "payment_status": {
+                      "type": "string"
+                    },
+                    "amount": {
+                      "type": "integer"
+                    },
+                    "payment_method": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "order_id",
+                    "payment_status",
+                    "amount",
+                    "payment_method"
+                  ]
+                },
+                "example": {
+                  "order_id": "uuid",
+                  "payment_status": "authorized",
+                  "amount": 20000,
+                  "payment_method": "dana"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/payments/webhook": {
+      "post": {
+        "summary": "Handle Payment Webhook",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Payment"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "payment_id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "external_ref": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "payment_id",
+                  "status",
+                  "external_ref"
+                ]
+              },
+              "example": {
+                "payment_id": "uuid",
+                "status": "success",
+                "external_ref": "MIDTRANS123"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Webhook diterima"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/promos": {
+      "get": {
+        "summary": "List Available Promos",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Promo"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "promo_id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "discount_percent": {
+                        "type": "integer"
+                      },
+                      "max_discount": {
+                        "type": "integer"
+                      },
+                      "expired_at": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "promo_id": "uuid",
+                  "title": "Diskon 50%",
+                  "description": "Maks potongan 10.000",
+                  "discount_percent": 50,
+                  "max_discount": 10000,
+                  "expired_at": "2026-05-01"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/promos/{id}": {
+      "get": {
+        "summary": "Get Promo Detail",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Promo"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "promo_id": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "terms": {
+                      "type": "string"
+                    },
+                    "quota": {
+                      "type": "integer"
+                    },
+                    "used": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "promo_id",
+                    "title",
+                    "terms",
+                    "quota",
+                    "used"
+                  ]
+                },
+                "example": {
+                  "promo_id": "uuid",
+                  "title": "Diskon 50%",
+                  "terms": "Minimal transaksi 20.000",
+                  "quota": 100,
+                  "used": 20
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/promos/apply": {
+      "post": {
+        "summary": "Apply Promo",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Promo"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "voucher_code": {
+                    "type": "string"
+                  },
+                  "estimated_price": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "voucher_code",
+                  "estimated_price"
+                ]
+              },
+              "example": {
+                "voucher_code": "HEMAT50",
+                "estimated_price": 20000
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "valid": {
+                      "type": "boolean"
+                    },
+                    "discount_amount": {
+                      "type": "integer"
+                    },
+                    "final_price": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "valid",
+                    "discount_amount",
+                    "final_price"
+                  ]
+                },
+                "example": {
+                  "valid": true,
+                  "discount_amount": 10000,
+                  "final_price": 10000
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Voucher tidak valid atau sudah kadaluarsa"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/chats/{order_id}": {
+      "get": {
+        "summary": "List Chat Messages",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Chat"
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "sender": {
+                        "type": "string"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "timestamp": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "sender",
+                      "message",
+                      "timestamp"
+                    ]
+                  }
+                },
+                "examples": {
+                  "1": {
+                    "summary": "Success",
+                    "value": {
+                      "sender": "customer",
+                      "message": "Saya sudah di depan",
+                      "timestamp": "2026-04-25T10:10:00Z"
+                    }
+                  },
+                  "2": {
+                    "summary": "Success",
+                    "value": {
+                      "sender": "driver",
+                      "message": "Baik, saya menuju lokasi",
+                      "timestamp": "2026-04-25T10:11:00Z"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/chats": {
+      "post": {
+        "summary": "Send Chat Message",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Chat"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "order_id": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "order_id",
+                  "message"
+                ]
+              },
+              "example": {
+                "order_id": "uuid",
+                "message": "Saya sudah di depan"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sent": {
+                      "type": "boolean"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "sent",
+                    "timestamp"
+                  ]
+                },
+                "example": {
+                  "sent": true,
+                  "timestamp": "2026-04-25T10:12:00Z"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/notifications": {
+      "get": {
+        "summary": "List Notifications",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Notification"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "body": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "is_read": {
+                        "type": "boolean"
+                      },
+                      "created_at": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "id": "uuid",
+                  "title": "Driver ditemukan",
+                  "body": "Driver Joko sedang menuju kamu",
+                  "type": "order",
+                  "is_read": false,
+                  "created_at": "2026-04-25T10:10:00Z"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/notifications/{id}/read": {
+      "patch": {
+        "summary": "Mark Notification as Read",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Notification"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "Notifikasi ditandai sudah dibaca"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/dashboard": {
+      "get": {
+        "summary": "Get Dashboard Summary",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total_customers": {
+                      "type": "integer"
+                    },
+                    "total_drivers": {
+                      "type": "integer"
+                    },
+                    "orders_today": {
+                      "type": "integer"
+                    },
+                    "active_orders": {
+                      "type": "object",
+                      "properties": {
+                        "pending": {
+                          "type": "integer"
+                        },
+                        "accepted": {
+                          "type": "integer"
+                        },
+                        "on_going": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "pending",
+                        "accepted",
+                        "on_going"
+                      ]
+                    },
+                    "last_updated_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "total_customers",
+                    "total_drivers",
+                    "orders_today",
+                    "active_orders",
+                    "last_updated_at"
+                  ]
+                },
+                "example": {
+                  "total_customers": 1200,
+                  "total_drivers": 300,
+                  "orders_today": 450,
+                  "active_orders": {
+                    "pending": 20,
+                    "accepted": 30,
+                    "on_going": 50
+                  },
+                  "last_updated_at": "2026-04-25T10:00:00Z"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/monitoring": {
+      "get": {
+        "summary": "Get Monitoring Data",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "drivers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "driver_id": {
+                            "type": "string"
+                          },
+                          "lat": {
+                            "type": "number"
+                          },
+                          "lng": {
+                            "type": "number"
+                          },
+                          "status": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "orders": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "order_id": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "drivers",
+                    "orders"
+                  ]
+                },
+                "example": {
+                  "drivers": [
+                    {
+                      "driver_id": "uuid",
+                      "lat": -6.2,
+                      "lng": 106.8,
+                      "status": "online"
+                    }
+                  ],
+                  "orders": [
+                    {
+                      "order_id": "uuid",
+                      "status": "on-going"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/drivers": {
+      "get": {
+        "summary": "List Driver",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "online|offline",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "verification",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "approved|pending|rejected",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "driver_id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "verification_status": {
+                        "type": "string"
+                      },
+                      "rating": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "driver_id": "uuid",
+                  "name": "Joko",
+                  "status": "online",
+                  "verification_status": "approved",
+                  "rating": 4.9
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/drivers/{id}/verify": {
+      "patch": {
+        "summary": "Verify Driver",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "status",
+                  "reason"
+                ]
+              },
+              "example": {
+                "status": "approved",
+                "reason": "-"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "driver_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "driver_id",
+                    "status",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "driver_id": "uuid",
+                  "status": "approved",
+                  "message": "Driver berhasil diverifikasi"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/drivers/{id}/toggle": {
+      "patch": {
+        "summary": "Toggle Driver Status",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "example": {
+                "status": "suspended"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "driver_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "driver_id",
+                    "status",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "driver_id": "uuid",
+                  "status": "suspended",
+                  "message": "Driver dinonaktifkan"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/orders": {
+      "get": {
+        "summary": "List Orders",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "pending|accepted|on-going|completed|cancelled",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "order_id": {
+                        "type": "string"
+                      },
+                      "order_code": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "customer_name": {
+                        "type": "string"
+                      },
+                      "driver_name": {
+                        "type": "string"
+                      },
+                      "price": {
+                        "type": "integer"
+                      },
+                      "date": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "order_id": "uuid",
+                  "order_code": "ORD123",
+                  "status": "completed",
+                  "customer_name": "Budi",
+                  "driver_name": "Joko",
+                  "price": 20000,
+                  "date": "2026-04-25"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/orders/{id}": {
+      "get": {
+        "summary": "Get Order Detail (Admin)",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "order_code": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "customer": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name"
+                      ]
+                    },
+                    "driver": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name"
+                      ]
+                    },
+                    "pickup": {
+                      "type": "string"
+                    },
+                    "destination": {
+                      "type": "string"
+                    },
+                    "price": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "order_code",
+                    "status",
+                    "customer",
+                    "driver",
+                    "pickup",
+                    "destination",
+                    "price"
+                  ]
+                },
+                "example": {
+                  "order_code": "ORD123",
+                  "status": "completed",
+                  "customer": {
+                    "name": "Budi"
+                  },
+                  "driver": {
+                    "name": "Joko"
+                  },
+                  "pickup": "Jl. A",
+                  "destination": "Jl. B",
+                  "price": 20000
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/analytics": {
+      "get": {
+        "summary": "Get Analytics Summary",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "range",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "daily|weekly|monthly",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total_orders": {
+                      "type": "integer"
+                    },
+                    "total_revenue": {
+                      "type": "integer"
+                    },
+                    "completion_rate": {
+                      "type": "integer"
+                    },
+                    "cancellation_rate": {
+                      "type": "integer"
+                    },
+                    "active_drivers": {
+                      "type": "integer"
+                    },
+                    "active_customers": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "total_orders",
+                    "total_revenue",
+                    "completion_rate",
+                    "cancellation_rate",
+                    "active_drivers",
+                    "active_customers"
+                  ]
+                },
+                "example": {
+                  "total_orders": 1000,
+                  "total_revenue": 20000000,
+                  "completion_rate": 95,
+                  "cancellation_rate": 5,
+                  "active_drivers": 150,
+                  "active_customers": 800
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/promos": {
+      "post": {
+        "summary": "Create Promo",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "discount_percent": {
+                    "type": "integer"
+                  },
+                  "max_discount": {
+                    "type": "integer"
+                  },
+                  "start_date": {
+                    "type": "string"
+                  },
+                  "end_date": {
+                    "type": "string"
+                  },
+                  "quota": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "title",
+                  "discount_percent",
+                  "max_discount",
+                  "start_date",
+                  "end_date",
+                  "quota"
+                ]
+              },
+              "example": {
+                "title": "Promo Lebaran",
+                "discount_percent": 50,
+                "max_discount": 10000,
+                "start_date": "2026-04-25",
+                "end_date": "2026-05-01",
+                "quota": 1000
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "promo_id": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "promo_id",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "promo_id": "uuid",
+                  "message": "Promo berhasil dibuat"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/reports": {
+      "get": {
+        "summary": "List User Reports",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "report_id": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "created_at": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "report_id": "uuid",
+                  "type": "driver",
+                  "status": "pending",
+                  "created_at": "2026-04-25"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/reports/{id}/respond": {
+      "post": {
+        "summary": "Respond to Report",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "action",
+                  "message"
+                ]
+              },
+              "example": {
+                "action": "penalty",
+                "message": "Driver diberi peringatan"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "report_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "report_id",
+                    "status"
+                  ]
+                },
+                "example": {
+                  "report_id": "uuid",
+                  "status": "resolved"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/withdrawals": {
+      "get": {
+        "summary": "List Withdrawal Requests",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "withdraw_id": {
+                        "type": "string"
+                      },
+                      "driver_name": {
+                        "type": "string"
+                      },
+                      "amount": {
+                        "type": "integer"
+                      },
+                      "status": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "withdraw_id": "uuid",
+                  "driver_name": "Joko",
+                  "amount": 100000,
+                  "status": "pending"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/withdrawals/{id}/process": {
+      "post": {
+        "summary": "Process Withdrawal",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "example": {
+                "status": "approved"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "withdraw_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "withdraw_id",
+                    "status",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "withdraw_id": "uuid",
+                  "status": "approved",
+                  "message": "Penarikan diproses"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/messages": {
+      "get": {
+        "summary": "List Admin Messages",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "message_id": {
+                        "type": "string"
+                      },
+                      "sender": {
+                        "type": "string"
+                      },
+                      "preview": {
+                        "type": "string"
+                      },
+                      "created_at": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "message_id": "uuid",
+                  "sender": "customer",
+                  "preview": "Saya ingin komplain...",
+                  "created_at": "2026-04-25"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "summary": "Send Admin Message",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string",
+              "default": "Bearer {{token}}"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "{{uuid}}",
+            "schema": {
+              "type": "string",
+              "default": "{{uuid}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "user_id": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "user_id",
+                  "message"
+                ]
+              },
+              "example": {
+                "user_id": "uuid",
+                "message": "Terima kasih, kami akan cek"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sent": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "sent"
+                  ]
+                },
+                "example": {
+                  "sent": true
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "responses": {},
+    "securitySchemes": {}
+  },
+  "servers": [],
+  "security": []
+}

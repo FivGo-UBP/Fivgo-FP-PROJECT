@@ -1,0 +1,323 @@
+ion-content {
+  --background: #e6ebf2; // Match the light blue/gray background
+}
+
+.header-toolbar {
+  --background: #233b81; // Match the dark blue in screenshot
+  --color: #ffffff;
+  
+  ion-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding-inline-start: 16px;
+  }
+}
+
+.search-container {
+  padding: 16px;
+  background-color: #e6ebf2;
+  
+  .custom-searchbar {
+    --background: #ffffff;
+    --box-shadow: none;
+    --border-radius: 8px;
+    padding: 0;
+    --icon-color: #1a1a1a;
+    --clear-button-color: #1a1a1a;
+    --placeholder-color: #666666;
+    --placeholder-font-weight: 400;
+  }
+}
+
+.filter-container {
+  display: flex;
+  justify-content: center;
+  padding: 0 16px;
+  gap: 24px;
+  background-color: #e6ebf2;
+
+  .filter-chip {
+    --background: #233b81;
+    --color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin: 0;
+    height: 32px;
+    padding: 0 12px;
+    
+    ion-label {
+      margin: 0;
+    }
+
+    ion-icon {
+      font-size: 0.9rem;
+      margin-left: 4px;
+      color: #ffffff;
+    }
+
+    &.chip-active {
+      --background: #1a2a5e; // slightly darker when active
+    }
+  }
+}
+
+// Popover Styles
+.popover-list {
+  padding: 6px 0;
+  min-width: 160px;
+
+  .popover-item {
+    --min-height: 44px;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --background: transparent;
+
+    ion-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1e293b;
+    }
+
+    .check-icon { 
+      font-size: 16px; 
+      color: #233b81; 
+    }
+
+    &.item-active {
+      --background: #e6ebf2;
+      ion-label { color: #233b81; font-weight: 700; }
+    }
+
+    .dot-badge {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 8px;
+      flex-shrink: 0;
+      &.dot-green { background: #22c55e; }
+      &.dot-red   { background: #ef4444; }
+    }
+  }
+
+  .reset-item ion-label {
+    font-size: 13px;
+    color: #94a3b8;
+    font-weight: 500;
+  }
+}
+
+.empty-state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  margin-top: 40px;
+  text-align: center;
+
+  .empty-image {
+    width: 100%;
+    max-width: 300px;
+    margin-bottom: 24px;
+    border-radius: 16px;
+  }
+
+  .empty-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 8px 0;
+  }
+
+  .empty-subtitle {
+    font-size: 0.85rem;
+    color: #333333;
+    line-height: 1.4;
+    margin: 0;
+  }
+}
+
+// ------------------------------------
+// Trip List Styles (Matching Design)
+// ------------------------------------
+
+.skeleton-list {
+  padding: 16px;
+  .skeleton-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: none;
+    .sk-row {
+      height: 20px;
+      margin-bottom: 12px;
+      border-radius: 4px;
+    }
+  }
+}
+
+.date-group {
+  padding: 16px;
+  padding-bottom: 0;
+}
+
+.trip-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+
+    .vehicle-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .vehicle-icon-box {
+        width: 64px;
+        height: 48px;
+        background-color: #ffeed6;
+        border-radius: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+
+        img {
+          width: 130%;
+          height: 130%;
+          object-fit: contain;
+        }
+
+        .car-icon {
+          font-size: 20px;
+          color: #d97706; // Orange color
+        }
+      }
+
+      .vehicle-text {
+        .vehicle-title {
+          font-size: 15px;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 0 0 4px 0;
+        }
+        .vehicle-datetime {
+          font-size: 11px;
+          color: #64748b;
+          margin: 0;
+        }
+      }
+    }
+
+    .price-info {
+      text-align: right;
+
+      .trip-price {
+        font-size: 13px;
+        font-weight: 500;
+        color: #475569;
+        margin: 0 0 4px 0;
+      }
+      .trip-status {
+        font-size: 11px;
+        font-weight: 600;
+        margin: 0;
+
+        &.status-selesai {
+          color: #22c55e;
+        }
+        &.status-dibatalkan {
+          color: #ef4444;
+        }
+      }
+    }
+  }
+
+  .route-section {
+    position: relative;
+    padding-left: 8px;
+
+    .route-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      position: relative;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .route-icon-wrapper {
+        width: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-right: 12px;
+        position: relative;
+
+        .hollow-circle {
+          width: 10px;
+          height: 10px;
+          border: 1.5px solid #f59e0b; // Orange outline
+          border-radius: 50%;
+          background: #ffffff;
+          z-index: 2;
+        }
+
+        .solid-pin {
+          font-size: 14px;
+          color: #1e3a8a; // Dark blue pin
+          z-index: 2;
+        }
+
+        .vertical-line {
+          position: absolute;
+          top: 10px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 1px;
+          height: 30px; // Connects circle to pin
+          background-color: #94a3b8;
+          z-index: 1;
+        }
+      }
+
+      .route-content {
+        flex: 1;
+        margin-top: -2px;
+
+        .route-label {
+          font-size: 12px;
+          font-weight: 700;
+          color: #1e293b;
+          display: block;
+          margin-bottom: 4px;
+        }
+
+        .route-address {
+          font-size: 11px;
+          color: #475569;
+          margin: 0;
+          line-height: 1.4;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+  }
+}

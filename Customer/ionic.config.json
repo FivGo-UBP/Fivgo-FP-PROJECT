@@ -1,0 +1,7 @@
+{
+  "name": "FivGo",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

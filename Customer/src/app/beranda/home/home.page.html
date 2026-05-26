@@ -1,0 +1,53 @@
+<ion-content [fullscreen]="true" class="bg-white">
+  <div class="header-section">
+    <div class="search-row">
+      <ion-searchbar readonly="true" routerLink="/cari-lokasi" class="custom-search" searchIcon="undefined" [placeholder]="t('home.search')"></ion-searchbar>
+      <div class="profile-circle" routerLink="/kelola-profile" style="overflow: hidden;">
+        <img *ngIf="user?.photo" [src]="user?.photo" style="width: 100%; height: 100%; object-fit: cover;" referrerpolicy="no-referrer" />
+      </div>
+    </div>
+  </div>
+
+  <div class="content-section">
+    <!-- Top Large Banner -->
+    <div class="grey-card promo-banner" style="margin-bottom: 20px;">
+      <img src="assets/beranda poster.png" alt="Promo Utama" />
+    </div>
+
+    <div class="top-cards-row">
+      <div class="service-card" [routerLink]="['/prioritas-kendaraan']" [queryParams]="{ vehicle: 'motor' }">
+        <div class="img-container">
+          <img src="assets/motor.png" alt="Motor" />
+        </div>
+        <p class="service-label">{{ t('activity.vehicle.motor') | titlecase }}</p>
+      </div>
+      <div class="service-card" [routerLink]="['/prioritas-kendaraan']" [queryParams]="{ vehicle: 'mobil' }">
+        <div class="img-container">
+          <img src="assets/mobil.png" alt="Mobil" />
+        </div>
+        <p class="service-label">{{ t('activity.vehicle.car') | titlecase }}</p>
+      </div>
+    </div>
+
+    <!-- Edukasi & keamanan -->
+    <h3 class="section-title">{{ t('home.education') }}</h3>
+    <div class="grey-card box-large">
+      <img src="https://i.pinimg.com/736x/e0/3b/81/e03b8158a61555aa01de34320d898eda.jpg" alt="Foto Edukasi" />
+    </div>
+
+    <!-- promosi -->
+    <h3 class="section-title">{{ t('home.promotion') }}</h3>
+    <div class="scroll-container">
+      <div class="grey-card box-medium">
+        <img src="https://i.pinimg.com/736x/51/7e/8e/517e8e74a8cb89bbba898401941a53da.jpg" alt="Foto Promosi 1" />
+      </div>
+      <div class="grey-card box-medium">
+        <img src="https://i.pinimg.com/736x/51/a1/ce/51a1ce5143f27103ba293728bae17cc6.jpg" alt="Foto Promosi 2" />
+      </div>
+      <div class="grey-card box-medium">
+        <img src="https://i.pinimg.com/736x/a7/21/f1/a721f122317f41415d31812539214762.jpg" alt="Foto Promosi 3" />
+      </div>
+    </div>
+  </div>
+</ion-content>
+

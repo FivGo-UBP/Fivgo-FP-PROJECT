@@ -1,0 +1,43 @@
+<ion-header class="ion-no-border">
+  <div class="header-section">
+    <h1 class="header-title">Chat</h1>
+    <ion-segment [(ngModel)]="segmentValue" class="custom-segment" mode="md">
+      <ion-segment-button value="chat">
+        <ion-label>Chat</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="notifikasi">
+        <ion-label>Notifikasi</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
+</ion-header>
+
+<ion-content class="bg-light">
+  <!-- Tab: Chat -->
+  <div *ngIf="segmentValue === 'chat'">
+    <div class="search-container">
+      <ion-searchbar class="custom-searchbar" animated="true" placeholder="Cari pesan..." mode="ios"></ion-searchbar>
+    </div>
+
+    <!-- Empty State Chat -->
+    <div class="empty-state-container">
+      <div class="empty-icon-wrapper">
+        <ion-icon name="chatbubbles-outline" class="empty-icon"></ion-icon>
+      </div>
+      <h2 class="empty-title">Belum ada Pesan</h2>
+      <p class="empty-subtitle">Pesan masuk dan info aplikasi ada di sini</p>
+    </div>
+  </div>
+
+  <!-- Tab: Notifikasi -->
+  <div *ngIf="segmentValue === 'notifikasi'">
+    <!-- Empty State Notifikasi -->
+    <div class="empty-state-container">
+      <div class="empty-icon-wrapper">
+        <ion-icon name="notifications-outline" class="empty-icon"></ion-icon>
+      </div>
+      <h2 class="empty-title">Belum ada Notifikasi</h2>
+      <p class="empty-subtitle">Notifikasi dan info aplikasi ada di sini</p>
+    </div>
+  </div>
+</ion-content>
