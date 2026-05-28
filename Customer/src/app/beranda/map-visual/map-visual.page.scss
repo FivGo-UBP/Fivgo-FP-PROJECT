@@ -72,43 +72,90 @@ ion-content.transparent-content {
   }
 }
 
-/* Modal 1: Bottom Sheet Styling */
-ion-modal.custom-bottom-sheet {
-  --background: transparent;
+/* Custom Vehicle Bottom Sheet */
+.vehicle-sheet-wrap {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  max-height: 60vh;
+  border-radius: 20px 20px 0 0;
+  background: white;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.vehicle-sheet-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.vehicle-sheet-footer {
+  flex-shrink: 0;
+  padding: 10px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+  background: white;
+  border-top: 1px solid #f0f0f0;
+}
+
+.sheet-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-top: 12px;
+  margin-bottom: 24px;
+  position: relative;
   
-  &::part(content) {
-    background: white;
-    border-radius: 20px 20px 0 0;
-    box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
+  .modal-handle {
+    width: 40px;
+    height: 4px;
+    background: #111;
+    border-radius: 4px;
+    margin: 0 auto 20px;
+    align-self: center;
+  }
+  
+  .sheet-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #111;
+    margin: 0;
   }
 }
 
-.sheet-scroll-area {
-  --background: white;
-  --padding-top: 15px;
-  --padding-start: 20px;
-  --padding-end: 20px;
-}
-
 .vehicle-list {
+  padding-bottom: 20px;
+  
   .vehicle-item {
     display: flex;
     align-items: center;
-    padding: 12px;
+    padding: 14px 16px;
     border-radius: 12px;
-    margin-bottom: 10px;
-    transition: background 0.2s;
+    margin-bottom: 12px;
+    transition: all 0.2s;
     border: 1px solid transparent;
+    background: white;
 
     &.selected {
-      background: #f4f6fc;
-      border: 1px solid #dbe2f9;
+      background: #f4fff7;
+      border: 1.5px solid #28a745; /* Green border like Grab */
     }
 
     .v-img-container {
-      width: 60px;
-      height: 40px;
+      width: 50px;
+      height: 50px;
       margin-right: 15px;
+      flex-shrink: 0;
       img {
         width: 100%;
         height: 100%;
@@ -130,20 +177,35 @@ ion-modal.custom-bottom-sheet {
         color: #777;
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 6px;
         ion-icon {
-          font-size: 11px;
+          font-size: 13px;
+        }
+        .dot-separator {
+          font-size: 14px;
+          line-height: 1;
+        }
+      }
+      .v-note {
+        margin-top: 6px;
+        .note-badge {
+          font-size: 10px;
+          padding: 2px 6px;
+          border-radius: 4px;
+          border: 1px solid #ddd;
+          color: #555;
         }
       }
     }
 
-    .v-price {
+    .v-price-container {
       display: flex;
-      align-items: center;
+      flex-direction: column;
+      align-items: flex-end;
       gap: 5px;
       h4 {
         margin: 0;
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 700;
         color: #222;
       }
@@ -151,89 +213,79 @@ ion-modal.custom-bottom-sheet {
   }
 }
 
-.add-detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 0;
-  border-top: 1px solid #f0f0f0;
-  font-size: 13px;
-  font-weight: 600;
-  color: #444;
-  margin-bottom: 10px;
-  
-  ion-icon {
-    font-size: 20px;
-  }
-}
-
-/* Modal 2: Fixed Footer Overlay */
-ion-modal.footer-overlay-modal {
-  --height: 130px; /* Paksa tinggi modal agar tidak menutupi seluruh layar */
-  --width: 100%;
-  --backdrop-opacity: 0;
-  --z-index: 99999; /* Pastikan footer selalu di paling depan */
-  align-items: flex-end; /* Posisi di paling bawah */
-  pointer-events: none; /* Host modal tidak boleh memblokir sentuhan */
-  
-  &::part(backdrop) {
-    display: none;
-    pointer-events: none;
-  }
-  
-  &::part(content) {
-    pointer-events: auto; /* Hanya isi footer yang bisa disentuh/diklik */
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-}
-
-.page-footer {
+/* ───────────────────────────────────────────────────────────────── */
+/* FIXED ORDER FOOTER (di luar modal, selalu tampil di bawah layar) */
+/* ───────────────────────────────────────────────────────────────── */
+.fixed-order-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20001; /* Lebih tinggi dari z-index ion-modal (20000) */
   background: white;
-  padding: 10px 20px 20px;
-  width: 100%;
-  height: 130px;
-  box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
-  
-  .payment-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 0 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.15s ease;
+  padding: 12px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+}
 
-    &:active {
-      opacity: 0.7;
+.options-pill {
+  display: flex;
+  align-items: center;
+  background: #f5f6f8;
+  border-radius: 30px;
+  padding: 8px 16px;
+  margin-bottom: 16px;
+  height: 48px;
+
+  .pill-divider {
+    width: 1px;
+    height: 20px;
+    background: #ddd;
+    margin: 0 15px;
+  }
+
+  .pill-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+
+    &.payment-btn {
+      flex: 1;
+      justify-content: flex-start;
+      gap: 8px;
+      ion-icon {
+        font-size: 20px;
+        color: #1a73e8; /* Default Icon color */
+        background: #e8f0fe;
+        padding: 4px;
+        border-radius: 50%;
+      }
     }
 
-    .pay-method {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-      color: #333;
-      
+    &.promo-btn {
+      flex: 1;
+    }
+
+    &.more-btn {
+      width: 30px;
       ion-icon {
-        font-size: 22px;
+        font-size: 20px;
       }
     }
   }
+}
 
-  .btn-order {
-    --border-radius: 25px;
-    margin: 0;
-    font-weight: 700;
-    font-size: 16px;
-    text-transform: none;
-    letter-spacing: normal;
-    --box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
-  }
+.btn-order-main {
+  --border-radius: 25px;
+  margin: 0;
+  font-weight: 700;
+  font-size: 16px;
+  height: 52px;
+  text-transform: none;
+  --box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
 }
 
 ::ng-deep .mapboxgl-marker {
@@ -484,15 +536,16 @@ ion-modal.driver-notfound-modal {
 
   .back-btn-notfound {
     --border-radius: 25px;
+    --border-color: #ffcdd2;
+    --color: #e53935;
+    --background: #fff5f5;
+    --background-activated: #ffebee;
     width: 100%;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 15px;
     text-transform: none;
     letter-spacing: normal;
-    --color: #555;
-    margin-top: 12px; // Jarak terpisah dari tombol Coba Lagi
-    border-top: 1px solid #f0f0f0;
-    padding-top: 4px;
+    margin-top: 12px;
   }
 }
 
@@ -755,119 +808,161 @@ ion-modal.driver-found-sheet {
     margin: 0 auto 20px;
   }
 
-  .driver-profile-row {
+  .status-header {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    justify-content: space-between;
+    align-items: flex-start;
     margin-bottom: 20px;
 
-    .driver-avatar {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    .driver-info {
-      flex: 1;
-
-      .driver-name {
-        font-size: 17px;
+    .status-left {
+      .status-title {
+        font-size: 18px;
         font-weight: 800;
         color: #111;
-        margin: 0 0 4px;
+        margin: 0 0 6px;
       }
+      .status-location {
+        font-size: 14px;
+        color: #666;
+        margin: 0;
+        line-height: 1.4;
+      }
+    }
 
-      .driver-rating {
+    .status-right {
+      .eta-text {
+        font-size: 16px;
+        font-weight: 800;
+        color: #111;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  .driver-card {
+    border: 1px solid #E0E0E0;
+    border-radius: 16px;
+    padding: 16px;
+    background: #fff;
+    margin-bottom: 20px;
+
+    .driver-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .driver-images {
+        position: relative;
         display: flex;
-        align-items: center;
-        gap: 4px;
-        background: #f0f0f0;
-        padding: 4px 8px;
-        border-radius: 12px;
-        width: fit-content;
+        align-items: flex-end;
 
-        .rating-val {
-          font-size: 12px;
-          font-weight: 700;
-          color: #333;
+        .driver-photo {
+          width: 56px;
+          height: 56px;
+          border-radius: 50%;
+          object-fit: cover;
         }
 
-        .star-icon-gold {
-          color: #FFC107;
-          font-size: 12px;
+        .vehicle-icon-wrapper {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: #f5f5f5;
+          border: 2px solid white;
+          margin-left: -16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+
+          .vehicle-image {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+          }
+        }
+      }
+
+      .vehicle-details {
+        text-align: right;
+        .plate-number {
+          font-size: 22px;
+          font-weight: 800;
+          color: #111;
+          margin: 0 0 4px;
+          letter-spacing: 0.5px;
+        }
+        .vehicle-brand {
+          font-size: 14px;
+          color: #666;
+          margin: 0;
         }
       }
     }
 
-    .driver-actions {
-      display: flex;
-      gap: 12px;
+    .driver-card-middle {
+      margin-top: 16px;
 
-      .action-btn {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
+      .name-rating-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .name-rating-row {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+
+          .driver-name-rating {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+          }
+          .star-gold {
+            color: #FFC107;
+            font-size: 14px;
+          }
+        }
+
+        .driver-vehicle-type {
+          font-size: 13px;
+          color: #888;
+        }
+      }
+    }
+
+    .driver-card-bottom {
+      margin-top: 16px;
+
+      .chat-input-box {
         display: flex;
         align-items: center;
-        justify-content: center;
+        gap: 12px;
+        border: 1px solid #E0E0E0;
+        border-radius: 24px;
+        padding: 12px 16px;
+        background: #fff;
         cursor: pointer;
 
-        &.call-btn {
-          background: #FFE0B2;
-          color: #E65100;
+        .chat-icon {
+          font-size: 20px;
+          color: #555;
         }
-
-        &.chat-btn {
-          background: #C5CAE9;
-          color: #283593;
-        }
-
-        ion-icon {
-          font-size: 24px;
+        .chat-placeholder {
+          font-size: 14px;
+          color: #999;
         }
       }
     }
   }
 
-  .vehicle-info-grid {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 24px;
-
-    .info-box {
-      flex: 1;
-      background: #EAEAEA;
-      border-radius: 12px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-
-      .info-label {
-        font-size: 11px;
-        color: #555;
-        font-weight: 600;
-      }
-
-      .info-value {
-        font-size: 14px;
-        font-weight: 800;
-        color: #111;
-      }
-    }
-  }
-
-  .cancel-journey-btn {
+  .cancel-btn-visible {
     --border-radius: 20px;
-    --background: #FFCDD2;
-    --background-activated: #EF9A9A;
-    --color: #C62828;
-    height: 52px;
+    font-size: 14px;
     font-weight: 700;
-    font-size: 15px;
-    margin: 0;
-    --box-shadow: none;
+    margin: 8px 0 0 0;
+    text-transform: none;
+    letter-spacing: normal;
   }
 }
+

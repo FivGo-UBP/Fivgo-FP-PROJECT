@@ -115,6 +115,10 @@ const routes: Routes = [
     path: 'metode-pembayaran',
     loadChildren: () => import('./profile/metode-pembayaran/metode-pembayaran.module').then( m => m.MetodePembayaranPageModule)
   },
+  {
+    path: 'rating-driver',
+    loadChildren: () => import('./beranda/rating-driver/rating-driver.module').then( m => m.RatingDriverPageModule)
+  },
 ];
 
 @NgModule({

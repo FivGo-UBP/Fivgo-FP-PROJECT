@@ -63,73 +63,64 @@
 
 
 
-    <!-- Middle ETA Banner (Yellow) -->
-    <div class="tracking-middle-banner" *ngIf="!showInitialSuccessBanner">
-      <span *ngIf="!isDriverArrived && !isInJourney">Driver Anda akan tiba dalam <strong>{{ driverEtaText }}</strong></span>
-      <span *ngIf="isDriverArrived || isInJourney">Anda akan sampai di lokasi tujuan dalam <strong>{{ driverEtaText }}</strong></span>
-    </div>
-
   </ng-container>
 </ion-content>
 
-<!-- Modal 1: Bottom Sheet for Services (Bisa digeser) -->
-<ion-modal #vehicleModal [isOpen]="isVehicleModalOpen" [initialBreakpoint]="0.45" [breakpoints]="[0.3, 0.45, 0.8]" backdropBreakpoint="1" [backdropDismiss]="false" class="custom-bottom-sheet">
-  <ng-template>
-    <ion-content class="sheet-scroll-area">
-      <div class="vehicle-list">
-        <div class="vehicle-item" *ngFor="let v of vehicles" [class.selected]="v.type === selectedVehicle" (click)="selectVehicle(v.type)">
-          <div class="v-img-container">
-            <img [src]="v.image" [alt]="v.name">
-          </div>
-          <div class="v-details">
-            <h3>{{ v.name }}</h3>
-            <p>
-              <ng-container *ngIf="v.isLoading">Menghitung...</ng-container>
-              <ng-container *ngIf="!v.isLoading">{{ v.time }}</ng-container>
-              &nbsp;&bull;&nbsp; <ion-icon name="person"></ion-icon> {{ v.capacity }}
-            </p>
-          </div>
-          <div class="v-price">
-            <ion-spinner name="circles" *ngIf="v.isLoading" style="width: 20px; height: 20px; margin-right: 5px; color: #ffb347;"></ion-spinner>
-            <h4 *ngIf="!v.isLoading">{{ v.price }}</h4>
-          </div>
-        </div>
-      </div>
-      
-      <div class="add-detail-row" (click)="openNoteModal()">
-        <span *ngIf="!driverNote">Tambahkan Detail Penjemputan</span>
-        <span *ngIf="driverNote" class="has-note">{{ driverNote | slice:0:30 }}{{ driverNote.length > 30 ? '...' : '' }}</span>
-        <ion-icon name="add-circle" color="warning" *ngIf="!driverNote"></ion-icon>
-        <ion-icon name="create" color="warning" *ngIf="driverNote"></ion-icon>
-      </div>
-      
-      <div style="height: 130px;"></div>
-    </ion-content>
-  </ng-template>
-</ion-modal>
+<!-- ============================================================ -->
+<!-- CUSTOM VEHICLE BOTTOM SHEET (bukan ion-modal)               -->
+<!-- ============================================================ -->
+<div class="vehicle-sheet-wrap" *ngIf="isVehicleModalOpen && !isSearchingDriver && !isDriverFound">
 
-<!-- Modal 2: Fixed Footer (Selalu di depan, tidak bisa digeser) -->
-<ion-modal [isOpen]="isPageActive" [backdropDismiss]="false" class="footer-overlay-modal">
-  <ng-template>
-    <div class="page-footer">
-      <div class="payment-row" (click)="goToMetodePembayaran()">
-        <div class="pay-method">
-          <ion-icon [name]="selectedPayment === 'tunai' ? 'cash-outline' : 'card-outline'" color="primary"></ion-icon>
-          <span *ngIf="selectedPayment === 'tunai'">Tunai</span>
-          <span *ngIf="selectedPayment === 'nontunai'">Non Tunai : <strong>{{ selectedNonTunai }}</strong></span>
-          <span *ngIf="selectedPayment !== 'tunai' && selectedPayment !== 'nontunai'">Pilih Pembayaran</span>
+  <!-- Scrollable list area -->
+  <div class="vehicle-sheet-body">
+    <div class="vehicle-list" style="padding-top: 20px;">
+      <div class="vehicle-item" *ngFor="let v of vehicles" [class.selected]="v.type === selectedVehicle" (click)="selectVehicle(v.type)">
+        <div class="v-img-container">
+          <img [src]="v.image" [alt]="v.name">
         </div>
-        <ion-icon name="chevron-down-outline"></ion-icon>
+        <div class="v-details">
+          <h3>{{ v.name }}</h3>
+          <p>
+            <ng-container *ngIf="v.isLoading">Menghitung...</ng-container>
+            <ng-container *ngIf="!v.isLoading">{{ v.time }}</ng-container>
+            <span class="dot-separator">&bull;</span>
+            <ion-icon name="person"></ion-icon> {{ v.capacity }}
+          </p>
+          <div class="v-note" *ngIf="v.type === 'mobil'">
+            <span class="note-badge">4 Kursi</span>
+          </div>
+        </div>
+        <div class="v-price-container">
+          <ion-spinner name="circles" *ngIf="v.isLoading" style="width: 20px; height: 20px; color: #ffb347;"></ion-spinner>
+          <h4 *ngIf="!v.isLoading">{{ v.price }}</h4>
+        </div>
       </div>
-      
-      <ion-button expand="block" color="warning" class="btn-order" (click)="startSearch()">
-        Pesan Sekarang
-      </ion-button>
     </div>
-  </ng-template>
-</ion-modal>
+  </div>
 
-<!-- Modal 3: Catatan Pengemudi -->
+  <!-- Sticky footer: payment pill + order button -->
+  <div class="vehicle-sheet-footer">
+    <div class="options-pill">
+      <div class="pill-btn payment-btn" (click)="goToMetodePembayaran()">
+        <ion-icon [name]="selectedPayment === 'tunai' ? 'cash-outline' : 'card-outline'"></ion-icon>
+        <span>{{ selectedPayment === 'tunai' ? 'Tunai' : selectedNonTunai }}</span>
+      </div>
+      <div class="pill-divider"></div>
+      <div class="pill-btn promo-btn">
+        <span>Promo</span>
+      </div>
+      <div class="pill-divider"></div>
+      <div class="pill-btn more-btn" (click)="openNoteModal()">
+        <ion-icon name="ellipsis-horizontal" [color]="driverNote ? 'warning' : 'medium'"></ion-icon>
+      </div>
+    </div>
+    <ion-button expand="block" color="warning" class="btn-order-main" (click)="startSearch()">
+      Pesan Sekarang
+    </ion-button>
+  </div>
+</div>
+
+<!-- Modal 2: Catatan Pengemudi -->
 <ion-modal [isOpen]="isNoteModalOpen" (didDismiss)="closeNoteModal()" [initialBreakpoint]="0.45" [breakpoints]="[0, 0.45, 0.7]" class="note-modal" backdropBreakpoint="1">
   <ng-template>
     <ion-content class="ion-padding">
@@ -156,12 +147,10 @@
   </ng-template>
 </ion-modal>
 
-<!-- Modal 4: Mencari Driver -->
+<!-- Modal 3: Mencari Driver -->
 <ion-modal [isOpen]="isSearchingDriver" [backdropDismiss]="false" class="searching-driver-modal">
   <ng-template>
     <div class="searching-container">
-      <div class="modal-handle"></div>
-
       <h2 class="searching-title">Mencari Driver....</h2>
       <p class="searching-subtitle">Mohon tunggu sebentar, kami sedang mencarikan driver terdekat untukmu</p>
 
@@ -185,15 +174,13 @@
         </span>
       </div>
 
-      <ion-button expand="block" fill="outline" color="danger" class="cancel-search-btn" (click)="cancelSearch()">
-        <ion-icon name="close-outline" slot="start"></ion-icon>
-        Batalkan Pesanan
-      </ion-button>
+
+
     </div>
   </ng-template>
 </ion-modal>
 
-<!-- Modal 5: Driver Tidak Ditemukan -->
+<!-- Modal 4: Driver Tidak Ditemukan -->
 <ion-modal [isOpen]="isDriverNotFound" [backdropDismiss]="false" class="driver-notfound-modal">
   <ng-template>
     <div class="notfound-container">
@@ -205,8 +192,9 @@
         Coba Lagi
       </ion-button>
 
-      <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0; width: 100%;">
-        <ion-button expand="block" fill="clear" class="back-btn-notfound" (click)="cancelOrder()">
+      <div style="margin-top: 16px; width: 100%;">
+        <ion-button expand="block" fill="outline" color="danger" class="back-btn-notfound" (click)="cancelOrder()">
+          <ion-icon name="close-outline" slot="start"></ion-icon>
           Batal
         </ion-button>
       </div>
@@ -214,50 +202,53 @@
   </ng-template>
 </ion-modal>
 
-<!-- Modal 6: Driver Ditemukan (Bottom Sheet Konsisten) -->
-<ion-modal [isOpen]="isDriverFound" [handle]="false" [initialBreakpoint]="0.40" [breakpoints]="[0.40]" backdropBreakpoint="1" [backdropDismiss]="false" class="driver-found-sheet">
+<!-- Modal 5: Driver Ditemukan (Bottom Sheet Konsisten) -->
+<ion-modal [isOpen]="isDriverFound" [handle]="false" [initialBreakpoint]="0.45" [breakpoints]="[0.45]" backdropBreakpoint="1" [backdropDismiss]="false" class="driver-found-sheet">
   <ng-template>
     <div class="driver-found-container" *ngIf="activeOrder">
-      <div class="modal-handle"></div>
-
-      <!-- Profil Driver -->
-      <div class="driver-profile-row">
-        <img [src]="getDriverPhoto()" alt="Driver" class="driver-avatar" />
-        <div class="driver-info">
-          <h2 class="driver-name">{{ getDriverName() }}</h2>
-          <div class="driver-rating">
-            <span class="rating-val">{{ getDriverRating() }}</span>
-            <ion-icon name="star" class="star-icon-gold"></ion-icon>
-          </div>
+      <!-- Status Header -->
+      <div class="status-header">
+        <div class="status-left">
+          <h2 class="status-title">Pengemudi dalam perjalanan</h2>
+          <p class="status-location">{{ jemput || 'Menunggu lokasi...' }}</p>
         </div>
-        <div class="driver-actions">
-          <div class="action-btn call-btn">
-            <ion-icon name="call"></ion-icon>
-          </div>
-          <div class="action-btn chat-btn">
-            <ion-icon name="chatbox-ellipses"></ion-icon>
-          </div>
+        <div class="status-right">
+          <span class="eta-text">{{ driverEtaText || '3 mnt' }}</span>
         </div>
       </div>
 
-      <!-- Info Kendaraan -->
-      <div class="vehicle-info-grid">
-        <div class="info-box">
-          <span class="info-label">Plat Nomor</span>
-          <span class="info-value">{{ getDriverPlate() }}</span>
+      <!-- Driver Card -->
+      <div class="driver-card">
+        <div class="driver-card-top">
+          <div class="driver-images">
+            <img [src]="getDriverPhoto()" alt="Driver" class="driver-photo" />
+          </div>
+          <div class="vehicle-details">
+            <h2 class="plate-number">{{ getDriverPlate() }}</h2>
+            <p class="vehicle-brand">{{ getDriverVehicleBrand() | titlecase }}</p>
+          </div>
         </div>
-        <div class="info-box">
-          <span class="info-label">Kendaraan</span>
-          <span class="info-value">{{ getDriverVehicle() | titlecase }}</span>
+        
+        <div class="driver-card-middle">
+          <div class="name-rating-group">
+            <div class="name-rating-row">
+              <span class="driver-name-rating">{{ getDriverName() }} &bull; {{ getDriverRating() }}</span>
+              <ion-icon name="star" class="star-gold"></ion-icon>
+            </div>
+            <span class="driver-vehicle-type">{{ getDriverVehicle() | titlecase }}</span>
+          </div>
+        </div>
+
+        <div class="driver-card-bottom">
+          <div class="chat-input-box" (click)="goToChat()">
+            <ion-icon name="chatbubble-ellipses-outline" class="chat-icon"></ion-icon>
+            <span class="chat-placeholder">Pesan baru untukmu</span>
+          </div>
         </div>
       </div>
 
       <!-- Cancel Button -->
-      <ion-button
-        expand="block"
-        class="cancel-journey-btn"
-        (click)="cancelOrder()">
-        <ion-icon name="close-outline" slot="start"></ion-icon>
+      <ion-button expand="block" fill="outline" color="danger" class="cancel-btn-visible" (click)="cancelOrder()">
         Batalkan Pesanan
       </ion-button>
     </div>

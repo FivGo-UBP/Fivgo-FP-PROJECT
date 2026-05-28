@@ -58,6 +58,14 @@ const routes: Routes = [
   {
     path: 'ganti-nomor',
     loadChildren: () => import('./profile/ganti-nomor/ganti-nomor.module').then( m => m.GantiNomorPageModule)
+  },
+  {
+    path: 'order-summary/:id',
+    loadChildren: () => import('./beranda/order-summary/order-summary.module').then( m => m.OrderSummaryPageModule)
+  },
+  {
+    path: 'transaction-detail/:id',
+    loadChildren: () => import('./beranda/transaction-detail/transaction-detail.module').then( m => m.TransactionDetailPageModule)
   }
 ];
 

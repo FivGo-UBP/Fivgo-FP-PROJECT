@@ -355,13 +355,13 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
         this.isCompleting = false;
         this.stopPolling();
         this.showToast('Perjalanan selesai! Terima kasih.', 'success');
-        setTimeout(() => this.router.navigate(['/tabs/beranda']), 2000);
+        setTimeout(() => this.router.navigate(['/order-summary', this.order!.id]), 2000);
       },
       error: () => {
         this.isCompleting = false;
         this.stopPolling();
         this.showToast('Perjalanan selesai! Terima kasih.', 'success');
-        setTimeout(() => this.router.navigate(['/tabs/beranda']), 2000);
+        setTimeout(() => this.router.navigate(['/order-summary', this.order!.id]), 2000);
       }
     });
   }
@@ -408,5 +408,11 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
   async showToast(message: string, color: string) {
     const toast = await this.toastCtrl.create({ message, duration: 2500, color, position: 'top' });
     await toast.present();
+  }
+
+  goToChat() {
+    if (this.orderId) {
+      this.router.navigate(['/tabs/pesan'], { queryParams: { order_id: this.orderId } });
+    }
   }
 }

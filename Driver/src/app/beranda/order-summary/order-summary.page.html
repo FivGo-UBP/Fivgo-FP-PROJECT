@@ -1,0 +1,87 @@
+<ion-content color="light" class="ion-padding-bottom">
+  <div class="top-header">
+    <div class="date-time">{{ order?.created_at | date:'dd MMM yyyy, HH:mm' }}</div>
+  </div>
+
+  <div class="summary-container" *ngIf="order && !isLoading">
+    
+    <!-- Card 1: Income Summary -->
+    <div class="card summary-card">
+      <div class="payment-method">
+        <span class="label">Dibayar Pakai</span>
+        <div class="method">
+          <img *ngIf="order.payment_method === 'dana'" src="assets/dana-icon.png" alt="Dana" class="dana-icon" />
+          <ion-icon *ngIf="order.payment_method !== 'dana'" name="cash-outline" color="warning"></ion-icon>
+          <span class="method-text">{{ order.payment_method === 'tunai' ? 'Tunai' : 'Non Tunai : ' + (order.payment_method | titlecase) }}</span>
+        </div>
+      </div>
+
+      <div class="income-box">
+        <span class="income-label">Saldo Masuk</span>
+        <span class="income-amount">{{ formatPrice(order.final_price) }}</span>
+      </div>
+
+      <div class="breakdown">
+        <div class="row">
+          <span class="col-label">Total Tarif</span>
+          <span class="col-val">{{ formatPrice(order.final_price) }}</span>
+        </div>
+        <div class="row">
+          <span class="col-label">Komisi FivGO</span>
+          <!-- Assuming 10% commission for design parity -->
+          <span class="col-val red">-{{ formatPrice(order.final_price ? order.final_price * 0.1 : 0) }}</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="total-row">
+        <span class="total-label">Pendapatan</span>
+        <span class="total-val">{{ formatPrice(order.final_price ? order.final_price * 0.9 : 0) }}</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="detail-link" (click)="goToDetail()">
+        <span>lihat detail</span>
+        <ion-icon name="chevron-forward"></ion-icon>
+      </div>
+    </div>
+
+    <!-- Card 2: Rating -->
+    <div class="card rating-card">
+      <h3 class="card-title">Gimana Pelanggannya?</h3>
+      <p class="card-subtitle">Rating ini tidak berdampak pada akun Anda</p>
+      
+      <div class="stars">
+        <ion-icon 
+          *ngFor="let star of [1,2,3,4,5]" 
+          [name]="rating >= star ? 'star' : 'star'"
+          [class.filled]="rating >= star"
+          (click)="setRating(star)">
+        </ion-icon>
+      </div>
+    </div>
+
+    <!-- Card 3: Review -->
+    <div class="card review-card">
+      <h3 class="card-title text-left">Ada cerita lain tentang penumpang ini?</h3>
+      <textarea 
+        class="review-textarea" 
+        placeholder="Tulis detailnya di sini, misal: Penumpang ramah banget atau ngasih tip lebih..."
+        [(ngModel)]="review">
+      </textarea>
+    </div>
+
+  </div>
+
+  <div *ngIf="isLoading" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border" style="background: #eaedf2;">
+  <div class="ion-padding">
+    <ion-button expand="block" class="selesai-btn" (click)="finish()">selesai</ion-button>
+  </div>
+</ion-footer>

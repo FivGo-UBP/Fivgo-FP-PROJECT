@@ -1,0 +1,63 @@
+<ion-content class="rating-content">
+  <!-- Orange Header Background -->
+  <div class="orange-header">
+    <h2 class="header-title">Bagaimana Perjalanan Mu?</h2>
+    <p class="header-subtitle">Rating kamu sangat membantu meningkatkan layanan kami.</p>
+  </div>
+
+  <div class="cards-container">
+    <!-- Card 1: Driver Info -->
+    <div class="rating-card">
+      <div class="invoice-row">
+        <!-- Replaced invoice with just date as per user comment -->
+        <span class="date-text">{{ orderDate }}</span>
+      </div>
+      
+      <div class="driver-profile-row">
+        <img [src]="driverPhoto" class="driver-avatar" alt="Driver">
+        <h3 class="driver-name">{{ driverName }}</h3>
+      </div>
+      
+      <div class="vehicle-pill">
+        {{ vehicleInfo }}
+      </div>
+    </div>
+
+    <!-- Card 2: Star Rating -->
+    <div class="rating-card star-card">
+      <h3 class="card-title">Nilai driver, yuk!</h3>
+      <div class="stars-container">
+        <ion-icon 
+          name="star" 
+          *ngFor="let i of [1, 2, 3, 4, 5]" 
+          [class.active]="i <= currentRating"
+          (click)="setRating(i)">
+        </ion-icon>
+      </div>
+    </div>
+
+    <!-- Card 3: Review Text -->
+    <div class="rating-card review-card">
+      <h3 class="card-title">Tuliskan ulasanmu</h3>
+      <div class="textarea-container">
+        <textarea 
+          [(ngModel)]="reviewText" 
+          placeholder="Tuliskan komentar atau masukan untuk driver ... (Opsional)"
+          rows="4">
+        </textarea>
+      </div>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <div class="footer-container">
+    <ion-button 
+      expand="block" 
+      class="btn-selesai" 
+      (click)="submitRating()"
+      [disabled]="isSubmitting">
+      {{ isSubmitting ? 'Mengirim...' : 'selesai' }}
+    </ion-button>
+  </div>
+</ion-footer>

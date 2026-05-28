@@ -1,0 +1,171 @@
+ion-content.rating-content {
+  --background: #EAECEF;
+}
+
+.orange-header {
+  background-color: #F7931E;
+  padding: 40px 20px 80px 20px;
+  border-bottom-left-radius: 30px;
+  border-bottom-right-radius: 30px;
+  color: #fff;
+  
+  .header-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    color: #1a1a1a;
+  }
+  
+  .header-subtitle {
+    font-size: 14px;
+    margin: 0;
+    color: #333;
+    line-height: 1.4;
+  }
+}
+
+.cards-container {
+  margin-top: -50px;
+  padding: 0 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rating-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+
+  .invoice-row {
+    display: flex;
+    justify-content: flex-end;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #EAECEF;
+    margin-bottom: 16px;
+    
+    .date-text {
+      font-size: 13px;
+      color: #333;
+      font-weight: 500;
+    }
+  }
+
+  .driver-profile-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+
+    .driver-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 16px;
+      background: #f0f0f0;
+    }
+
+    .driver-name {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+  }
+
+  .vehicle-pill {
+    background: #F0F2F5;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+    text-align: center;
+    display: inline-block;
+    margin: 0 auto;
+    width: fit-content;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.star-card {
+  text-align: center;
+  padding: 24px 16px;
+
+  .card-title {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .stars-container {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+
+    ion-icon {
+      font-size: 40px;
+      color: #EAECEF;
+      transition: color 0.2s ease;
+
+      &.active {
+        color: #F7931E;
+      }
+    }
+  }
+}
+
+.review-card {
+  padding: 20px 16px;
+
+  .card-title {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .textarea-container {
+    background: #EAECEF;
+    border-radius: 12px;
+    padding: 12px;
+
+    textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: none;
+      font-size: 14px;
+      color: #333;
+      font-family: inherit;
+
+      &::placeholder {
+        color: #888;
+      }
+    }
+  }
+}
+
+ion-footer {
+  background: #EAECEF;
+  
+  .footer-container {
+    padding: 16px 20px;
+    background: #EAECEF;
+  }
+
+  .btn-selesai {
+    --background: #F7931E;
+    --background-activated: #e08316;
+    --border-radius: 25px;
+    --box-shadow: none;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: none;
+  }
+}

@@ -1,0 +1,236 @@
+ion-toolbar {
+  --background: #2b4085;
+  --color: white;
+}
+
+ion-content {
+  --background: #eaedf2;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.route-card {
+  .invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .invoice-text {
+      display: flex;
+      flex-direction: column;
+
+      .label {
+        font-size: 10px;
+        color: #666;
+        margin-bottom: 2px;
+      }
+      .value {
+        font-size: 12px;
+        font-weight: 600;
+        color: #333;
+      }
+    }
+
+    .status-badge {
+      background: #2dd36f;
+      color: white;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 12px;
+    }
+  }
+
+  .divider {
+    height: 1px;
+    background: #eee;
+    margin: 12px 0;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    .stat-box {
+      flex: 1;
+      background: #e2e6ec;
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+
+      .stat-label {
+        font-size: 12px;
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .stat-val {
+        display: flex;
+        align-items: center;
+        font-size: 12px;
+        color: #444;
+
+        ion-icon {
+          margin-right: 6px;
+          font-size: 16px;
+        }
+      }
+    }
+  }
+
+  .route-timeline {
+    position: relative;
+    padding-left: 10px;
+    margin-bottom: 16px;
+
+    .timeline-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 2;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .timeline-icon {
+      margin-right: 12px;
+      margin-top: 2px;
+      background: white;
+
+      &.start {
+        width: 14px;
+        height: 14px;
+        border: 2px solid #ffc409;
+        border-radius: 50%;
+      }
+      &.end {
+        font-size: 18px;
+        margin-left: -2px; // adjust for icon size vs circle
+      }
+    }
+
+    .timeline-content {
+      .timeline-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 2px;
+      }
+      .timeline-address {
+        font-size: 11px;
+        color: #666;
+        line-height: 1.4;
+      }
+    }
+
+    .timeline-line {
+      position: absolute;
+      left: 16px;
+      top: 14px;
+      bottom: 24px;
+      width: 1px;
+      background: #ccc;
+      z-index: 1;
+    }
+  }
+
+  .date-footer {
+    text-align: center;
+    font-size: 10px;
+    color: #333;
+    font-weight: 600;
+    margin-top: 16px;
+  }
+}
+
+.income-card {
+  .income-header {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 16px;
+
+    .icon-wrap {
+      width: 24px;
+      height: 24px;
+      background: #fff4e5;
+      border-radius: 4px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 8px;
+
+      ion-icon {
+        font-size: 14px;
+      }
+    }
+  }
+
+  .breakdown {
+    .row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: #666;
+
+      .col-label {
+        color: #666;
+      }
+
+      .col-val {
+        font-weight: 700;
+        color: #333;
+
+        &.red {
+          color: #eb445a;
+        }
+      }
+    }
+  }
+
+  .divider {
+    height: 1px;
+    background: #eee;
+    margin: 12px 0;
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 700;
+    
+    .total-label {
+      color: #2b4085;
+      text-transform: uppercase;
+    }
+    
+    .total-val {
+      color: #2b4085;
+      font-size: 14px;
+    }
+  }
+}
+
+.bantuan-btn {
+  --background: #2b4085;
+  --color: white;
+  --border-radius: 20px;
+  font-weight: 600;
+  margin: 0;
+  text-transform: none;
+}

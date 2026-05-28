@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Chat;
 use App\Models\Order;
+use App\Events\MessageSent;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ChatController extends Controller
 {
     public function listMessages(Request $request, $order_id)
     {
-        // Ensure user is part of the order
         $order = Order::findOrFail($order_id);
         $userId = $request->user()->id;
 
@@ -33,8 +34,14 @@ class ChatController extends Controller
     {
         $validated = $request->validate([
             'order_id' => 'required|exists:orders,id',
-            'message' => 'required|string'
+            'message'  => 'nullable|string',
+            'image'    => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
         ]);
+
+        // Must have at least a message or an image
+        if (empty($validated['message']) && !$request->hasFile('image')) {
+            return response()->json(['message' => 'Message or image is required'], 422);
+        }
 
         $order = Order::findOrFail($validated['order_id']);
         $userId = $request->user()->id;
@@ -49,12 +56,22 @@ class ChatController extends Controller
             return response()->json(['message' => 'Driver not assigned yet'], 400);
         }
 
+        // Handle image upload
+        $imageUrl = null;
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('chats', 'public');
+            $imageUrl = asset('storage/' . $path);
+        }
+
         $chat = Chat::create([
-            'order_id' => $order->id,
-            'sender_id' => $userId,
+            'order_id'    => $order->id,
+            'sender_id'   => $userId,
             'receiver_id' => $receiverId,
-            'message' => $validated['message']
+            'message'     => $validated['message'] ?? '',
+            'image_url'   => $imageUrl,
         ]);
+
+        broadcast(new MessageSent($chat))->toOthers();
 
         return response()->json($chat, 201);
     }

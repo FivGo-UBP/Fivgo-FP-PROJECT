@@ -39,10 +39,7 @@
           </div>
           <!-- Action Icons (Phone + Chat) -->
           <div class="action-icons">
-            <div class="icon-btn">
-              <ion-icon name="call-outline"></ion-icon>
-            </div>
-            <div class="icon-btn">
+            <div class="icon-btn" (click)="goToChat()">
               <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
             </div>
           </div>
@@ -138,7 +135,6 @@
         <!-- ─── PHASE 3: started — Dalam perjalanan ──────────────────────── -->
         <div *ngIf="getPhase() === 'started'" class="action-section">
           <div class="phase-info journey-info">
-            <ion-icon name="car-outline" class="phase-icon journey-icon"></ion-icon>
             <span class="phase-text">Sedang dalam perjalanan...</span>
           </div>
           <ion-button

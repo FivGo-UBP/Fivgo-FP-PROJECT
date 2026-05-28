@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 declare var mapboxgl: any;
 import { environment } from '../../../environments/environment';
@@ -13,7 +13,6 @@ import { ToastController, NavController } from '@ionic/angular';
 })
 export class MapVisualPage implements OnInit, OnDestroy {
   @ViewChild('map', { static: false }) mapContainer!: ElementRef;
-  @ViewChild('vehicleModal', { static: false }) vehicleModal!: any;
   map!: any;
   
   startCoord = [106.827153, -6.175392];
@@ -36,7 +35,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
   isDriverNotFound: boolean = false;
   searchProgress: number = 0;
   private searchTimer: any = null;
-  private searchDuration: number = 45;
+  private searchDuration: number = 50;
   private searchElapsed: number = 0;
   private isNavigatingAway: boolean = false;
 
@@ -48,6 +47,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
   isInJourney: boolean = false;
   isOrderComplete: boolean = false;
   showInitialSuccessBanner: boolean = false;
+  isCheckingHistory: boolean = false;
   private orderPollingInterval: any = null;
   
   driverEtaText: string = 'Menghitung...';
@@ -65,7 +65,8 @@ export class MapVisualPage implements OnInit, OnDestroy {
     private router: Router,
     private orderService: OrderService,
     private toastCtrl: ToastController,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -102,11 +103,75 @@ export class MapVisualPage implements OnInit, OnDestroy {
   ionViewWillEnter() {
     if (this.isNavigatingAway) {
       this.isNavigatingAway = false;
+      this.isPageActive = true;
+      // Pulihkan tampilan modal saat kembali dari chat
+      if (this.activeOrder) {
+        if (this.activeOrder.status === 'accepted' || this.activeOrder.status === 'arrived' || this.activeOrder.status === 'started') {
+          this.isDriverFound = true;
+          if (this.activeOrder.status === 'arrived') this.isDriverArrived = true;
+          if (this.activeOrder.status === 'started') {
+            this.isDriverArrived = true;
+            this.isInJourney = true;
+          }
+        }
+      }
       return;
     }
 
     this.isPageActive = true;
-    this.isVehicleModalOpen = true;
+    
+    // Periksa apakah ada pesanan aktif saat halaman dimuat
+    this.orderService.getActiveOrder().subscribe({
+      next: (order) => {
+        if (order) {
+          if (order.status === 'pending') {
+            // Cek apakah order pending ini sudah kedaluwarsa (lebih dari 2 menit)
+            const orderTime = new Date(order.created_at).getTime();
+            const now = new Date().getTime();
+            const isStale = (now - orderTime) > 120000; // 2 menit
+
+            if (isStale) {
+              // Order lama yang nyangkut, otomatis batalkan
+              this.orderService.cancelOrder(order.id, 'Auto cancelled stale order').subscribe();
+              if (!this.isVehicleModalOpen) {
+                this.isVehicleModalOpen = true;
+                this.cdr.detectChanges();
+              }
+            } else {
+              // Order pending yang masih valid
+              this.activeOrder = order;
+              this.currentOrderId = order.id;
+              this.isVehicleModalOpen = false;
+              this.cdr.detectChanges();
+              
+              this.isSearchingDriver = true;
+              this.startProgressTimer();
+              this.startOrderPolling();
+            }
+          } else if (order.status === 'accepted' || order.status === 'arrived' || order.status === 'started') {
+            this.activeOrder = order;
+            this.currentOrderId = order.id;
+            this.isVehicleModalOpen = false;
+            this.cdr.detectChanges();
+            
+            this.isDriverFound = true;
+            if (order.status === 'arrived') this.isDriverArrived = true;
+            if (order.status === 'started') {
+              this.isDriverArrived = true;
+              this.isInJourney = true;
+            }
+            if (!this.orderPollingInterval) {
+              this.startOrderPolling();
+            }
+          }
+        } else {
+          // Modal will be opened in ionViewDidEnter
+        }
+      },
+      error: () => {
+        // Modal will be opened in ionViewDidEnter
+      }
+    });
 
     const savedPayment = localStorage.getItem('selectedPayment');
     const savedNonTunai = localStorage.getItem('selectedNonTunai');
@@ -115,6 +180,14 @@ export class MapVisualPage implements OnInit, OnDestroy {
   }
 
   ionViewDidEnter() {
+    // Memberikan sedikit waktu setelah transisi halaman selesai agar modal tidak crash
+    setTimeout(() => {
+      if (!this.currentOrderId && !this.isSearchingDriver && !this.isDriverFound) {
+        this.isVehicleModalOpen = true;
+        this.cdr.detectChanges();
+      }
+    }, 150);
+
     try {
       this.initMap();
     } catch (e: any) {
@@ -126,6 +199,15 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.isPageActive = false;
     this.isVehicleModalOpen = false;
     this.isNoteModalOpen = false;
+
+    if (this.isNavigatingAway) {
+      // Sembunyikan modal supaya tidak terbawa ke halaman chat
+      this.isDriverFound = false;
+      this.isDriverArrived = false;
+      this.isInJourney = false;
+      return; // Jangan stop polling jika hanya ke halaman chat
+    }
+
     this.stopSearch();
     this.stopOrderPolling();
   }
@@ -151,6 +233,11 @@ export class MapVisualPage implements OnInit, OnDestroy {
   initMap() {
     if (typeof mapboxgl === 'undefined') {
       setTimeout(() => this.initMap(), 500);
+      return;
+    }
+
+    if (this.map) {
+      setTimeout(() => this.map.resize(), 100);
       return;
     }
 
@@ -317,13 +404,11 @@ export class MapVisualPage implements OnInit, OnDestroy {
   }
 
   openNoteModal() {
-    if (this.vehicleModal) this.vehicleModal.setCurrentBreakpoint(0.3);
     this.isNoteModalOpen = true;
   }
 
   closeNoteModal() {
     this.isNoteModalOpen = false;
-    if (this.vehicleModal) this.vehicleModal.setCurrentBreakpoint(0.45);
   }
 
   saveNote() {
@@ -348,10 +433,14 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.isVehicleModalOpen = false;
     this.isNoteModalOpen = false;
     this.isPageActive = false;
-    this.isSearchingDriver = true;
-    this.isDriverNotFound = false;
-    this.searchProgress = 0;
-    this.searchElapsed = 0;
+    
+    setTimeout(() => {
+      this.isSearchingDriver = true;
+      this.isDriverNotFound = false;
+      this.searchProgress = 0;
+      this.searchElapsed = 0;
+      this.cdr.detectChanges();
+    }, 350);
 
     // 1. Buat order di backend
     const orderData = {
@@ -404,18 +493,29 @@ export class MapVisualPage implements OnInit, OnDestroy {
       if (!this.currentOrderId) return;
       this.orderService.getActiveOrder().subscribe({
         next: (order) => {
-          if (!order) return;
+          if (!order || (this.currentOrderId && order.id !== this.currentOrderId)) {
+            if (!this.isCheckingHistory) {
+              this.isCheckingHistory = true;
+              this.checkMissingOrderStatus();
+            }
+            return;
+          }
+          this.isCheckingHistory = false;
           this.activeOrder = order;
 
           if (order.status === 'accepted' && !this.isDriverFound) {
             // Driver ditemukan!
             this.stopSearch();
             this.isSearchingDriver = false;
-            this.isDriverFound = true;
-            this.showInitialSuccessBanner = true;
+            
             setTimeout(() => {
-              this.showInitialSuccessBanner = false;
-            }, 4000);
+              this.isDriverFound = true;
+              this.showInitialSuccessBanner = true;
+              this.cdr.detectChanges();
+              setTimeout(() => {
+                this.showInitialSuccessBanner = false;
+              }, 4000);
+            }, 350);
             this.updateDriverMapAndETA(order);
           } else if (order.status === 'arrived' && !this.isDriverArrived) {
             this.stopSearch();
@@ -434,6 +534,11 @@ export class MapVisualPage implements OnInit, OnDestroy {
             this.isSearchingDriver = false;
             this.stopOrderPolling();
             this.isOrderComplete = true;
+            this.isNavigatingAway = true; // Prevents polling restart
+            
+            // Navigate to rating page
+            this.router.navigate(['/rating-driver'], { queryParams: { order_id: order.id } });
+            
           } else if (order.status === 'rejected' || order.status === 'cancelled') {
             this.stopOrderPolling();
             this.showToast('Pesanan dibatalkan atau ditolak oleh driver. Silakan pesan ulang.', 'danger');
@@ -443,6 +548,36 @@ export class MapVisualPage implements OnInit, OnDestroy {
         error: (err) => console.error('Error polling order status:', err)
       });
     }, 4000);
+  }
+
+  checkMissingOrderStatus() {
+    if (!this.currentOrderId) return;
+    
+    this.orderService.getHistoryDetail(this.currentOrderId).subscribe({
+      next: (res) => {
+        this.isCheckingHistory = false;
+        const order = res.data;
+        if (order) {
+          if (order.status === 'completed') {
+            this.stopSearch();
+            this.isSearchingDriver = false;
+            this.stopOrderPolling();
+            this.isOrderComplete = true;
+            this.isNavigatingAway = true;
+            
+            this.router.navigate(['/rating-driver'], { queryParams: { order_id: order.id } });
+          } else if (order.status === 'rejected' || order.status === 'cancelled') {
+            this.stopOrderPolling();
+            this.showToast('Pesanan dibatalkan atau ditolak.', 'danger');
+            this.cancelOrder();
+          }
+        }
+      },
+      error: (err) => {
+        this.isCheckingHistory = false;
+        console.error('Error checking missing order status:', err);
+      }
+    });
   }
 
   stopOrderPolling() {
@@ -473,16 +608,23 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.isDriverNotFound = false;
     this.searchProgress = 0;
     this.searchElapsed = 0;
-    this.isVehicleModalOpen = true;
-    this.isPageActive = true;
     this.isNoteModalOpen = false;
+
+    setTimeout(() => {
+      this.isVehicleModalOpen = true;
+      this.isPageActive = true;
+      this.cdr.detectChanges();
+    }, 350);
   }
 
   retrySearch() {
     this.isDriverNotFound = false;
     this.activeOrder = null;
     this.currentOrderId = null;
-    this.startSearch();
+    
+    setTimeout(() => {
+      this.startSearch();
+    }, 350);
   }
 
   cancelOrder() {
@@ -503,9 +645,13 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.activeOrder = null;
     this.searchProgress = 0;
     this.searchElapsed = 0;
-    this.isVehicleModalOpen = true;
-    this.isPageActive = true;
     this.isNoteModalOpen = false;
+    
+    setTimeout(() => {
+      this.isVehicleModalOpen = true;
+      this.isPageActive = true;
+      this.cdr.detectChanges();
+    }, 350);
     
     if (this.driverMarker) {
       this.driverMarker.remove();
@@ -575,11 +721,22 @@ export class MapVisualPage implements OnInit, OnDestroy {
   }
 
   getDriverPlate(): string {
-    return this.activeOrder?.driver?.plate_number || '-';
+    return this.activeOrder?.driver?.plate_number || 'B 4309 FOJ';
+  }
+
+  getDriverVehicleBrand(): string {
+    return this.activeOrder?.driver?.vehicle_brand || 'Honda Beat';
   }
 
   async showToast(message: string, color: string) {
     const toast = await this.toastCtrl.create({ message, duration: 2500, color, position: 'top' });
     await toast.present();
+  }
+
+  goToChat() {
+    if (this.currentOrderId) {
+      this.isNavigatingAway = true;
+      this.router.navigate(['/tabs/pesan'], { queryParams: { order_id: this.currentOrderId } });
+    }
   }
 }

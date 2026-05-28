@@ -1,0 +1,205 @@
+ion-content {
+  --background: #eaedf2;
+}
+
+.top-header {
+  background-color: #2b4085;
+  height: 80px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 16px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.date-time {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.summary-container {
+  position: relative;
+  z-index: 1;
+  margin-top: 50px;
+  padding: 0 16px;
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
+}
+
+.payment-method {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  .label {
+    font-size: 14px;
+    color: #333;
+  }
+
+  .method {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+
+    .dana-icon {
+      width: 20px;
+      height: 20px;
+      margin-right: 6px;
+      border-radius: 4px;
+    }
+
+    ion-icon {
+      font-size: 18px;
+      margin-right: 6px;
+    }
+  }
+}
+
+.income-box {
+  background: #c9d2e5;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  .income-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .income-amount {
+    font-size: 20px;
+    font-weight: 700;
+    color: #222;
+  }
+}
+
+.breakdown {
+  .row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #444;
+
+    .col-val.red {
+      color: #eb445a;
+    }
+  }
+}
+
+.divider {
+  height: 1px;
+  background: #eee;
+  margin: 16px 0;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 700;
+  color: #222;
+}
+
+.detail-link {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  margin-top: 16px;
+
+  ion-icon {
+    margin-left: 4px;
+  }
+}
+
+.rating-card {
+  text-align: center;
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 8px 0;
+  }
+
+  .card-subtitle {
+    font-size: 12px;
+    color: #666;
+    margin: 0 0 16px 0;
+  }
+
+  .stars {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+
+    ion-icon {
+      font-size: 36px;
+      color: #e0e0e0;
+
+      &.filled {
+        color: #ffc409;
+      }
+    }
+  }
+}
+
+.review-card {
+  .text-left {
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .review-textarea {
+    width: 100%;
+    background: #eaedf2;
+    border: none;
+    border-radius: 12px;
+    padding: 12px;
+    height: 100px;
+    font-size: 14px;
+    color: #333;
+    resize: none;
+    outline: none;
+
+    &::placeholder {
+      color: #999;
+    }
+  }
+}
+
+.selesai-btn {
+  --background: #2b4085;
+  --color: white;
+  --border-radius: 20px;
+  font-weight: 600;
+  margin: 0;
+  text-transform: lowercase;
+}

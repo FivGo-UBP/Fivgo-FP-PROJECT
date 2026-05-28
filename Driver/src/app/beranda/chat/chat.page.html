@@ -1,5 +1,6 @@
 <ion-header class="ion-no-border">
-  <div class="header-section">
+  <!-- Mode Daftar Chat -->
+  <div class="header-section" *ngIf="!orderId">
     <h1 class="header-title">Chat</h1>
     <ion-segment [(ngModel)]="segmentValue" class="custom-segment" mode="md">
       <ion-segment-button value="chat">
@@ -10,34 +11,122 @@
       </ion-segment-button>
     </ion-segment>
   </div>
+
+  <!-- Mode Chat Aktif -->
+  <div class="chat-active-header" *ngIf="orderId">
+    <button class="back-btn-custom" (click)="goBack()">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </button>
+
+    <div class="chat-profile" *ngIf="activeOrder?.customer">
+      <img [src]="activeOrder?.customer?.photo || 'https://ionicframework.com/docs/img/demos/avatar.svg'" class="chat-avatar">
+      <div class="chat-details">
+        <h2 class="chat-name">{{ activeOrder?.customer?.name || 'Customer' }}</h2>
+      </div>
+    </div>
+
+    <div class="chat-profile" *ngIf="!activeOrder?.customer">
+      <div class="chat-details">
+        <h2 class="chat-name">Memuat...</h2>
+      </div>
+    </div>
+  </div>
 </ion-header>
 
 <ion-content class="bg-light">
-  <!-- Tab: Chat -->
-  <div *ngIf="segmentValue === 'chat'">
-    <div class="search-container">
-      <ion-searchbar class="custom-searchbar" animated="true" placeholder="Cari pesan..." mode="ios"></ion-searchbar>
+
+  <!-- ===== MODE CHAT AKTIF ===== -->
+  <ng-container *ngIf="orderId">
+    <div class="loading-container" *ngIf="isLoading">
+      <ion-spinner name="crescent" color="warning"></ion-spinner>
+      <p>Memuat pesan...</p>
     </div>
 
-    <!-- Empty State Chat -->
-    <div class="empty-state-container">
-      <div class="empty-icon-wrapper">
+    <div class="message-list" #messageList *ngIf="!isLoading">
+      <div *ngIf="messages.length === 0" class="empty-chat">
         <ion-icon name="chatbubbles-outline" class="empty-icon"></ion-icon>
+        <p>Belum ada pesan. Mulai percakapan!</p>
       </div>
-      <h2 class="empty-title">Belum ada Pesan</h2>
-      <p class="empty-subtitle">Pesan masuk dan info aplikasi ada di sini</p>
+
+      <div
+        *ngFor="let msg of messages"
+        class="message-wrapper"
+        [class.mine]="isMine(msg)"
+        [class.theirs]="!isMine(msg)"
+      >
+        <div class="bubble">
+          <!-- Image message -->
+          <img *ngIf="msg.image_url" [src]="msg.image_url" class="bubble-image" (click)="openImage(msg.image_url)">
+          <!-- Text message -->
+          <p class="bubble-text" *ngIf="msg.message">{{ msg.message }}</p>
+          <span class="bubble-time">{{ msg.created_at | date:'HH:mm' }}</span>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ===== MODE DAFTAR CHAT ===== -->
+  <ng-container *ngIf="!orderId">
+    <div *ngIf="segmentValue === 'chat'">
+      <div class="search-container">
+        <ion-searchbar class="custom-searchbar" animated="true" placeholder="Cari pesan..." mode="ios"></ion-searchbar>
+      </div>
+      <div class="empty-state-container">
+        <div class="empty-icon-wrapper">
+          <ion-icon name="chatbubbles-outline" class="empty-icon"></ion-icon>
+        </div>
+        <h2 class="empty-title">Belum ada Pesan</h2>
+        <p class="empty-subtitle">Pesan masuk dan info aplikasi ada di sini</p>
+      </div>
+    </div>
+
+    <div *ngIf="segmentValue === 'notifikasi'">
+      <div class="empty-state-container">
+        <div class="empty-icon-wrapper">
+          <ion-icon name="notifications-outline" class="empty-icon"></ion-icon>
+        </div>
+        <h2 class="empty-title">Belum ada Notifikasi</h2>
+        <p class="empty-subtitle">Notifikasi dan info aplikasi ada di sini</p>
+      </div>
+    </div>
+  </ng-container>
+
+</ion-content>
+
+<!-- Input bar (hanya saat chat aktif) -->
+<ion-footer *ngIf="orderId" class="chat-footer ion-no-border">
+  <!-- Image Preview -->
+  <div class="image-preview-bar" *ngIf="imagePreviewUrl">
+    <div class="preview-wrapper">
+      <img [src]="imagePreviewUrl" class="preview-img">
+      <button class="remove-preview-btn" (click)="removeImage()">
+        <ion-icon name="close-circle" class="remove-icon"></ion-icon>
+      </button>
     </div>
   </div>
 
-  <!-- Tab: Notifikasi -->
-  <div *ngIf="segmentValue === 'notifikasi'">
-    <!-- Empty State Notifikasi -->
-    <div class="empty-state-container">
-      <div class="empty-icon-wrapper">
-        <ion-icon name="notifications-outline" class="empty-icon"></ion-icon>
-      </div>
-      <h2 class="empty-title">Belum ada Notifikasi</h2>
-      <p class="empty-subtitle">Notifikasi dan info aplikasi ada di sini</p>
+  <!-- Hidden file input -->
+  <input #fileInput type="file" accept="image/*" style="display:none" (change)="onFileSelected($event)">
+
+  <div class="input-row">
+    <!-- Plus button -->
+    <button class="attach-btn" (click)="openFilePicker()" [disabled]="isSending">
+      <ion-icon name="add-outline"></ion-icon>
+    </button>
+
+    <!-- Text input -->
+    <div class="input-wrapper">
+      <ion-input
+        [(ngModel)]="newMessage"
+        placeholder="Ketik pesan..."
+        class="msg-input"
+        (keyup.enter)="sendMessage()"
+      ></ion-input>
     </div>
+
+    <!-- Send button -->
+    <button class="send-btn-round" (click)="sendMessage()" [disabled]="(!newMessage.trim() && !selectedImage) || isSending">
+      <ion-icon name="send"></ion-icon>
+    </button>
   </div>
-</ion-content>
+</ion-footer>

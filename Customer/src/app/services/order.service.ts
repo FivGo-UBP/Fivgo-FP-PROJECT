@@ -9,6 +9,7 @@ export interface OrderDriver {
   photo: string | null;
   vehicle_type: string | null;
   plate_number: string | null;
+  vehicle_brand?: string | null;
   rating: number | null;
   phone?: string | null;
   current_lat?: number | null;
