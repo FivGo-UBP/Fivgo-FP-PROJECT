@@ -37,6 +37,59 @@ ion-content {
   overflow: hidden;
 }
 
+// ─── Navigation Banner ───────────────────────────────────────────────────────
+
+.navigation-banner {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  background: #1a2b6d; // Dark blue like the app theme
+  border-radius: 16px;
+  padding: 16px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 8px 24px rgba(26, 43, 109, 0.4);
+  color: white;
+
+  .nav-icon-col {
+    background: rgba(255, 255, 255, 0.15);
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .nav-icon {
+      font-size: 28px;
+      color: white;
+    }
+  }
+
+  .nav-text-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    .nav-distance {
+      font-size: 13px;
+      font-weight: 600;
+      color: #90caf9;
+      margin-bottom: 4px;
+    }
+
+    .nav-instruction {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+  }
+}
+
 // ─── Map ──────────────────────────────────────────────────────────────────
 
 .map-container {

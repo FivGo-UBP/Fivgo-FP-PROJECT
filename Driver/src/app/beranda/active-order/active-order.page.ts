@@ -19,6 +19,7 @@ import { environment } from '../../../environments/environment';
   standalone: false,
 })
 export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
+  isPageActive: boolean = true;
   orderId: string = '';
   order: ActiveOrder | null = null;
   isLoading: boolean = true;
@@ -34,6 +35,11 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
   private pickupMarker: any = null;
   private dropoffMarker: any = null;
   private mapReady: boolean = false;
+  private watchId: string | null = null;
+
+  currentInstruction: string = '';
+  instructionDistance: string = '';
+  private navigationInstructions: any[] = [];
 
   private pollingInterval: any = null;
 
@@ -60,7 +66,22 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy() {
     this.stopPolling();
+    this.stopNavigationTracking();
     if (this.map) { this.map.remove(); this.map = null; }
+  }
+
+  ionViewWillEnter() {
+    this.isPageActive = true;
+  }
+
+  ionViewDidEnter() {
+    if (this.map) {
+      setTimeout(() => this.map.resize(), 100);
+    }
+  }
+
+  ionViewWillLeave() {
+    this.isPageActive = false;
   }
 
   loadOrder() {
@@ -127,10 +148,13 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
     setTimeout(() => {
       if (this.map) this.map.resize();
     }, 500);
+
+    this.startNavigationTracking();
   }
 
   // Menggunakan TomTom API — rute SAMA PERSIS dengan yang ditampilkan di aplikasi customer
   drawRouteTomTom(fromLat: number, fromLng: number, toLat: number, toLng: number, vehicleType: string, phase: string) {
+    if (!this.isPageActive) return;
     this.tomtomService.calculateRoute(fromLat, fromLng, toLat, toLng, vehicleType).subscribe({
       next: (res: any) => {
         if (!res.routes || res.routes.length === 0 || !this.map) return;
@@ -146,8 +170,8 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
         if (this.map.getLayer('route-layer')) this.map.removeLayer('route-layer');
         if (this.map.getSource('route')) this.map.removeSource('route');
 
-        // Warna rute: oranye saat menuju jemput, biru tua saat mengantar
-        const routeColor = phase === 'started' ? '#1a2b6d' : '#FF9800';
+        // Warna rute: Samakan dengan aplikasi customer (selalu oranye)
+        const routeColor = '#FF9800';
 
         this.map.addSource('route', {
           type: 'geojson',
@@ -159,15 +183,22 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
           type: 'line',
           source: 'route',
           layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: { 'line-color': routeColor, 'line-width': 5, 'line-opacity': 0.9 }
+          paint: { 'line-color': routeColor, 'line-width': 5, 'line-opacity': 1 }
         });
 
-        // Fit peta agar seluruh rute terlihat
+        // Fit peta agar seluruh rute terlihat saat pertama kali, 
+        // tapi nanti akan di-override oleh easeTo dari watchPosition
         const bounds = coordinates.reduce(
           (b, c) => b.extend(c),
           new mapboxgl.LngLatBounds(coordinates[0], coordinates[0])
         );
         this.map.fitBounds(bounds, { padding: { top: 80, bottom: 220, left: 40, right: 40 } });
+
+        // Simpan instruksi turn-by-turn jika ada
+        if (routeData.guidance && routeData.guidance.instructions) {
+          this.navigationInstructions = routeData.guidance.instructions;
+          this.updateNavigationInstruction(fromLat, fromLng);
+        }
       },
       error: (err) => console.error('TomTom routing error:', err)
     });
@@ -190,10 +221,15 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
       .setLngLat([driverLng, driverLat])
       .addTo(this.map);
 
-    // Marker titik penjemputan (pin oranye)
+    // Marker titik penjemputan (Titik Biru seperti Customer App)
     const pickupEl = document.createElement('div');
-    pickupEl.className = 'pickup-pin-marker';
-    pickupEl.innerHTML = `<div class="pin-dot"></div>`;
+    pickupEl.className = 'marker';
+    pickupEl.style.backgroundColor = '#3880ff';
+    pickupEl.style.width = '20px';
+    pickupEl.style.height = '20px';
+    pickupEl.style.borderRadius = '50%';
+    pickupEl.style.border = '2px solid white';
+    pickupEl.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
     this.pickupMarker = new mapboxgl.Marker({ element: pickupEl, anchor: 'center' })
       .setLngLat([pickupLng, pickupLat])
       .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${order.pickup_address}</strong>`))
@@ -245,6 +281,76 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
 
     // Gambar rute dari titik jemput ke tujuan (TomTom, fase 'started')
     this.drawRouteTomTom(pickupLat, pickupLng, dropLat, dropLng, order.vehicle_type || 'motor', 'started');
+  }
+
+  async startNavigationTracking() {
+    this.watchId = await Geolocation.watchPosition(
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 },
+      (position, err) => {
+        if (!position || err || !this.map || !this.mapReady || !this.isPageActive) return;
+
+        const lng = position.coords.longitude;
+        const lat = position.coords.latitude;
+        const heading = position.coords.heading || 0; // Arah hadap device (0-360)
+
+        // Pindahkan marker driver secara halus
+        if (this.driverMarker) {
+          this.driverMarker.setLngLat([lng, lat]);
+        }
+
+        // Update lokasi driver ke backend agar customer app bisa melakukan tracking
+        this.orderService.updateDriverLocation(lat, lng).subscribe({
+          error: (err) => console.error('Gagal sinkronisasi lokasi ke server:', err)
+        });
+
+        // Animasi 3D Mapbox mengikuti pergerakan driver
+        this.map.easeTo({
+          center: [lng, lat],
+          bearing: heading,
+          pitch: 60, // Memiringkan kamera jadi mode 3D
+          zoom: 17,
+          duration: 1000
+        });
+
+        this.updateNavigationInstruction(lat, lng);
+      }
+    );
+  }
+
+  async stopNavigationTracking() {
+    if (this.watchId != null) {
+      await Geolocation.clearWatch({ id: this.watchId });
+      this.watchId = null;
+    }
+  }
+
+  updateNavigationInstruction(lat: number, lng: number) {
+    if (!this.navigationInstructions || this.navigationInstructions.length === 0) return;
+
+    let closestDist = Infinity;
+    let closestInstruction = null;
+
+    for (const inst of this.navigationInstructions) {
+      const pLat = inst.point.latitude;
+      const pLng = inst.point.longitude;
+      // Rumus estimasi jarak dalam meter
+      const dLat = (pLat - lat) * 111000;
+      const dLng = (pLng - lng) * 111000 * Math.cos(lat * Math.PI / 180);
+      const dist = Math.sqrt(dLat * dLat + dLng * dLng);
+
+      // Cari poin instruksi di depan yang paling dekat (abaikan yang sudah terlewat jauh di belakang)
+      if (dist < closestDist) {
+        closestDist = dist;
+        closestInstruction = inst;
+      }
+    }
+
+    if (closestInstruction) {
+      this.currentInstruction = closestInstruction.message;
+      this.instructionDistance = closestDist > 1000 
+        ? (closestDist / 1000).toFixed(1) + ' km' 
+        : Math.round(closestDist) + ' m';
+    }
   }
 
   startPolling() {

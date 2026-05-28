@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, ChangeDetectorRef, HostListener } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 declare var mapboxgl: any;
 import { environment } from '../../../environments/environment';
@@ -58,6 +58,20 @@ export class MapVisualPage implements OnInit, OnDestroy {
     { type: 'mobil', name: 'Mobil', time: '', capacity: 4, price: '', image: 'assets/mobil.png', isLoading: true }
   ];
   selectedVehicle: string = 'motor';
+
+  // ─── Dragging State for Bottom Sheet ──────────────────────────────────────
+  @ViewChild('sheetContent', { static: false }) sheetContentEl!: ElementRef;
+  isDragging: boolean = false;
+  startY: number = 0;
+  currentY: number = 60; // 60% down (COLLAPSED)
+  startTranslateY: number = 60;
+  backdropOpacity: number = 0;
+  contentOverflowY: string = 'hidden';
+
+  readonly COLLAPSED = 60;
+  readonly HALF = 30;
+  readonly FULL = 0;
+
 
   constructor(
     private tomtomService: TomtomService,
@@ -153,6 +167,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
             this.currentOrderId = order.id;
             this.isVehicleModalOpen = false;
             this.cdr.detectChanges();
+
             
             this.isDriverFound = true;
             if (order.status === 'arrived') this.isDriverArrived = true;
@@ -184,12 +199,18 @@ export class MapVisualPage implements OnInit, OnDestroy {
     setTimeout(() => {
       if (!this.currentOrderId && !this.isSearchingDriver && !this.isDriverFound) {
         this.isVehicleModalOpen = true;
+        this.setSheetPosition(this.COLLAPSED); // Reset position
         this.cdr.detectChanges();
       }
     }, 150);
 
+
     try {
       this.initMap();
+      // Redraw driver tracking when returning to this page if an order is active
+      if (this.activeOrder && (this.activeOrder.status === 'accepted' || this.activeOrder.status === 'started' || this.activeOrder.status === 'arrived')) {
+        this.updateDriverMapAndETA(this.activeOrder);
+      }
     } catch (e: any) {
       alert("System Error Map: " + (e.message || e));
     }
@@ -341,14 +362,14 @@ export class MapVisualPage implements OnInit, OnDestroy {
     });
   }
 
-  drawRoute(start: number[], dest: number[]) {
-    if (!this.map) return;
+  drawRoute(start: number[], dest: number[], shouldFitBounds: boolean = true) {
+    if (!this.map || !this.isPageActive) return;
 
     this.tomtomService.calculateRoute(start[1], start[0], dest[1], dest[0], this.selectedVehicle).subscribe((res: any) => {
       if (!this.map || !res.routes || res.routes.length === 0) return;
       
       if (!this.map.isStyleLoaded()) {
-        this.map.once('idle', () => this.drawRoute(start, dest));
+        this.map.once('idle', () => this.drawRoute(start, dest, shouldFitBounds));
         return;
       }
 
@@ -386,9 +407,11 @@ export class MapVisualPage implements OnInit, OnDestroy {
           });
         }
 
-        const bounds = new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]);
-        for (const coord of coordinates) bounds.extend(coord as any);
-        this.map.fitBounds(bounds, { padding: 50 });
+        if (shouldFitBounds) {
+          const bounds = new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]);
+          for (const coord of coordinates) bounds.extend(coord as any);
+          this.map.fitBounds(bounds, { padding: 50 });
+        }
       }
     }, err => console.error('Error fetching route from TomTom:', err));
   }
@@ -517,17 +540,32 @@ export class MapVisualPage implements OnInit, OnDestroy {
               }, 4000);
             }, 350);
             this.updateDriverMapAndETA(order);
+          } else if (order.status === 'accepted' && this.isDriverFound) {
+            // Driver sedang menuju penjemputan — tracking terus-menerus
+            this.updateDriverMapAndETA(order);
           } else if (order.status === 'arrived' && !this.isDriverArrived) {
             this.stopSearch();
             this.isSearchingDriver = false;
             this.isDriverFound = true;
             this.isDriverArrived = true;
+            this.updateDriverMapAndETA(order);
+          } else if (order.status === 'arrived' && this.isDriverArrived) {
+            // Driver sudah di titik, tetap update marker posisi
+            this.updateDriverMapAndETA(order);
           } else if (order.status === 'started' && !this.isInJourney) {
             this.stopSearch();
             this.isSearchingDriver = false;
             this.isDriverFound = true;
             this.isDriverArrived = true;
             this.isInJourney = true;
+            // Reset marker agar fitBounds terjadi lagi untuk rute baru (driver → tujuan)
+            if (this.driverMarker) {
+              this.driverMarker.remove();
+              this.driverMarker = null;
+            }
+            this.updateDriverMapAndETA(order);
+          } else if (order.status === 'started' && this.isInJourney) {
+            // Dalam perjalanan — tracking terus-menerus
             this.updateDriverMapAndETA(order);
           } else if (order.status === 'completed') {
             this.stopSearch();
@@ -612,10 +650,12 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
     setTimeout(() => {
       this.isVehicleModalOpen = true;
+      this.setSheetPosition(this.COLLAPSED);
       this.isPageActive = true;
       this.cdr.detectChanges();
     }, 350);
   }
+
 
   retrySearch() {
     this.isDriverNotFound = false;
@@ -649,6 +689,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
     
     setTimeout(() => {
       this.isVehicleModalOpen = true;
+      this.setSheetPosition(this.COLLAPSED);
       this.isPageActive = true;
       this.cdr.detectChanges();
     }, 350);
@@ -662,10 +703,13 @@ export class MapVisualPage implements OnInit, OnDestroy {
   // ─── Map & Tracking Helpers ──────────────────────────────────────────────
 
   updateDriverMapAndETA(order: ActiveOrder) {
-    if (!this.map || !order.driver?.current_lat || !order.driver?.current_lng) return;
+    if (!this.map || !order.driver?.current_lat || !order.driver?.current_lng || !this.isPageActive) return;
 
     const dLat = parseFloat(order.driver.current_lat as any);
     const dLng = parseFloat(order.driver.current_lng as any);
+
+    // Pertama kali: buat marker driver & fitBounds agar peta berpindah ke rute baru
+    const isFirstCall = !this.driverMarker;
 
     // Update Driver Marker
     if (!this.driverMarker) {
@@ -680,6 +724,9 @@ export class MapVisualPage implements OnInit, OnDestroy {
       this.driverMarker.setLngLat([dLng, dLat]);
     }
 
+    // Tentukan start & dest berdasarkan fase:
+    // accepted/arrived = driver menuju pickup
+    // started = driver menuju tujuan
     let start = [dLng, dLat];
     let dest = this.startCoord;
 
@@ -695,7 +742,8 @@ export class MapVisualPage implements OnInit, OnDestroy {
           res.routes.sort((a: any, b: any) => a.summary.lengthInMeters - b.summary.lengthInMeters);
           const travelMinutes = Math.ceil(res.routes[0].summary.travelTimeInSeconds / 60);
           this.driverEtaText = `${travelMinutes} Menit`;
-          this.drawRoute(start, dest);
+          // fitBounds hanya pada panggilan pertama agar peta reposisi ke rute driver→pickup/tujuan
+          this.drawRoute(start, dest, isFirstCall);
         }
       }
     });
@@ -737,6 +785,75 @@ export class MapVisualPage implements OnInit, OnDestroy {
     if (this.currentOrderId) {
       this.isNavigatingAway = true;
       this.router.navigate(['/tabs/pesan'], { queryParams: { order_id: this.currentOrderId } });
+    }
+  }
+
+  // ─── Drag Methods ────────────────────────────────────────────────────────
+
+  setSheetPosition(percentage: number) {
+    this.currentY = percentage;
+    this.backdropOpacity = Math.max(0, (60 - percentage) / 60) * 0.4;
+  }
+
+  handleStart(e: any) {
+    this.isDragging = true;
+    this.startY = e.type === 'mousedown' ? e.pageY : e.touches[0].pageY;
+    this.startTranslateY = this.currentY;
+  }
+
+  handleContentStart(e: any) {
+    // Only start drag if content is scrolled to top
+    if (this.sheetContentEl && this.sheetContentEl.nativeElement.scrollTop <= 0) {
+      this.isDragging = true;
+      this.startY = e.type === 'mousedown' ? e.pageY : e.touches[0].pageY;
+      this.startTranslateY = this.currentY;
+    }
+  }
+
+  @HostListener('document:touchmove', ['$event'])
+  @HostListener('document:mousemove', ['$event'])
+  onMove(e: any) {
+    if (!this.isDragging) return;
+    
+    const y = e.type === 'mousemove' ? e.pageY : e.touches[0].pageY;
+    const delta = y - this.startY;
+    
+    const sheetHeight = window.innerHeight - 160; // Approximate height of sheet
+    const deltaPercent = (delta / sheetHeight) * 100;
+    
+    let nextY = this.startTranslateY + deltaPercent;
+    
+    if (nextY < this.FULL) {
+      nextY = this.FULL - (Math.pow(this.FULL - nextY, 0.5)); 
+    }
+    if (nextY > 75) nextY = 75; 
+    
+    this.setSheetPosition(nextY);
+    
+    // Prevent default only for touch events (avoid error on mousemove)
+    if (e.cancelable && e.type !== 'mousemove') {
+      e.preventDefault();
+    }
+  }
+
+  @HostListener('document:touchend')
+  @HostListener('document:mouseup')
+  onEnd() {
+    if (!this.isDragging) return;
+    this.isDragging = false;
+
+    if (this.currentY < 15) {
+      this.setSheetPosition(this.FULL);
+      this.contentOverflowY = 'auto';
+    } else if (this.currentY < 45) {
+      this.setSheetPosition(this.HALF);
+      this.contentOverflowY = 'hidden';
+    } else {
+      this.setSheetPosition(this.COLLAPSED);
+      this.contentOverflowY = 'hidden';
+      if (this.sheetContentEl) {
+        this.sheetContentEl.nativeElement.scrollTop = 0;
+      }
     }
   }
 }

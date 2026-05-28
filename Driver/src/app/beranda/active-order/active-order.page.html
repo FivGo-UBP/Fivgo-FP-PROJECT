@@ -16,6 +16,17 @@
   <!-- Main Content -->
   <div *ngIf="!isLoading && order" class="active-order-wrapper">
 
+    <!-- Navigation Guidance Banner -->
+    <div class="navigation-banner" *ngIf="currentInstruction">
+      <div class="nav-icon-col">
+        <ion-icon name="navigate" class="nav-icon"></ion-icon>
+      </div>
+      <div class="nav-text-col">
+        <span class="nav-distance">{{ instructionDistance }}</span>
+        <h3 class="nav-instruction">{{ currentInstruction }}</h3>
+      </div>
+    </div>
+
     <!-- Map Background (Mapbox GL) -->
     <div class="map-container">
       <div id="driver-active-map"></div>

@@ -69,11 +69,29 @@
 <!-- ============================================================ -->
 <!-- CUSTOM VEHICLE BOTTOM SHEET (bukan ion-modal)               -->
 <!-- ============================================================ -->
-<div class="vehicle-sheet-wrap" *ngIf="isVehicleModalOpen && !isSearchingDriver && !isDriverFound">
+
+<!-- Backdrop -->
+<div class="sheet-backdrop" 
+     *ngIf="isVehicleModalOpen && !isSearchingDriver && !isDriverFound" 
+     [style.opacity]="backdropOpacity"></div>
+
+<div class="vehicle-sheet-wrap" 
+     *ngIf="isVehicleModalOpen && !isSearchingDriver && !isDriverFound" 
+     [class.dragging]="isDragging"
+     [style.transform]="'translateY(' + currentY + '%)'">
+
+  <!-- Header/Handle -->
+  <div class="sheet-header" 
+       (touchstart)="handleStart($event)" (mousedown)="handleStart($event)">
+    <div class="modal-handle"></div>
+  </div>
 
   <!-- Scrollable list area -->
-  <div class="vehicle-sheet-body">
-    <div class="vehicle-list" style="padding-top: 20px;">
+  <div class="vehicle-sheet-body custom-scrollbar" 
+       [style.overflow-y]="contentOverflowY"
+       #sheetContent
+       (touchstart)="handleContentStart($event)" (mousedown)="handleContentStart($event)">
+    <div class="vehicle-list" style="padding-top: 0px;">
       <div class="vehicle-item" *ngFor="let v of vehicles" [class.selected]="v.type === selectedVehicle" (click)="selectVehicle(v.type)">
         <div class="v-img-container">
           <img [src]="v.image" [alt]="v.name">
@@ -97,160 +115,150 @@
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Sticky footer: payment pill + order button -->
-  <div class="vehicle-sheet-footer">
-    <div class="options-pill">
-      <div class="pill-btn payment-btn" (click)="goToMetodePembayaran()">
-        <ion-icon [name]="selectedPayment === 'tunai' ? 'cash-outline' : 'card-outline'"></ion-icon>
-        <span>{{ selectedPayment === 'tunai' ? 'Tunai' : selectedNonTunai }}</span>
-      </div>
-      <div class="pill-divider"></div>
-      <div class="pill-btn promo-btn">
-        <span>Promo</span>
-      </div>
-      <div class="pill-divider"></div>
-      <div class="pill-btn more-btn" (click)="openNoteModal()">
-        <ion-icon name="ellipsis-horizontal" [color]="driverNote ? 'warning' : 'medium'"></ion-icon>
-      </div>
+<!-- Sticky footer: payment pill + order button (Outside Modal, Fixed) -->
+<div class="fixed-order-footer" *ngIf="isVehicleModalOpen && !isSearchingDriver && !isDriverFound">
+  <div class="options-pill">
+    <div class="pill-btn payment-btn" (click)="goToMetodePembayaran()">
+      <ion-icon [name]="selectedPayment === 'tunai' ? 'cash-outline' : 'card-outline'"></ion-icon>
+      <span>{{ selectedPayment === 'tunai' ? 'Tunai' : selectedNonTunai }}</span>
     </div>
-    <ion-button expand="block" color="warning" class="btn-order-main" (click)="startSearch()">
-      Pesan Sekarang
+    <div class="pill-divider"></div>
+    <div class="pill-btn promo-btn">
+      <span>Promo</span>
+    </div>
+    <div class="pill-divider"></div>
+    <div class="pill-btn more-btn" (click)="openNoteModal()">
+      <ion-icon name="ellipsis-horizontal" [color]="driverNote ? 'warning' : 'medium'"></ion-icon>
+    </div>
+  </div>
+  <ion-button expand="block" color="warning" class="btn-order-main" (click)="startSearch()">
+    Pesan Sekarang
+  </ion-button>
+</div>
+
+<!-- Modal 2: Catatan Pengemudi -->
+<div class="custom-backdrop-solid" *ngIf="isNoteModalOpen" (click)="closeNoteModal()"></div>
+<div class="custom-bottom-sheet-wrap note-modal-wrap" *ngIf="isNoteModalOpen">
+  <div class="note-modal-header" style="padding: 20px 20px 0;">
+    <h3 class="note-title">Catatan Untuk Pengemudi</h3>
+  </div>
+  
+  <div class="note-input-container" style="padding: 20px;">
+    <textarea 
+      placeholder="Masukkan catatan disini..."
+      [(ngModel)]="driverNote"
+      maxlength="150"
+      (input)="updateCharCount($event)">
+    </textarea>
+    <div class="char-count">{{ driverNote.length }}/150 Karakter</div>
+  </div>
+  
+  <div style="padding: 0 20px 20px;">
+    <ion-button expand="block" color="warning" class="save-note-btn" (click)="saveNote()">
+      Simpan
     </ion-button>
   </div>
 </div>
 
-<!-- Modal 2: Catatan Pengemudi -->
-<ion-modal [isOpen]="isNoteModalOpen" (didDismiss)="closeNoteModal()" [initialBreakpoint]="0.45" [breakpoints]="[0, 0.45, 0.7]" class="note-modal" backdropBreakpoint="1">
-  <ng-template>
-    <ion-content class="ion-padding">
-      <div class="note-modal-header">
-        <h3 class="note-title">Catatan Untuk Pengemudi</h3>
-      </div>
-      
-      <div class="note-input-container">
-        <textarea 
-          placeholder="Masukkan catatan disini..."
-          [(ngModel)]="driverNote"
-          maxlength="150"
-          (input)="updateCharCount($event)">
-        </textarea>
-        <div class="char-count">{{ driverNote.length }}/150 Karakter</div>
-      </div>
-      
-      <ion-button expand="block" color="warning" class="save-note-btn" (click)="saveNote()">
-        Simpan
-      </ion-button>
-      
-      <div style="height: 130px;"></div>
-    </ion-content>
-  </ng-template>
-</ion-modal>
-
 <!-- Modal 3: Mencari Driver -->
-<ion-modal [isOpen]="isSearchingDriver" [backdropDismiss]="false" class="searching-driver-modal">
-  <ng-template>
-    <div class="searching-container">
-      <h2 class="searching-title">Mencari Driver....</h2>
-      <p class="searching-subtitle">Mohon tunggu sebentar, kami sedang mencarikan driver terdekat untukmu</p>
+<div class="custom-backdrop-solid" *ngIf="isSearchingDriver"></div>
+<div class="custom-bottom-sheet-wrap searching-wrap" *ngIf="isSearchingDriver">
+  <div class="searching-container">
+    <h2 class="searching-title">Mencari Driver....</h2>
+    <p class="searching-subtitle">Mohon tunggu sebentar, kami sedang mencarikan driver terdekat untukmu</p>
 
-      <div class="search-progress-track">
-        <div class="search-progress-fill" [style.width.%]="searchProgress"></div>
-      </div>
+    <div class="search-progress-track">
+      <div class="search-progress-fill" [style.width.%]="searchProgress"></div>
+    </div>
 
-      <div class="search-vehicle-card">
-        <div class="search-vehicle-info">
-          <img [src]="'assets/' + selectedVehicle + '.png'" class="search-vehicle-img" [alt]="selectedVehicle">
-          <div class="search-vehicle-text">
-            <span class="search-vehicle-name">{{ selectedVehicle === 'motor' ? 'Motor' : 'Mobil' }}</span>
-            <div class="search-payment-badge">
-              <ion-icon [name]="selectedPayment === 'tunai' ? 'cash-outline' : 'card-outline'" style="font-size:14px;"></ion-icon>
-              <span>{{ selectedPayment === 'tunai' ? 'Tunai' : selectedNonTunai }}</span>
-            </div>
+    <div class="search-vehicle-card">
+      <div class="search-vehicle-info">
+        <img [src]="'assets/' + selectedVehicle + '.png'" class="search-vehicle-img" [alt]="selectedVehicle">
+        <div class="search-vehicle-text">
+          <span class="search-vehicle-name">{{ selectedVehicle === 'motor' ? 'Motor' : 'Mobil' }}</span>
+          <div class="search-payment-badge">
+            <ion-icon [name]="selectedPayment === 'tunai' ? 'cash-outline' : 'card-outline'" style="font-size:14px;"></ion-icon>
+            <span>{{ selectedPayment === 'tunai' ? 'Tunai' : selectedNonTunai }}</span>
           </div>
         </div>
-        <span class="search-vehicle-price">
-          {{ getSelectedVehiclePrice() }}
-        </span>
       </div>
-
-
-
+      <span class="search-vehicle-price">
+        {{ getSelectedVehiclePrice() }}
+      </span>
     </div>
-  </ng-template>
-</ion-modal>
+  </div>
+</div>
 
 <!-- Modal 4: Driver Tidak Ditemukan -->
-<ion-modal [isOpen]="isDriverNotFound" [backdropDismiss]="false" class="driver-notfound-modal">
-  <ng-template>
-    <div class="notfound-container">
-      <img src="assets/driver-not-found.png" class="notfound-img" alt="Driver tidak ditemukan">
-      <h2 class="notfound-title">Waduh, Driver belum Ketemu</h2>
-      <p class="notfound-subtitle">Area ini sedang sangat sibuk. Jangan menyerah, coba sekali lagi ya!</p>
+<div class="custom-backdrop-solid" *ngIf="isDriverNotFound"></div>
+<div class="custom-bottom-sheet-wrap notfound-wrap" *ngIf="isDriverNotFound">
+  <div class="notfound-container">
+    <img src="assets/driver-not-found.png" class="notfound-img" alt="Driver tidak ditemukan">
+    <h2 class="notfound-title">Waduh, Driver belum Ketemu</h2>
+    <p class="notfound-subtitle">Area ini sedang sangat sibuk. Jangan menyerah, coba sekali lagi ya!</p>
 
-      <ion-button expand="block" color="warning" class="retry-btn" (click)="retrySearch()">
-        Coba Lagi
+    <ion-button expand="block" color="warning" class="retry-btn" (click)="retrySearch()">
+      Coba Lagi
+    </ion-button>
+
+    <div style="margin-top: 16px; width: 100%;">
+      <ion-button expand="block" fill="outline" color="danger" class="back-btn-notfound" (click)="cancelOrder()">
+        <ion-icon name="close-outline" slot="start"></ion-icon>
+        Batal
       </ion-button>
-
-      <div style="margin-top: 16px; width: 100%;">
-        <ion-button expand="block" fill="outline" color="danger" class="back-btn-notfound" (click)="cancelOrder()">
-          <ion-icon name="close-outline" slot="start"></ion-icon>
-          Batal
-        </ion-button>
-      </div>
     </div>
-  </ng-template>
-</ion-modal>
+  </div>
+</div>
 
 <!-- Modal 5: Driver Ditemukan (Bottom Sheet Konsisten) -->
-<ion-modal [isOpen]="isDriverFound" [handle]="false" [initialBreakpoint]="0.45" [breakpoints]="[0.45]" backdropBreakpoint="1" [backdropDismiss]="false" class="driver-found-sheet">
-  <ng-template>
-    <div class="driver-found-container" *ngIf="activeOrder">
-      <!-- Status Header -->
-      <div class="status-header">
-        <div class="status-left">
-          <h2 class="status-title">Pengemudi dalam perjalanan</h2>
-          <p class="status-location">{{ jemput || 'Menunggu lokasi...' }}</p>
-        </div>
-        <div class="status-right">
-          <span class="eta-text">{{ driverEtaText || '3 mnt' }}</span>
-        </div>
+<div class="custom-bottom-sheet-wrap driver-found-wrap" *ngIf="isDriverFound && activeOrder">
+  <div class="driver-found-container">
+    <!-- Status Header -->
+    <div class="status-header">
+      <div class="status-left">
+        <h2 class="status-title">Pengemudi dalam perjalanan</h2>
+        <p class="status-location">{{ jemput || 'Menunggu lokasi...' }}</p>
       </div>
-
-      <!-- Driver Card -->
-      <div class="driver-card">
-        <div class="driver-card-top">
-          <div class="driver-images">
-            <img [src]="getDriverPhoto()" alt="Driver" class="driver-photo" />
-          </div>
-          <div class="vehicle-details">
-            <h2 class="plate-number">{{ getDriverPlate() }}</h2>
-            <p class="vehicle-brand">{{ getDriverVehicleBrand() | titlecase }}</p>
-          </div>
-        </div>
-        
-        <div class="driver-card-middle">
-          <div class="name-rating-group">
-            <div class="name-rating-row">
-              <span class="driver-name-rating">{{ getDriverName() }} &bull; {{ getDriverRating() }}</span>
-              <ion-icon name="star" class="star-gold"></ion-icon>
-            </div>
-            <span class="driver-vehicle-type">{{ getDriverVehicle() | titlecase }}</span>
-          </div>
-        </div>
-
-        <div class="driver-card-bottom">
-          <div class="chat-input-box" (click)="goToChat()">
-            <ion-icon name="chatbubble-ellipses-outline" class="chat-icon"></ion-icon>
-            <span class="chat-placeholder">Pesan baru untukmu</span>
-          </div>
-        </div>
+      <div class="status-right">
+        <span class="eta-text">{{ driverEtaText || '3 mnt' }}</span>
       </div>
-
-      <!-- Cancel Button -->
-      <ion-button expand="block" fill="outline" color="danger" class="cancel-btn-visible" (click)="cancelOrder()">
-        Batalkan Pesanan
-      </ion-button>
     </div>
-  </ng-template>
-</ion-modal>
+
+    <!-- Driver Card -->
+    <div class="driver-card">
+      <div class="driver-card-top">
+        <div class="driver-images">
+          <img [src]="getDriverPhoto()" alt="Driver" class="driver-photo" />
+        </div>
+        <div class="vehicle-details">
+          <h2 class="plate-number">{{ getDriverPlate() }}</h2>
+          <p class="vehicle-brand">{{ getDriverVehicleBrand() | titlecase }}</p>
+        </div>
+      </div>
+      
+      <div class="driver-card-middle">
+        <div class="name-rating-group">
+          <div class="name-rating-row">
+            <span class="driver-name-rating">{{ getDriverName() }} &bull; {{ getDriverRating() }}</span>
+            <ion-icon name="star" class="star-gold"></ion-icon>
+          </div>
+          <span class="driver-vehicle-type">{{ getDriverVehicle() | titlecase }}</span>
+        </div>
+      </div>
+
+      <div class="driver-card-bottom">
+        <div class="chat-input-box" (click)="goToChat()">
+          <ion-icon name="chatbubble-ellipses-outline" class="chat-icon"></ion-icon>
+          <span class="chat-placeholder">Pesan baru untukmu</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cancel Button -->
+    <ion-button *ngIf="activeOrder?.status !== 'started'" expand="block" fill="outline" color="danger" class="cancel-btn-visible" (click)="cancelOrder()">
+      Batalkan Pesanan
+    </ion-button>
+  </div>
+</div>

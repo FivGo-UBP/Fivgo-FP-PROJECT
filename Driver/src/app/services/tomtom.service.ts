@@ -43,7 +43,7 @@ export class TomtomService {
     const routeType = vehicleType === 'motor' ? 'eco' : 'fastest';
     const maxAlternatives = vehicleType === 'motor' ? 2 : 0;
     
-    let url = `https://api.tomtom.com/routing/1/calculateRoute/${locations}/json?key=${this.apiKey}&maxAlternatives=${maxAlternatives}&routeType=${routeType}&traffic=true&travelMode=${travelMode}`;
+    let url = `https://api.tomtom.com/routing/1/calculateRoute/${locations}/json?key=${this.apiKey}&maxAlternatives=${maxAlternatives}&routeType=${routeType}&traffic=true&travelMode=${travelMode}&instructionsType=text&language=id-ID`;
     
     if (vehicleType === 'motor') {
       url += '&avoid=tollRoads';

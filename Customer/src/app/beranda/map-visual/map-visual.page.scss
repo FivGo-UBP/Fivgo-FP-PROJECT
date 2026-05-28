@@ -72,33 +72,88 @@ ion-content.transparent-content {
   }
 }
 
+/* Backdrop for Bottom Sheet */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: black;
+  opacity: 0;
+  z-index: 9999;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
 /* Custom Vehicle Bottom Sheet */
 .vehicle-sheet-wrap {
   position: fixed;
-  bottom: 0;
   left: 0;
-  right: 0;
+  width: 100%;
+  bottom: 140px; /* Fixed order footer height roughly */
+  height: calc(100vh - 140px);
   z-index: 10000;
   display: flex;
   flex-direction: column;
-  max-height: 60vh;
   border-radius: 20px 20px 0 0;
   background: white;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  animation: slideUp 0.3s ease-out;
-}
+  touch-action: none;
+  transform: translateY(60%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
 
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0); }
+  &.dragging {
+    transition: none;
+  }
 }
 
 .vehicle-sheet-body {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: hidden; /* Controlled by JS based on snap point */
   padding: 0 20px;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Custom Scrollbar for list */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #dde2f3;
+  border-radius: 10px;
+}
+
+/* Custom Bottom Sheet Wrap for Modals */
+.custom-bottom-sheet-wrap {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10001; /* Above backdrops */
+  background: white;
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.1);
+  animation: slideUpModal 0.3s ease-out forwards;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideUpModal {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.custom-backdrop-solid {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 10000;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .vehicle-sheet-footer {
@@ -110,25 +165,21 @@ ion-content.transparent-content {
 
 .sheet-header {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding-top: 12px;
-  margin-bottom: 24px;
-  position: relative;
+  justify-content: center;
+  padding: 12px 0;
+  margin-bottom: 0;
+  cursor: grab;
+  flex-shrink: 0;
+  
+  &:active {
+    cursor: grabbing;
+  }
   
   .modal-handle {
     width: 40px;
-    height: 4px;
-    background: #111;
+    height: 6px;
+    background: #e0e0e0;
     border-radius: 4px;
-    margin: 0 auto 20px;
-    align-self: center;
-  }
-  
-  .sheet-title {
-    font-size: 16px;
-    font-weight: 800;
-    color: #111;
     margin: 0;
   }
 }
@@ -293,8 +344,8 @@ ion-content.transparent-content {
 }
 
 /* Modal 3: Note Modal Styling */
-ion-modal.note-modal {
-  --border-radius: 20px 20px 0 0;
+.note-modal-wrap {
+  border-radius: 20px 20px 0 0;
   
   .note-modal-header {
     display: flex;
@@ -357,15 +408,9 @@ ion-modal.note-modal {
 }
 
 // ─── MODAL 4: MENCARI DRIVER ─────────────────────────────────────────────────
-ion-modal.searching-driver-modal {
-  --border-radius: 24px 24px 0 0;
-  align-items: flex-end;
-
-  &::part(content) {
-    background: white;
-    border-radius: 24px 24px 0 0;
-    max-height: 55vh;
-  }
+.searching-wrap {
+  border-radius: 24px 24px 0 0;
+  justify-content: flex-end;
 }
 
 .searching-container {
@@ -483,15 +528,9 @@ ion-modal.searching-driver-modal {
 }
 
 // ─── MODAL 5: DRIVER TIDAK DITEMUKAN ─────────────────────────────────────────
-ion-modal.driver-notfound-modal {
-  --border-radius: 24px 24px 0 0;
-  align-items: flex-end;
-
-  &::part(content) {
-    background: white;
-    border-radius: 24px 24px 0 0;
-    max-height: 65vh;
-  }
+.notfound-wrap {
+  border-radius: 24px 24px 0 0;
+  justify-content: flex-end;
 }
 
 .notfound-container {
@@ -783,15 +822,10 @@ ion-modal.driver-notfound-modal {
 
 // ─── MODAL 6: DRIVER DITEMUKAN (BOTTOM SHEET) ─────────────────────────────────
 
-ion-modal.driver-found-sheet {
-  --border-radius: 24px 24px 0 0;
-  --background: transparent;
-
-  &::part(content) {
-    background: white;
-    border-radius: 24px 24px 0 0;
-    box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
-  }
+.driver-found-wrap {
+  border-radius: 24px 24px 0 0;
+  background: white;
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
 }
 
 .driver-found-container {
