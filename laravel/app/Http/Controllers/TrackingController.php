@@ -50,4 +50,64 @@ class TrackingController extends Controller
             
         return response()->json($drivers);
     }
+
+    /**
+     * Hitung rute dinamis dari backend berdasarkan fase pesanan aktif saat ini.
+     *
+     * @param Request $request
+     * @param string $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getRoute(Request $request, $id)
+    {
+        // Load order beserta profil driver jika ada
+        $order = Order::with(['driver.driverProfile'])->findOrFail($id);
+        
+        $startLat = $order->pickup_lat;
+        $startLng = $order->pickup_lng;
+        $endLat = $order->dropoff_lat;
+        $endLng = $order->dropoff_lng;
+
+        // Penentuan titik rute dinamis berdasarkan fase pesanan:
+        // 1. accepted/arrived (driver berjalan menuju pickup) -> rute: driver ke pickup
+        if (in_array($order->status, ['accepted', 'arrived']) && $order->driver) {
+            $profile = $order->driver->driverProfile;
+            if ($profile && $profile->current_lat && $profile->current_lng) {
+                $startLat = $profile->current_lat;
+                $startLng = $profile->current_lng;
+                $endLat = $order->pickup_lat;
+                $endLng = $order->pickup_lng;
+            }
+        } 
+        // 2. started (dalam perjalanan) -> rute: driver ke dropoff
+        elseif ($order->status === 'started' && $order->driver) {
+            $profile = $order->driver->driverProfile;
+            if ($profile && $profile->current_lat && $profile->current_lng) {
+                $startLat = $profile->current_lat;
+                $startLng = $profile->current_lng;
+                $endLat = $order->dropoff_lat;
+                $endLng = $order->dropoff_lng;
+            }
+        }
+        // 3. pending / default -> rute: pickup ke dropoff
+
+        $tomTom = app(\App\Services\TomTomService::class);
+        $routeData = $tomTom->calculateRoute(
+            (float) $startLat, 
+            (float) $startLng, 
+            (float) $endLat, 
+            (float) $endLng, 
+            $order->vehicle_type ?? 'motor'
+        );
+
+        return response()->json([
+            'order_id' => $id,
+            'status' => $order->status,
+            'coordinates' => $routeData['coordinates'] ?? [],
+            'eta_minutes' => (int) ceil(($routeData['travel_time_seconds'] ?? 0) / 60),
+            'distance_km' => round(($routeData['distance_meters'] ?? 0) / 1000, 1),
+            'start' => ['lat' => (float)$startLat, 'lng' => (float)$startLng],
+            'destination' => ['lat' => (float)$endLat, 'lng' => (float)$endLng]
+        ]);
+    }
 }

@@ -6,6 +6,7 @@ use App\Models\DriverProfile;
 use App\Models\DriverDocument;
 use App\Models\Report;
 use App\Services\OtpService;
+use App\Services\TomTomService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -13,10 +14,12 @@ use Illuminate\Validation\Rule;
 class DriverController extends Controller
 {
     protected OtpService $otpService;
+    protected TomTomService $tomTomService;
 
-    public function __construct(OtpService $otpService)
+    public function __construct(OtpService $otpService, TomTomService $tomTomService)
     {
         $this->otpService = $otpService;
+        $this->tomTomService = $tomTomService;
     }
     public function register(Request $request)
     {
@@ -170,18 +173,72 @@ class DriverController extends Controller
     {
         $validated = $request->validate([
             'lat' => 'required|numeric',
-            'lng' => 'required|numeric'
+            'lng' => 'required|numeric',
+            'order_id' => 'nullable|string|exists:orders,id'
         ]);
 
-        $profile = DriverProfile::where('user_id', $request->user()->id)->first();
+        $user = $request->user();
+        $lat = (float) $validated['lat'];
+        $lng = (float) $validated['lng'];
+
+        // 1. Update Driver Profile (posisi GPS asli/mentah)
+        $profile = DriverProfile::where('user_id', $user->id)->first();
         if ($profile) {
             $profile->update([
-                'current_lat' => $validated['lat'],
-                'current_lng' => $validated['lng']
+                'current_lat' => $lat,
+                'current_lng' => $lng
             ]);
         }
 
-        return response()->json(['message' => 'Location updated']);
+        // 2. Cari pesanan aktif untuk driver ini (bisa otomatis atau dikirim eksplisit)
+        $orderId = $validated['order_id'] ?? null;
+        
+        $activeOrderQuery = \App\Models\Order::where('driver_id', $user->id)
+            ->whereIn('status', ['accepted', 'arrived', 'started']);
+            
+        if ($orderId) {
+            $activeOrder = $activeOrderQuery->where('id', $orderId)->first();
+        } else {
+            $activeOrder = $activeOrderQuery->first();
+        }
+
+        $responseData = [
+            'message' => 'Location updated',
+            'raw' => ['lat' => $lat, 'lng' => $lng]
+        ];
+
+        // 3. Jika ada pesanan aktif, snap koordinat & broadcast ke penumpang
+        if ($activeOrder) {
+            // Bersihkan data koordinat dengan TomTom Snap to Roads Service
+            $snappedData = $this->tomTomService->snapToRoad($lat, $lng);
+            
+            // Simpan ke riwayat pelacakan pesanan
+            $tracking = \App\Models\OrderTracking::create([
+                'order_id'  => $activeOrder->id,
+                'driver_id' => $user->id,
+                'lat'       => $snappedData['lat'],
+                'lng'       => $snappedData['lng'],
+                'status'    => $activeOrder->status
+            ]);
+
+            // Broadcast ke channel penumpang menggunakan WebSockets (Laravel Reverb)
+            broadcast(new \App\Events\DriverLocationUpdated(
+                $activeOrder->id,
+                $snappedData['lat'],
+                $snappedData['lng'],
+                $activeOrder->status,
+                $snappedData['snapped']
+            ))->toOthers();
+
+            $responseData['snapped'] = [
+                'lat' => $snappedData['lat'],
+                'lng' => $snappedData['lng'],
+                'is_snapped' => $snappedData['snapped']
+            ];
+            $responseData['tracking_id'] = $tracking->id;
+        }
+
+        return response()->json($responseData);
     }
 
     public function history(Request $request)

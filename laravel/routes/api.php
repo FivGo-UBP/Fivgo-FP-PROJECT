@@ -81,6 +81,7 @@ Route::middleware('auth:api')->group(function () {
         
         // Tracking
         Route::get('{id}/tracking', [TrackingController::class, 'tracking']);
+        Route::get('{id}/route', [TrackingController::class, 'getRoute']);
     });
 
     // Promo Endpoints

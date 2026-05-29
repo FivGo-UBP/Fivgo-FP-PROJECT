@@ -87,6 +87,10 @@ export class OrderService {
     return this.http.post<any>(`${environment.apiUrl}/orders/${id}/rating`, { rating, review });
   }
 
+  getOrderRoute(id: string): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/orders/${id}/route`);
+  }
+
   // ─── History ──────────────────────────────────────────────────────────────
 
   getHistory(): Observable<{ data: OrderHistory[] }> {
