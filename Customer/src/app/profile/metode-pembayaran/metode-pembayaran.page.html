@@ -48,13 +48,12 @@
             <ion-icon name="card-outline" class="payment-icon payment-icon--white"></ion-icon>
           </div>
           <ion-label class="payment-label">
-            <span *ngIf="selectedPayment !== 'nontunai'">Qris/VA/E-Wallet</span>
-            <span *ngIf="selectedPayment === 'nontunai'">Non Tunai : {{ selectedNonTunai }}</span>
+            <span *ngIf="selectedPayment !== 'nontunai'">Non Tunai : QRIS/VA</span>
+            <span *ngIf="selectedPayment === 'nontunai'">Non Tunai : {{ getSelectedNonTunaiLabel() }}</span>
           </ion-label>
           <div slot="end" class="radio-circle" [class.radio-active]="selectedPayment === 'nontunai'" (click)="selectPayment('nontunai'); $event.stopPropagation()">
             <div class="radio-inner" *ngIf="selectedPayment === 'nontunai'"></div>
           </div>
-          <ion-icon name="chevron-down-outline" slot="end" class="expand-icon" [class.rotated]="showNonTunaiOptions"></ion-icon>
         </ion-item>
         <ion-item-options side="start">
           <ion-item-option color="primary" (click)="setUtama('nontunai')">
@@ -62,15 +61,6 @@
           </ion-item-option>
         </ion-item-options>
       </ion-item-sliding>
-
-      <!-- Sub-opsi Non Tunai -->
-      <div class="nontunai-options" *ngIf="showNonTunaiOptions">
-        <ion-item class="sub-item" *ngFor="let opt of nonTunaiOptions" (click)="selectNonTunai(opt)">
-          <ion-icon name="checkmark-outline" slot="start" class="sub-check" *ngIf="selectedNonTunai === opt"></ion-icon>
-          <ion-icon name="ellipse-outline" slot="start" class="sub-check sub-check--empty" *ngIf="selectedNonTunai !== opt"></ion-icon>
-          <ion-label>{{ opt }}</ion-label>
-        </ion-item>
-      </div>
 
     </ion-list>
   </div>

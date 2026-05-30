@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -8,6 +9,7 @@ import { environment } from '../../environments/environment';
 })
 export class TomtomService {
   private apiKey = environment.tomtomApiKey;
+  private mapboxApiKey = environment.mapboxApiKey;
 
   constructor(private http: HttpClient) {}
 
@@ -32,6 +34,22 @@ export class TomtomService {
 
   // 3. Routing API
   calculateRoute(startLat: number, startLon: number, destLat: number, destLon: number, vehicleType: string = 'mobil'): Observable<any> {
+    const mapboxUrl = this.buildMapboxRouteUrl(startLat, startLon, destLat, destLon, vehicleType);
+    const tomtomUrl = this.buildTomTomRouteUrl(startLat, startLon, destLat, destLon, vehicleType);
+
+    return this.http.get(mapboxUrl).pipe(
+      map((res: any) => {
+        const normalized = this.normalizeMapboxRouteResponse(res);
+        if (!normalized.routes.length) {
+          throw new Error('Mapbox route not found');
+        }
+        return normalized;
+      }),
+      catchError(() => this.http.get(tomtomUrl))
+    );
+  }
+
+  private buildTomTomRouteUrl(startLat: number, startLon: number, destLat: number, destLon: number, vehicleType: string): string {
     const locations = `${startLat},${startLon}:${destLat},${destLon}`;
     
     // Trik untuk Motor: Kita pinjam mode 'car' agar tidak masuk gang sempit,
@@ -49,6 +67,55 @@ export class TomtomService {
       url += '&avoid=tollRoads';
     }
     
-    return this.http.get(url);
+    return url;
+  }
+
+  private buildMapboxRouteUrl(startLat: number, startLon: number, destLat: number, destLon: number, vehicleType: string): string {
+    const coordinates = `${startLon},${startLat};${destLon},${destLat}`;
+    const params = new URLSearchParams({
+      access_token: this.mapboxApiKey,
+      geometries: 'geojson',
+      overview: 'full',
+      steps: 'true',
+      language: 'id',
+      alternatives: vehicleType === 'motor' ? 'true' : 'false',
+    });
+
+    if (vehicleType === 'motor') {
+      params.set('exclude', 'toll');
+    }
+
+    return `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?${params.toString()}`;
+  }
+
+  private normalizeMapboxRouteResponse(res: any): any {
+    return {
+      routes: (res?.routes || []).map((route: any) => {
+        const coordinates = route?.geometry?.coordinates || [];
+        const points = coordinates.map(([longitude, latitude]: [number, number]) => ({ longitude, latitude }));
+        const instructions: any[] = [];
+
+        for (const leg of route?.legs || []) {
+          for (const step of leg?.steps || []) {
+            const [longitude, latitude] = step?.maneuver?.location || [];
+            if (Number.isFinite(longitude) && Number.isFinite(latitude)) {
+              instructions.push({
+                message: step?.maneuver?.instruction || step?.name || '',
+                point: { longitude, latitude },
+              });
+            }
+          }
+        }
+
+        return {
+          summary: {
+            lengthInMeters: route?.distance || 0,
+            travelTimeInSeconds: route?.duration || 0,
+          },
+          legs: [{ points }],
+          guidance: { instructions },
+        };
+      }),
+    };
   }
 }

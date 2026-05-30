@@ -18,7 +18,7 @@ export interface OrderDriver {
 
 export interface ActiveOrder {
   id: string;
-  status: 'pending' | 'accepted' | 'arrived' | 'started' | 'completed' | 'cancelled' | 'rejected';
+  status: 'payment_pending' | 'pending' | 'accepted' | 'arrived' | 'started' | 'completed' | 'cancelled' | 'rejected';
   vehicle_type: string | null;
   pickup_address: string;
   pickup_lat: number;
@@ -54,6 +54,18 @@ export interface OrderDetail extends OrderHistory {
   cancel_reason: string | null;
 }
 
+export interface PaymentRecord {
+  id: string;
+  order_id: string;
+  method: string;
+  gateway: string | null;
+  total_amount: number;
+  status: string;
+  transaction_id: string | null;
+  gateway_payload?: any;
+  expires_at?: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class OrderService {
   constructor(private http: HttpClient) {}
@@ -83,12 +95,20 @@ export class OrderService {
     return this.http.post<any>(`${environment.apiUrl}/orders/${id}/cancel`, { reason });
   }
 
-  rateOrder(id: string, rating: number, review: string): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}/orders/${id}/rating`, { rating, review });
+  createPayment(data: {
+    order_id: string;
+    method: string;
+    amount: number;
+  }): Observable<PaymentRecord> {
+    return this.http.post<PaymentRecord>(`${environment.apiUrl}/payments/pre-auth`, data);
   }
 
-  getOrderRoute(id: string): Observable<any> {
-    return this.http.get<any>(`${environment.apiUrl}/orders/${id}/route`);
+  getPaymentStatus(orderId: string): Observable<PaymentRecord> {
+    return this.http.get<PaymentRecord>(`${environment.apiUrl}/payments/${orderId}`);
+  }
+
+  rateOrder(id: string, rating: number, review: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/orders/${id}/rating`, { rating, review });
   }
 
   // ─── History ──────────────────────────────────────────────────────────────

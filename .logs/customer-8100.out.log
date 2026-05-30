@@ -1,0 +1,114 @@
+
+> FivGo@0.0.1 start
+> ng serve --host localhost --port 8100
+
+
+Initial chunk files                                                                                     | Names                                                  |  Raw size
+vendor.js                                                                                               | vendor                                                 |   4.47 MB | 
+polyfills.js                                                                                            | polyfills                                              | 242.15 kB | 
+styles.css, styles.js                                                                                   | styles                                                 | 217.98 kB | 
+main.js                                                                                                 | main                                                   |  32.22 kB | 
+runtime.js                                                                                              | runtime                                                |  13.12 kB | 
+
+                                                                                                        | Initial total                                          |   4.97 MB
+
+Lazy chunk files                                                                                        | Names                                                  |  Raw size
+src_app_beranda_chat_chat_module_ts.js                                                                  | chat-chat-module                                       | 246.19 kB | 
+node_modules_ionic_core_dist_esm_ion-datetime_3_entry_js.js                                             | -                                                      | 160.46 kB | 
+src_app_beranda_map-visual_map-visual_module_ts.js                                                      | beranda-map-visual-map-visual-module                   | 152.12 kB | 
+node_modules_ionic_core_dist_esm_ion-modal_entry_js.js                                                  | -                                                      | 139.27 kB | 
+node_modules_capgo_capacitor-social-login_dist_esm_web_js.js                                            | web                                                    | 111.30 kB | 
+common.js                                                                                               | common                                                 |  96.01 kB | 
+src_app_beranda_activity_activity_module_ts.js                                                          | activity-activity-module                               |  94.51 kB | 
+node_modules_ionic_core_dist_esm_ion-app_8_entry_js.js                                                  | -                                                      |  88.94 kB | 
+node_modules_ionic_core_dist_esm_ion-select_3_entry_js.js                                               | -                                                      |  82.63 kB | 
+node_modules_ionic_core_dist_esm_ion-popover_entry_js.js                                                | -                                                      |  72.10 kB | 
+node_modules_ionic_core_dist_esm_ion-item_8_entry_js.js                                                 | -                                                      |  71.01 kB | 
+node_modules_ionic_core_dist_esm_ion-textarea_entry_js.js                                               | -                                                      |  64.20 kB | 
+node_modules_ionic_core_dist_esm_ion-refresher_2_entry_js.js                                            | -                                                      |  61.43 kB | 
+src_app_beranda_order-detail_order-detail_module_ts.js                                                  | beranda-order-detail-order-detail-module               |  60.78 kB | 
+node_modules_ionic_core_dist_esm_ion-input_entry_js.js                                                  | -                                                      |  60.75 kB | 
+default-node_modules_ionic_core_dist_esm_data-B9iGR5YO_js.js                                            | -                                                      |  60.12 kB | 
+node_modules_ionic_core_dist_esm_ion-range_entry_js.js                                                  | -                                                      |  56.31 kB | 
+node_modules_ionic_core_dist_esm_ion-alert_entry_js.js                                                  | -                                                      |  56.14 kB | 
+src_app_profile_ganti-nomor_ganti-nomor_module_ts.js                                                    | profile-ganti-nomor-ganti-nomor-module                 |  53.38 kB | 
+node_modules_ionic_core_dist_esm_ion-menu_3_entry_js.js                                                 | -                                                      |  50.21 kB | 
+src_app_profile_edit-profile_edit-profile_module_ts.js                                                  | profile-edit-profile-edit-profile-module               |  49.98 kB | 
+node_modules_ionic_core_dist_esm_ion-segment_2_entry_js.js                                              | -                                                      |  49.42 kB | 
+node_modules_ionic_core_dist_esm_ion-toast_entry_js.js                                                  | -                                                      |  49.31 kB | 
+src_app_beranda_order_order_module_ts.js                                                                | beranda-order-order-module                             |  48.91 kB | 
+src_app_auth_menu-login_menu-login_module_ts.js                                                         | auth-menu-login-menu-login-module                      |  47.25 kB | 
+node_modules_ionic_core_dist_esm_ion-button_2_entry_js.js                                               | -                                                      |  45.02 kB | 
+node_modules_ionic_core_dist_esm_ion-action-sheet_entry_js.js                                           | -                                                      |  42.94 kB | 
+node_modules_ionic_core_dist_esm_ion-input-otp_entry_js.js                                              | -                                                      |  42.64 kB | 
+node_modules_ionic_core_dist_esm_ion-searchbar_entry_js.js                                              | -                                                      |  39.25 kB | 
+node_modules_ionic_core_dist_esm_ion-nav_2_entry_js.js                                                  | -                                                      |  38.97 kB | 
+node_modules_ionic_core_dist_esm_ion-item-option_3_entry_js.js                                          | -                                                      |  36.29 kB | 
+src_app_beranda_pilih-penjemputan_pilih-penjemputan_module_ts.js                                        | beranda-pilih-penjemputan-pilih-penjemputan-module     |  35.54 kB | 
+node_modules_ionic_core_dist_esm_ion-toggle_entry_js.js                                                 | -                                                      |  35.22 kB | 
+node_modules_ionic_core_dist_esm_ion-route_4_entry_js.js                                                | -                                                      |  35.10 kB | 
+node_modules_ionic_core_dist_esm_ion-radio_2_entry_js.js                                                | -                                                      |  34.08 kB | 
+src_app_beranda_cari-lokasi_cari-lokasi_module_ts.js                                                    | beranda-cari-lokasi-cari-lokasi-module                 |  34.02 kB | 
+node_modules_ionic_core_dist_esm_ion-accordion_2_entry_js.js                                            | -                                                      |  32.95 kB | 
+src_app_profile_metode-pembayaran_metode-pembayaran_module_ts.js                                        | profile-metode-pembayaran-metode-pembayaran-module     |  32.75 kB | 
+src_app_auth_kode-otp-login_kode-otp-login_module_ts.js                                                 | auth-kode-otp-login-kode-otp-login-module              |  31.35 kB | 
+src_app_profile_kelola-profile_kelola-profile_module_ts.js                                              | profile-kelola-profile-kelola-profile-module           |  30.78 kB | 
+node_modules_ionic_core_dist_esm_input-shims-AaDhOpKN_js.js                                             | input-shims-AaDhOpKN-js                                |  30.37 kB | 
+src_app_auth_kodeotp_kodeotp_module_ts.js                                                               | auth-kodeotp-kodeotp-module                            |  30.14 kB | 
+src_app_beranda_rating-driver_rating-driver_module_ts.js                                                | beranda-rating-driver-rating-driver-module             |  29.64 kB | 
+node_modules_ionic_core_dist_esm_ion-picker-column_entry_js.js                                          | -                                                      |  29.29 kB | 
+node_modules_ionic_core_dist_esm_ion-fab_3_entry_js.js                                                  | -                                                      |  28.78 kB | 
+node_modules_ionic_core_dist_esm_ion-checkbox_entry_js.js                                               | -                                                      |  27.41 kB | 
+node_modules_ionic_core_dist_esm_ion-tab-bar_2_entry_js.js                                              | -                                                      |  25.56 kB | 
+node_modules_ionic_core_dist_esm_ion-picker_entry_js.js                                                 | -                                                      |  24.75 kB | 
+src_app_beranda_prioritas-kendaraan_prioritas-kendaraan_module_ts.js                                    | beranda-prioritas-kendaraan-prioritas-kendaraan-module |  24.44 kB | 
+src_app_auth_form_form-telpon-daftar_form-telpon-daftar_module_ts.js                                    | auth-form-form-telpon-daftar-form-telpon-daftar-module |  23.56 kB | 
+src_app_auth_form_form-telpon-login_form-telpon-login_module_ts.js                                      | auth-form-form-telpon-login-form-telpon-login-module   |  23.48 kB | 
+src_app_beranda_home_home_module_ts.js                                                                  | home-home-module                                       |  23.39 kB | 
+node_modules_ionic_core_dist_esm_ion-breadcrumb_2_entry_js.js                                           | -                                                      |  23.02 kB | 
+node_modules_ionic_core_dist_esm_ion-progress-bar_entry_js.js                                           | -                                                      |  22.89 kB | 
+node_modules_ionic_core_dist_esm_ion-datetime-button_entry_js.js                                        | -                                                      |  21.04 kB | 
+src_app_profile_bahasa_bahasa_module_ts.js                                                              | profile-bahasa-bahasa-module                           |  20.66 kB | 
+node_modules_ionic_core_dist_esm_ion-loading_entry_js.js                                                | -                                                      |  20.39 kB | 
+src_app_aktivasi-lokasi_aktivasi-lokasi_module_ts.js                                                    | aktivasi-lokasi-aktivasi-lokasi-module                 |  17.97 kB | 
+node_modules_ionic_core_components_p-CBzELu-H_js.js                                                     | p-CBzELu-H-js                                          |  16.86 kB | 
+node_modules_ionic_core_dist_esm_ion-card_5_entry_js.js                                                 | -                                                      |  16.34 kB | 
+src_app_auth_form_form-nama_form-nama_module_ts.js                                                      | auth-form-form-nama-form-nama-module                   |  16.16 kB | 
+node_modules_ionic_core_dist_esm_ion-back-button_entry_js.js                                            | -                                                      |  16.12 kB | 
+node_modules_ionic_core_dist_esm_ion-infinite-scroll_2_entry_js.js                                      | -                                                      |  15.29 kB | 
+node_modules_ionic_core_dist_esm_ion-reorder_2_entry_js.js                                              | -                                                      |  15.09 kB | 
+src_app_auth_login_login_module_ts.js                                                                   | auth-login-login-module                                |  14.07 kB | 
+src_app_beranda_simpan-lokasi_simpan-lokasi_module_ts.js                                                | beranda-simpan-lokasi-simpan-lokasi-module             |  13.61 kB | 
+default-node_modules_ionic_core_dist_esm_input_utils-Bxa_DQ7-_js-node_modules_ionic_core_dist-66891c.js | -                                                      |  13.33 kB | 
+node_modules_ionic_core_dist_esm_ion-col_3_entry_js.js                                                  | -                                                      |  13.31 kB | 
+src_app_landing-page_landing-page_module_ts.js                                                          | landing-page-landing-page-module                       |  12.04 kB | 
+node_modules_ionic_core_dist_esm_ion-tab_2_entry_js.js                                                  | -                                                      |  11.98 kB | 
+src_app_beranda_tabs_tabs_module_ts.js                                                                  | beranda-tabs-tabs-module                               |  11.81 kB | 
+node_modules_ionic_core_dist_esm_ion-select-modal_entry_js.js                                           | -                                                      |   9.97 kB | 
+node_modules_ionic_core_dist_esm_ion-spinner_entry_js.js                                                | -                                                      |   8.72 kB | 
+node_modules_ionic_core_dist_esm_ion-chip_entry_js.js                                                   | -                                                      |   8.34 kB | 
+node_modules_ionic_core_dist_esm_ion-split-pane_entry_js.js                                             | -                                                      |   7.81 kB | 
+src_app_profile_keamanan_keamanan_module_ts.js                                                          | profile-keamanan-keamanan-module                       |   7.52 kB | 
+src_app_beranda_payment_payment_module_ts.js                                                            | payment-payment-module                                 |   7.46 kB | 
+src_app_profile_bantuan_bantuan_module_ts.js                                                            | profile-bantuan-bantuan-module                         |   7.46 kB | 
+src_app_profile_promo_promo_module_ts.js                                                                | profile-promo-promo-module                             |   7.34 kB | 
+node_modules_ionic_core_dist_esm_ion-segment-view_entry_js.js                                           | -                                                      |   7.00 kB | 
+node_modules_ionic_core_dist_esm_ion-ripple-effect_entry_js.js                                          | -                                                      |   6.90 kB | 
+node_modules_capacitor_geolocation_dist_esm_web_js.js                                                   | web                                                    |   6.48 kB | 
+node_modules_ionic_core_dist_esm_ion-picker-column-option_entry_js.js                                   | -                                                      |   6.42 kB | 
+node_modules_ionic_core_dist_esm_index-BtUdxPjv_js.js                                                   | index-BtUdxPjv-js                                      |   6.10 kB | 
+node_modules_ionic_core_dist_esm_ion-avatar_3_entry_js.js                                               | -                                                      |   5.96 kB | 
+node_modules_ionic_core_dist_esm_ion-input-password-toggle_entry_js.js                                  | -                                                      |   5.34 kB | 
+node_modules_ionic_core_dist_esm_ion-img_entry_js.js                                                    | -                                                      |   4.98 kB | 
+node_modules_ionic_core_dist_esm_ion-backdrop_entry_js.js                                               | -                                                      |   3.16 kB | 
+node_modules_ionic_core_dist_esm_status-tap-BfJqFSLF_js.js                                              | status-tap-BfJqFSLF-js                                 |   2.88 kB | 
+node_modules_ionic_core_components_p-CU1SSH8__js.js                                                     | p-CU1SSH8_-js                                          |   2.32 kB | 
+node_modules_ionic_core_dist_esm_ion-text_entry_js.js                                                   | -                                                      |   1.91 kB | 
+node_modules_ionic_core_dist_esm_ion-segment-content_entry_js.js                                        | -                                                      |   1.73 kB | 
+
+Build at: 2026-05-29T05:36:45.115Z - Hash: 7f55b7dadfefd211 - Time: 12242ms
+
+** Angular Live Development Server is listening on localhost:8100, open your browser on http://localhost:8100/ **
+
+
+√ Compiled successfully.

@@ -239,7 +239,27 @@ export class HomePage implements OnInit, OnDestroy {
   getPaymentLabel(): string {
     const method = this.incomingOrder?.payment_method || 'tunai';
     if (method === 'tunai') return 'Tunai';
-    return `Non Tunai : ${method}`;
+    return `Non Tunai : ${this.formatPaymentMethod(method)}`;
+  }
+
+  formatPaymentMethod(method: string): string {
+    const map: Record<string, string> = {
+      qris: 'QRIS',
+      va_bca: 'VA BCA',
+      va_bni: 'VA BNI',
+      va_bri: 'VA BRI',
+      va_mandiri: 'VA Mandiri',
+      va_permata: 'VA Permata',
+      va_cimb: 'VA CIMB',
+      va_danamon: 'VA Danamon',
+      dana: 'DANA',
+      ovo: 'OVO',
+      gopay: 'GoPay',
+      shopeepay: 'ShopeePay',
+      linkaja: 'LinkAja',
+    };
+
+    return map[method.toLowerCase()] || method;
   }
 
   navigate(path: string) {

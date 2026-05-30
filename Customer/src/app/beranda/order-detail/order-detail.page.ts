@@ -75,9 +75,20 @@ export class OrderDetailPage implements OnInit {
   formatPayment(method: string): string {
     const map: { [k: string]: string } = {
       cash: 'Tunai',
+      tunai: 'Tunai',
       dana: 'DANA',
       gopay: 'GoPay',
       ovo: 'OVO',
+      qris: 'QRIS',
+      va_bca: 'VA BCA',
+      va_bni: 'VA BNI',
+      va_bri: 'VA BRI',
+      va_mandiri: 'VA Mandiri',
+      va_permata: 'VA Permata',
+      va_cimb: 'VA CIMB',
+      va_danamon: 'VA Danamon',
+      shopeepay: 'ShopeePay',
+      linkaja: 'LinkAja',
     };
     return map[method?.toLowerCase()] ?? method?.toUpperCase() ?? '-';
   }

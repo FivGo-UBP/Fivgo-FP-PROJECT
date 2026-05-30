@@ -1,7 +1,35 @@
 <?php
 
+use App\Http\Controllers\Admin\WebAdminController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/login', function () {
+    return redirect()->route('admin.login');
+})->name('login');
+
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('admin.dashboard');
+});
+
+Route::prefix('admin')->name('admin.')->controller(WebAdminController::class)->group(function () {
+    Route::middleware('guest')->group(function () {
+        Route::get('login', 'showLogin')->name('login');
+        Route::post('login', 'login')->name('login.store');
+    });
+
+    Route::middleware('auth')->group(function () {
+        Route::get('/', 'dashboard')->name('dashboard');
+        Route::get('dashboard', fn () => redirect()->route('admin.dashboard'))->name('dashboard.redirect');
+        Route::get('monitoring', 'monitoring')->name('monitoring');
+        Route::get('analytics', 'analytics')->name('analytics');
+        Route::get('customers', 'customers')->name('customers');
+        Route::get('drivers', 'drivers')->name('drivers');
+        Route::get('verification', 'verification')->name('verification');
+        Route::get('orders', 'orders')->name('orders');
+        Route::get('promo', 'promo')->name('promo');
+        Route::get('reports', 'reports')->name('reports');
+        Route::get('messages', 'messages')->name('messages');
+        Route::get('withdrawals', 'withdrawals')->name('withdrawals');
+        Route::post('logout', 'logout')->name('logout');
+    });
 });

@@ -140,8 +140,12 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
         if (this.map) this.map.resize();
       }, 100);
       this.addMarkers(driverLat, driverLng, pickupLat, pickupLng, order);
-      // Gambar rute dari posisi driver ke titik penjemputan menggunakan TomTom (SAMA seperti customer)
-      this.drawRouteTomTom(driverLat, driverLng, pickupLat, pickupLng, order.vehicle_type || 'motor', 'accepted');
+      if (order.status === 'started') {
+        this.updateMapForStartedPhase(order);
+      } else {
+        // Sebelum bersama pelanggan, jangan tampilkan tujuan dulu.
+        this.drawRouteTomTom(driverLat, driverLng, pickupLat, pickupLng, order.vehicle_type || 'motor', 'accepted');
+      }
     });
 
     // Resize tambahan setelah map selesai render
@@ -395,8 +399,6 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
         this.isArriving = false;
         if (this.order) {
           this.order.status = 'arrived';
-          // Tampilkan rute ke tujuan segera setelah tiba di titik jemput
-          this.updateMapForStartedPhase(this.order);
         }
         this.showToast('Status: Sudah di titik penjemputan', 'success');
       },
@@ -405,8 +407,6 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
         this.isArriving = false;
         if (this.order) {
           this.order.status = 'arrived';
-          // Tampilkan rute ke tujuan segera setelah tiba di titik jemput (fallback local)
-          this.updateMapForStartedPhase(this.order);
         }
         this.showToast('Status: Sudah di titik penjemputan', 'success');
       }
@@ -425,7 +425,7 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
           this.order.status = 'started';
           this.updateMapForStartedPhase(this.order);
         }
-        this.showToast('Perjalanan dimulai!', 'success');
+        this.showToast('Pelanggan sudah bersama driver. Perjalanan dimulai!', 'success');
       },
       error: (err) => {
         console.error(err);
@@ -434,7 +434,7 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
           this.order.status = 'started';
           this.updateMapForStartedPhase(this.order);
         }
-        this.showToast('Perjalanan dimulai!', 'success');
+        this.showToast('Pelanggan sudah bersama driver. Perjalanan dimulai!', 'success');
       }
     });
   }
@@ -509,7 +509,27 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
   getCustomerName(): string { return this.order?.customer?.name || 'Pelanggan'; }
   getCustomerRating(): string { const r = this.order?.customer?.rating; return r ? r.toFixed(1) : '4.8'; }
   formatPrice(price: number | null | undefined): string { if (!price) return 'Rp 0'; return 'Rp ' + price.toLocaleString('id-ID'); }
-  getPaymentLabel(): string { const m = this.order?.payment_method || 'tunai'; return m === 'tunai' ? 'Tunai' : `Non Tunai : ${m}`; }
+  getPaymentLabel(): string { const m = this.order?.payment_method || 'tunai'; return m === 'tunai' ? 'Tunai' : `Non Tunai : ${this.formatPaymentMethod(m)}`; }
+
+  formatPaymentMethod(method: string): string {
+    const map: Record<string, string> = {
+      qris: 'QRIS',
+      va_bca: 'VA BCA',
+      va_bni: 'VA BNI',
+      va_bri: 'VA BRI',
+      va_mandiri: 'VA Mandiri',
+      va_permata: 'VA Permata',
+      va_cimb: 'VA CIMB',
+      va_danamon: 'VA Danamon',
+      dana: 'DANA',
+      ovo: 'OVO',
+      gopay: 'GoPay',
+      shopeepay: 'ShopeePay',
+      linkaja: 'LinkAja',
+    };
+
+    return map[method.toLowerCase()] || method;
+  }
 
   async showToast(message: string, color: string) {
     const toast = await this.toastCtrl.create({ message, duration: 2500, color, position: 'top' });

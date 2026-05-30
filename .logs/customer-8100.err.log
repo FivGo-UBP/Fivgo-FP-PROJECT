@@ -1,0 +1,7 @@
+- Generating browser application bundles (phase: setup)...
+√ Browser application bundle generation complete.
+
+Warning: C:\Users\LEGION\Documents\Projects\Fivgo-FP-PROJECT-fresh\Customer\src\app\services\chat.service.ts depends on 'pusher-js'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+

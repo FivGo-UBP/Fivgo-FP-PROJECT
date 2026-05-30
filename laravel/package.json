@@ -13,5 +13,10 @@
         "laravel-vite-plugin": "^3.0.0",
         "tailwindcss": "^4.0.0",
         "vite": "^8.0.0"
+    },
+    "dependencies": {
+        "laravel-echo": "^2.3.4",
+        "mapbox-gl": "^3.24.0",
+        "pusher-js": "^8.5.0"
     }
 }

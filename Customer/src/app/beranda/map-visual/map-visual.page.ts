@@ -3,11 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 declare var mapboxgl: any;
 import { environment } from '../../../environments/environment';
 import { TomtomService } from '../../services/tomtom.service';
-import { OrderService, ActiveOrder } from '../../services/order.service';
+import { OrderService, ActiveOrder, PaymentRecord } from '../../services/order.service';
 import { ToastController, NavController } from '@ionic/angular';
-import Echo from 'laravel-echo';
-import Pusher from 'pusher-js';
-import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-map-visual',
   templateUrl: './map-visual.page.html',
@@ -31,7 +28,21 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
   // Metode pembayaran
   selectedPayment: string = 'tunai';
-  selectedNonTunai: string = 'Dana';
+  selectedNonTunai: string = 'QRIS_VA';
+  paymentInfo: PaymentRecord | null = null;
+  isCreatingPayment: boolean = false;
+  paymentError: string = '';
+  isPaymentGatewayOpen: boolean = false;
+  dompetxGatewayMethod: string = 'QRIS';
+  dompetxGatewayAmount: number = 0;
+  readonly dompetxGatewayOptions = [
+    { label: 'QRIS', code: 'QRIS' },
+    { label: 'VA BCA', code: 'VA_BCA' },
+    { label: 'VA BNI', code: 'VA_BNI' },
+    { label: 'VA BRI', code: 'VA_BRI' },
+    { label: 'VA Mandiri', code: 'VA_MANDIRI' },
+  ];
+  private paymentPollingInterval: any = null;
 
   // ─── State Pencarian Driver ───────────────────────────────────────────────
   isSearchingDriver: boolean = false;
@@ -55,12 +66,8 @@ export class MapVisualPage implements OnInit, OnDestroy {
   
   driverEtaText: string = 'Menghitung...';
   private driverMarker: any = null;
-
-  // ─── Driver Marker Animation State ────────────────────────────────────────
-  private driverAnimationId: any = null;
-  private driverLastCoords: [number, number] | null = null;
-  private driverLastBearing: number = 0;
-  private echo: Echo<any> | null = null;
+  private pickupMarker: any = null;
+  private dropoffMarker: any = null;
 
   vehicles = [
     { type: 'motor', name: 'Motor', time: '', capacity: 1, price: '', image: 'assets/motor.png', isLoading: true },
@@ -89,8 +96,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
     private orderService: OrderService,
     private toastCtrl: ToastController,
     private navCtrl: NavController,
-    private cdr: ChangeDetectorRef,
-    private authService: AuthService
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -112,10 +118,9 @@ export class MapVisualPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.stopPaymentPolling();
     this.stopOrderPolling();
     this.stopSearch();
-    this.stopDriverAnimation();
-    this.disconnectWebSocket();
   }
 
   sortVehicles() {
@@ -139,7 +144,6 @@ export class MapVisualPage implements OnInit, OnDestroy {
             this.isDriverArrived = true;
             this.isInJourney = true;
           }
-          this.connectWebSocket(this.activeOrder.id);
         }
       }
       return;
@@ -151,7 +155,29 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.orderService.getActiveOrder().subscribe({
       next: (order) => {
         if (order) {
-          if (order.status === 'pending') {
+          if (this.clearPreviousOrderForNewBooking(order)) {
+            return;
+          }
+
+          if (order.status === 'payment_pending') {
+            this.activeOrder = order;
+            this.currentOrderId = order.id;
+            this.isVehicleModalOpen = false;
+            this.isPaymentGatewayOpen = true;
+            this.cdr.detectChanges();
+
+            this.orderService.getPaymentStatus(order.id).subscribe({
+              next: (payment) => {
+                this.paymentInfo = payment;
+                this.dompetxGatewayMethod = payment.method || this.dompetxGatewayMethod;
+                this.startPaymentPolling();
+                this.cdr.detectChanges();
+              },
+              error: () => {
+                this.openDompetxGateway(order.id, order.estimated_price || this.getSelectedVehiclePriceRaw());
+              }
+            });
+          } else if (order.status === 'pending') {
             // Cek apakah order pending ini sudah kedaluwarsa (lebih dari 2 menit)
             const orderTime = new Date(order.created_at).getTime();
             const now = new Date().getTime();
@@ -191,7 +217,6 @@ export class MapVisualPage implements OnInit, OnDestroy {
             if (!this.orderPollingInterval) {
               this.startOrderPolling();
             }
-            this.connectWebSocket(order.id);
           }
         } else {
           // Modal will be opened in ionViewDidEnter
@@ -205,7 +230,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
     const savedPayment = localStorage.getItem('selectedPayment');
     const savedNonTunai = localStorage.getItem('selectedNonTunai');
     if (savedPayment) this.selectedPayment = savedPayment;
-    if (savedNonTunai) this.selectedNonTunai = savedNonTunai;
+    if (savedNonTunai) this.selectedNonTunai = this.normalizePaymentCode(savedNonTunai);
   }
 
   ionViewDidEnter() {
@@ -230,10 +255,78 @@ export class MapVisualPage implements OnInit, OnDestroy {
     }
   }
 
+  private clearPreviousOrderForNewBooking(order: ActiveOrder): boolean {
+    if (!this.isNewBookingSelection() || this.isSameRouteAsSelection(order)) {
+      return false;
+    }
+
+    const canCancelPreviousOrder = ['payment_pending', 'pending', 'accepted', 'arrived'].includes(order.status);
+    if (!canCancelPreviousOrder) {
+      return false;
+    }
+
+    this.orderService.cancelOrder(order.id, 'Auto cancelled previous unfinished order').subscribe({
+      error: (err) => console.warn('Gagal membatalkan order lama:', err)
+    });
+
+    this.resetForNewBooking();
+    return true;
+  }
+
+  private isNewBookingSelection(): boolean {
+    return !!(this.route.snapshot.queryParamMap.get('tLat') && this.route.snapshot.queryParamMap.get('tLng'));
+  }
+
+  private isSameRouteAsSelection(order: ActiveOrder): boolean {
+    return this.isCoordinateClose(Number(order.pickup_lat), this.startCoord[1])
+      && this.isCoordinateClose(Number(order.pickup_lng), this.startCoord[0])
+      && this.isCoordinateClose(Number(order.dropoff_lat), this.destCoord[1])
+      && this.isCoordinateClose(Number(order.dropoff_lng), this.destCoord[0]);
+  }
+
+  private isCoordinateClose(a: number, b: number): boolean {
+    return Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) <= 0.00015;
+  }
+
+  private resetForNewBooking() {
+    this.stopSearch();
+    this.stopOrderPolling();
+    this.stopPaymentPolling();
+
+    this.currentOrderId = null;
+    this.activeOrder = null;
+    this.paymentInfo = null;
+    this.paymentError = '';
+    this.isSearchingDriver = false;
+    this.isPaymentGatewayOpen = false;
+    this.isDriverNotFound = false;
+    this.isDriverFound = false;
+    this.isDriverArrived = false;
+    this.isInJourney = false;
+    this.isOrderComplete = false;
+    this.showInitialSuccessBanner = false;
+    this.isCheckingHistory = false;
+    this.searchProgress = 0;
+    this.searchElapsed = 0;
+    this.driverEtaText = 'Menghitung...';
+
+    if (this.driverMarker) {
+      this.driverMarker.remove();
+      this.driverMarker = null;
+    }
+
+    this.isPageActive = true;
+    this.isVehicleModalOpen = true;
+    this.setSheetPosition(this.COLLAPSED);
+    this.restorePreOrderRoute();
+    this.cdr.detectChanges();
+  }
+
   ionViewWillLeave() {
     this.isPageActive = false;
     this.isVehicleModalOpen = false;
     this.isNoteModalOpen = false;
+    this.isPaymentGatewayOpen = false;
 
     if (this.isNavigatingAway) {
       // Sembunyikan modal supaya tidak terbawa ke halaman chat
@@ -244,15 +337,15 @@ export class MapVisualPage implements OnInit, OnDestroy {
     }
 
     this.stopSearch();
+    this.stopPaymentPolling();
     this.stopOrderPolling();
-    this.stopDriverAnimation();
-    this.disconnectWebSocket();
   }
 
   goBack() {
     this.isPageActive = false;
     this.isVehicleModalOpen = false;
     this.isNoteModalOpen = false;
+    this.isPaymentGatewayOpen = false;
     setTimeout(() => {
       this.navCtrl.back();
     }, 300);
@@ -262,6 +355,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.isPageActive = false;
     this.isVehicleModalOpen = false;
     this.isNoteModalOpen = false;
+    this.isPaymentGatewayOpen = false;
     setTimeout(() => {
       this.router.navigate(['/metode-pembayaran']);
     }, 300);
@@ -295,8 +389,8 @@ export class MapVisualPage implements OnInit, OnDestroy {
     }, 300);
 
     this.map.on('load', () => {
-      this.addMarker(this.startCoord, 'start');
-      this.addMarker(this.destCoord, 'dest');
+      this.pickupMarker = this.addMarker(this.startCoord, 'start');
+      this.dropoffMarker = this.addMarker(this.destCoord, 'dest');
       this.fetchPrices(this.startCoord, this.destCoord);
       this.drawRoute(this.startCoord, this.destCoord);
       setTimeout(() => { this.map.resize(); }, 100);
@@ -328,7 +422,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
         </svg>`;
     }
 
-    new mapboxgl.Marker(el)
+    return new mapboxgl.Marker(el)
       .setLngLat([coord[0], coord[1]] as any)
       .addTo(this.map);
   }
@@ -432,84 +526,10 @@ export class MapVisualPage implements OnInit, OnDestroy {
     }, err => console.error('Error fetching route from TomTom:', err));
   }
 
-  drawRouteFromBackend(orderId: string, shouldFitBounds: boolean = true) {
-    if (!this.map || !this.isPageActive) return;
-
-    this.orderService.getOrderRoute(orderId).subscribe({
-      next: (res: any) => {
-        if (!this.map || !res.coordinates || res.coordinates.length === 0) return;
-
-        // Pastikan style map sudah loaded sebelum manipulasi layer
-        if (!this.map.isStyleLoaded()) {
-          this.map.once('idle', () => this.drawRouteFromBackend(orderId, shouldFitBounds));
-          return;
-        }
-
-        const coordinates = res.coordinates;
-
-        // Tampilkan ETA dan Jarak dari backend jika tersedia
-        if (res.eta_minutes !== undefined) {
-          this.driverEtaText = `${res.eta_minutes} Menit`;
-        }
-
-        // Bersihkan layer dan source lama agar tidak duplikat
-        if (this.map.getLayer('route-line-main')) this.map.removeLayer('route-line-main');
-        if (this.map.getSource('route-main')) this.map.removeSource('route-main');
-
-        // Bersihkan alternatif rute dari preview lama juga jika ada
-        for (let i = 0; i < 5; i++) {
-          if (this.map.getLayer(`route-line-${i}`)) this.map.removeLayer(`route-line-${i}`);
-          if (this.map.getSource(`route-${i}`)) this.map.removeSource(`route-${i}`);
-        }
-
-        // Tambah source GeoJSON LineString
-        this.map.addSource('route-main', {
-          type: 'geojson',
-          data: {
-            type: 'Feature',
-            properties: {},
-            geometry: {
-              type: 'LineString',
-              coordinates: coordinates
-            }
-          }
-        });
-
-        // Gambar garis rute utama (oranye)
-        this.map.addLayer({
-          id: 'route-line-main',
-          type: 'line',
-          source: 'route-main',
-          layout: {
-            'line-join': 'round',
-            'line-cap': 'round'
-          },
-          paint: {
-            'line-color': '#FF9800',
-            'line-width': 5,
-            'line-opacity': 0.85
-          }
-        });
-
-        // fitBounds otomatis agar semua marker muat dalam layar HP secara proposional
-        if (shouldFitBounds) {
-          const bounds = new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]);
-          for (const coord of coordinates) {
-            bounds.extend(coord as any);
-          }
-          this.map.fitBounds(bounds, {
-            padding: { top: 80, bottom: 250, left: 50, right: 50 }, // Padding bawah disesuaikan dengan tinggi Bottom Sheet UI
-            duration: 1500 // Kecepatan animasi transisi kamera (1.5 detik)
-          });
-        }
-      },
-      error: (err) => console.error('Gagal mengambil rute dari backend:', err)
-    });
-  }
-
   selectVehicle(type: string) {
     if (this.selectedVehicle === type) return;
     this.selectedVehicle = type;
+    this.ensureDropoffMarker();
     this.drawRoute(this.startCoord, this.destCoord);
   }
 
@@ -540,21 +560,100 @@ export class MapVisualPage implements OnInit, OnDestroy {
     return parseInt(v.price.replace(/[^0-9]/g, ''), 10);
   }
 
+  getSelectedPaymentLabel(): string {
+    return this.selectedPayment === 'tunai' ? 'Tunai' : 'QRIS/VA';
+  }
+
+  getNonTunaiLabel(code: string): string {
+    const labels: Record<string, string> = {
+      QRIS: 'QRIS',
+      VA_BCA: 'VA BCA',
+      VA_BNI: 'VA BNI',
+      VA_BRI: 'VA BRI',
+      VA_MANDIRI: 'VA Mandiri',
+      VA_PERMATA: 'VA Permata',
+      VA_CIMB: 'VA CIMB',
+      VA_DANAMON: 'VA Danamon',
+      DANA: 'DANA',
+      OVO: 'OVO',
+      GOPAY: 'GoPay',
+      SHOPEEPAY: 'ShopeePay',
+      LINKAJA: 'LinkAja',
+    };
+
+    return labels[code] || code;
+  }
+
+  normalizePaymentCode(value: string): string {
+    const normalized = value.trim().toUpperCase().replace(/[\s-]+/g, '_');
+    if (['QRIS_VA', 'QRIS/VA', 'NON_TUNAI', 'NONTUNAI', 'DOMPETX'].includes(normalized)) {
+      return 'QRIS_VA';
+    }
+
+    const aliases: Record<string, string> = {
+      DANA: 'DANA',
+      GOPAY: 'GOPAY',
+      GO_PAY: 'GOPAY',
+      SHOPEEPAY: 'SHOPEEPAY',
+      SHOPEE_PAY: 'SHOPEEPAY',
+      LINKAJA: 'LINKAJA',
+      LINK_AJA: 'LINKAJA',
+      VIRTUAL_ACCOUNT: 'VA_BCA',
+      VA: 'VA_BCA',
+    };
+
+    return aliases[normalized] || normalized;
+  }
+
+  getDompetxGatewayMethodLabel(): string {
+    return this.getNonTunaiLabel(this.dompetxGatewayMethod);
+  }
+
+  getDompetxDetail(): any {
+    return this.paymentInfo?.gateway_payload?.detail || this.paymentInfo?.gateway_payload || {};
+  }
+
+  getPaymentQrImage(): string {
+    return this.getDompetxDetail()?.qrData?.qrImage || '';
+  }
+
+  getPaymentQrString(): string {
+    return this.getDompetxDetail()?.qrData?.qrString || '';
+  }
+
+  getPaymentVaNumber(): string {
+    const detail = this.getDompetxDetail();
+    return detail?.vaData?.accountNumber
+      || detail?.virtualAccount?.accountNumber
+      || detail?.virtualAccount?.number
+      || detail?.vaNumber
+      || detail?.accountNumber
+      || '';
+  }
+
+  getPaymentReference(): string {
+    const detail = this.getDompetxDetail();
+    return detail?.qrData?.refId || detail?.reference || this.paymentInfo?.transaction_id || '-';
+  }
+
+  getPaymentStatusLabel(): string {
+    const status = (this.paymentInfo?.status || '').toLowerCase();
+    if (['paid', 'captured', 'success', 'settled'].includes(status)) return 'Terbayar';
+    if (status === 'failed') return 'Gagal';
+    if (status === 'cancelled') return 'Dibatalkan';
+    return 'Menunggu pembayaran';
+  }
+
   // ─── CARI DRIVER & ORDER FLOW ─────────────────────────────────────────────
 
   /** Dipanggil saat tombol "Pesan Sekarang" ditekan */
   startSearch() {
     this.isVehicleModalOpen = false;
     this.isNoteModalOpen = false;
-    this.isPageActive = false;
-    
-    setTimeout(() => {
-      this.isSearchingDriver = true;
-      this.isDriverNotFound = false;
-      this.searchProgress = 0;
-      this.searchElapsed = 0;
-      this.cdr.detectChanges();
-    }, 350);
+    this.isPageActive = true;
+    this.paymentInfo = null;
+    this.paymentError = '';
+    this.stopPaymentPolling();
 
     // 1. Buat order di backend
     const orderData = {
@@ -564,7 +663,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
       dropoff_address: this.tujuan,
       dropoff_lat: this.destCoord[1],
       dropoff_lng: this.destCoord[0],
-      payment_method: this.selectedPayment === 'nontunai' ? this.selectedNonTunai : 'tunai',
+      payment_method: this.selectedPayment === 'nontunai' ? 'QRIS_VA' : 'tunai',
       vehicle_type: this.selectedVehicle,
       notes: this.driverNote || undefined,
       estimated_price: this.getSelectedVehiclePriceRaw() || undefined
@@ -573,17 +672,137 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.orderService.createOrder(orderData).subscribe({
       next: (order) => {
         this.currentOrderId = order.id;
-        this.startOrderPolling();
+        if (this.selectedPayment === 'nontunai') {
+          this.openDompetxGateway(order.id, order.estimated_price || this.getSelectedVehiclePriceRaw());
+          return;
+        }
+        this.beginDriverSearch();
       },
       error: (err) => {
         console.error('Gagal membuat order:', err);
         // Fallback: lanjutkan animasi pencarian meski backend gagal
-        this.startProgressTimer();
+        this.beginDriverSearch();
       }
     });
+  }
 
-    // Progress bar berjalan selama polling
+  beginDriverSearch() {
+    this.isPaymentGatewayOpen = false;
+    this.isPageActive = true;
+    this.stopPaymentPolling();
+
+    setTimeout(() => {
+      this.isSearchingDriver = true;
+      this.isDriverNotFound = false;
+      this.searchProgress = 0;
+      this.searchElapsed = 0;
+      this.cdr.detectChanges();
+    }, 350);
+
+    if (this.currentOrderId) {
+      this.startOrderPolling();
+    }
+
     this.startProgressTimer();
+  }
+
+  openDompetxGateway(orderId: string, amount: number) {
+    this.isPaymentGatewayOpen = true;
+    this.isSearchingDriver = false;
+    this.isDriverNotFound = false;
+    this.paymentInfo = null;
+    this.paymentError = '';
+    this.dompetxGatewayAmount = amount || this.getSelectedVehiclePriceRaw();
+    this.dompetxGatewayMethod = 'QRIS';
+    this.createDompetxPayment(orderId, this.dompetxGatewayAmount, this.dompetxGatewayMethod);
+  }
+
+  selectDompetxGatewayMethod(code: string) {
+    if (this.dompetxGatewayMethod === code || this.isCreatingPayment || !this.currentOrderId) return;
+    this.dompetxGatewayMethod = code;
+    this.paymentInfo = null;
+    this.paymentError = '';
+    this.createDompetxPayment(this.currentOrderId, this.dompetxGatewayAmount || this.getSelectedVehiclePriceRaw(), code);
+  }
+
+  createDompetxPayment(orderId: string, amount: number, method: string = this.dompetxGatewayMethod) {
+    this.isCreatingPayment = true;
+    this.paymentError = '';
+
+    this.orderService.createPayment({
+      order_id: orderId,
+      method,
+      amount: amount || this.getSelectedVehiclePriceRaw()
+    }).subscribe({
+      next: (payment) => {
+        this.paymentInfo = payment;
+        this.isCreatingPayment = false;
+        if (this.isPaymentPaid(payment)) {
+          this.beginDriverSearch();
+          return;
+        }
+        this.startPaymentPolling();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Gagal membuat pembayaran DompetX:', err);
+        this.paymentError = 'Pembayaran digital belum bisa dibuat. Coba channel lain atau ganti ke Tunai.';
+        this.isCreatingPayment = false;
+        this.showToast('Gagal membuat pembayaran DompetX.', 'danger');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  checkPaymentAndContinue(showPendingToast: boolean = true) {
+    if (!this.currentOrderId) return;
+
+    this.orderService.getPaymentStatus(this.currentOrderId).subscribe({
+      next: (payment) => {
+        this.paymentInfo = payment;
+        if (this.isPaymentPaid(payment)) {
+          this.showToast('Pembayaran berhasil. Mencari driver terdekat.', 'success');
+          this.beginDriverSearch();
+          return;
+        }
+
+        if (showPendingToast) {
+          this.showToast('Pembayaran belum terdeteksi.', 'warning');
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Gagal mengecek status pembayaran:', err);
+        if (showPendingToast) {
+          this.showToast('Belum bisa mengecek status pembayaran.', 'danger');
+        }
+      }
+    });
+  }
+
+  startPaymentPolling() {
+    if (this.paymentPollingInterval) return;
+
+    this.paymentPollingInterval = setInterval(() => {
+      if (!this.isPaymentGatewayOpen || !this.currentOrderId) {
+        this.stopPaymentPolling();
+        return;
+      }
+
+      this.checkPaymentAndContinue(false);
+    }, 5000);
+  }
+
+  stopPaymentPolling() {
+    if (this.paymentPollingInterval) {
+      clearInterval(this.paymentPollingInterval);
+      this.paymentPollingInterval = null;
+    }
+  }
+
+  isPaymentPaid(payment: PaymentRecord | null = this.paymentInfo): boolean {
+    const status = (payment?.status || '').toLowerCase();
+    return ['paid', 'captured', 'success', 'settled'].includes(status);
   }
 
   startProgressTimer() {
@@ -603,6 +822,8 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
   /** Polling status order untuk mengetahui driver menerima */
   startOrderPolling() {
+    if (this.orderPollingInterval) return;
+
     this.orderPollingInterval = setInterval(() => {
       if (!this.currentOrderId) return;
       this.orderService.getActiveOrder().subscribe({
@@ -619,9 +840,9 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
           if (order.status === 'accepted' && !this.isDriverFound) {
             // Driver ditemukan!
-            this.isPageActive = true;
             this.stopSearch();
             this.isSearchingDriver = false;
+            this.isPageActive = true;
             
             setTimeout(() => {
               this.isDriverFound = true;
@@ -631,30 +852,24 @@ export class MapVisualPage implements OnInit, OnDestroy {
                 this.showInitialSuccessBanner = false;
               }, 4000);
             }, 350);
-            this.connectWebSocket(order.id);
             this.updateDriverMapAndETA(order);
           } else if (order.status === 'accepted' && this.isDriverFound) {
             // Driver sedang menuju penjemputan — tracking terus-menerus
-            this.isPageActive = true;
-            this.connectWebSocket(order.id);
             this.updateDriverMapAndETA(order);
           } else if (order.status === 'arrived' && !this.isDriverArrived) {
-            this.isPageActive = true;
             this.stopSearch();
             this.isSearchingDriver = false;
+            this.isPageActive = true;
             this.isDriverFound = true;
             this.isDriverArrived = true;
-            this.connectWebSocket(order.id);
             this.updateDriverMapAndETA(order);
           } else if (order.status === 'arrived' && this.isDriverArrived) {
             // Driver sudah di titik, tetap update marker posisi
-            this.isPageActive = true;
-            this.connectWebSocket(order.id);
             this.updateDriverMapAndETA(order);
           } else if (order.status === 'started' && !this.isInJourney) {
-            this.isPageActive = true;
             this.stopSearch();
             this.isSearchingDriver = false;
+            this.isPageActive = true;
             this.isDriverFound = true;
             this.isDriverArrived = true;
             this.isInJourney = true;
@@ -663,21 +878,14 @@ export class MapVisualPage implements OnInit, OnDestroy {
               this.driverMarker.remove();
               this.driverMarker = null;
             }
-            this.stopDriverAnimation();
-            this.driverLastCoords = null;
-            this.driverLastBearing = 0;
-            this.connectWebSocket(order.id);
             this.updateDriverMapAndETA(order);
           } else if (order.status === 'started' && this.isInJourney) {
             // Dalam perjalanan — tracking terus-menerus
-            this.isPageActive = true;
-            this.connectWebSocket(order.id);
             this.updateDriverMapAndETA(order);
           } else if (order.status === 'completed') {
             this.stopSearch();
             this.isSearchingDriver = false;
             this.stopOrderPolling();
-            this.disconnectWebSocket();
             this.isOrderComplete = true;
             this.isNavigatingAway = true; // Prevents polling restart
             
@@ -686,7 +894,6 @@ export class MapVisualPage implements OnInit, OnDestroy {
             
           } else if (order.status === 'rejected' || order.status === 'cancelled') {
             this.stopOrderPolling();
-            this.disconnectWebSocket();
             this.showToast('Pesanan dibatalkan atau ditolak oleh driver. Silakan pesan ulang.', 'danger');
             this.cancelOrder();
           }
@@ -743,7 +950,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
   cancelSearch() {
     this.stopSearch();
     this.stopOrderPolling();
-    this.disconnectWebSocket();
+    this.stopPaymentPolling();
 
     // Batalkan order di backend jika sudah dibuat
     if (this.currentOrderId) {
@@ -752,6 +959,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
     }
 
     this.isSearchingDriver = false;
+    this.isPaymentGatewayOpen = false;
     this.isDriverNotFound = false;
     this.searchProgress = 0;
     this.searchElapsed = 0;
@@ -761,6 +969,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
       this.isVehicleModalOpen = true;
       this.setSheetPosition(this.COLLAPSED);
       this.isPageActive = true;
+      this.restorePreOrderRoute();
       this.cdr.detectChanges();
     }, 350);
   }
@@ -779,7 +988,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
   cancelOrder() {
     this.stopSearch();
     this.stopOrderPolling();
-    this.disconnectWebSocket();
+    this.stopPaymentPolling();
 
     if (this.currentOrderId) {
       this.orderService.cancelOrder(this.currentOrderId, 'Customer cancelled').subscribe();
@@ -787,12 +996,15 @@ export class MapVisualPage implements OnInit, OnDestroy {
     }
 
     this.isSearchingDriver = false;
+    this.isPaymentGatewayOpen = false;
     this.isDriverNotFound = false;
     this.isDriverFound = false;
     this.isDriverArrived = false;
     this.isInJourney = false;
     this.showInitialSuccessBanner = false;
     this.activeOrder = null;
+    this.paymentInfo = null;
+    this.paymentError = '';
     this.searchProgress = 0;
     this.searchElapsed = 0;
     this.isNoteModalOpen = false;
@@ -801,6 +1013,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
       this.isVehicleModalOpen = true;
       this.setSheetPosition(this.COLLAPSED);
       this.isPageActive = true;
+      this.restorePreOrderRoute();
       this.cdr.detectChanges();
     }, 350);
     
@@ -808,9 +1021,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
       this.driverMarker.remove();
       this.driverMarker = null;
     }
-    this.stopDriverAnimation();
-    this.driverLastCoords = null;
-    this.driverLastBearing = 0;
+    this.hideDropoffMarkerUntilJourneyStarts();
   }
 
   // ─── Map & Tracking Helpers ──────────────────────────────────────────────
@@ -820,8 +1031,9 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
     const dLat = parseFloat(order.driver.current_lat as any);
     const dLng = parseFloat(order.driver.current_lng as any);
-    const endCoords: [number, number] = [dLng, dLat];
+    const isInStartedPhase = order.status === 'started';
 
+    // Pertama kali: buat marker driver & fitBounds agar peta berpindah ke rute baru
     const isFirstCall = !this.driverMarker;
 
     // Update Driver Marker
@@ -829,103 +1041,58 @@ export class MapVisualPage implements OnInit, OnDestroy {
       const el = document.createElement('div');
       el.className = 'driver-marker';
       const vehicleImg = (order.driver.vehicle_type || this.selectedVehicle) === 'mobil' ? 'assets/mobil driver.png' : 'assets/Motor driver.png';
-      el.innerHTML = `<img src="${vehicleImg}" style="width:40px;height:40px;object-fit:contain;transition:transform 0.1s ease;" />`;
+      el.innerHTML = `<img src="${vehicleImg}" style="width:40px;height:40px;object-fit:contain;" />`;
       this.driverMarker = new mapboxgl.Marker({ element: el })
-        .setLngLat(endCoords)
+        .setLngLat([dLng, dLat])
         .addTo(this.map);
-
-      this.driverLastCoords = endCoords;
-      this.driverLastBearing = 0;
     } else {
-      // Dapatkan koordinat awal (posisi terinterpolasi terakhir atau posisi marker saat ini)
-      const startCoords = this.driverLastCoords || (this.driverMarker.getLngLat().toArray() as [number, number]);
-
-      // Hitung bearing baru jika ada pergeseran yang cukup signifikan (menghindari jittering)
-      let targetBearing = this.driverLastBearing;
-      const distance = Math.sqrt(Math.pow(endCoords[0] - startCoords[0], 2) + Math.pow(endCoords[1] - startCoords[1], 2));
-
-      if (distance > 0.00001) {
-        targetBearing = this.calculateBearing(startCoords[1], startCoords[0], endCoords[1], endCoords[0]);
-      }
-
-      // Mulai animasi pergeseran dan rotasi yang mulus
-      this.animateDriverMarker(startCoords, endCoords, targetBearing, 2500);
+      this.driverMarker.setLngLat([dLng, dLat]);
     }
 
-    // Draw route and update ETA from backend dynamically
-    this.drawRouteFromBackend(order.id, isFirstCall);
-  }
+    // Tentukan start & dest berdasarkan fase:
+    // accepted/arrived = driver menuju pickup
+    // started = driver menuju tujuan
+    let start = [dLng, dLat];
+    let dest = this.startCoord;
 
-  calculateBearing(lat1: number, lng1: number, lat2: number, lng2: number): number {
-    const dLon = (lng2 - lng1) * Math.PI / 180;
-    const rLat1 = lat1 * Math.PI / 180;
-    const rLat2 = lat2 * Math.PI / 180;
-    
-    const y = Math.sin(dLon) * Math.cos(rLat2);
-    const x = Math.cos(rLat1) * Math.sin(rLat2) -
-              Math.sin(rLat1) * Math.cos(rLat2) * Math.cos(dLon);
-              
-    const radians = Math.atan2(y, x);
-    const degrees = (radians * 180 / Math.PI + 360) % 360;
-    return degrees;
-  }
+    if (isInStartedPhase) {
+      start = [dLng, dLat];
+      dest = this.destCoord;
+      this.ensureDropoffMarker();
+    } else {
+      this.hideDropoffMarkerUntilJourneyStarts();
+    }
 
-  interpolateAngle(from: number, to: number, t: number): number {
-    let diff = to - from;
-    // Menormalisasi perbedaan ke rentang -180 hingga 180 derajat
-    diff = ((diff + 180) % 360) - 180;
-    if (diff < -180) diff += 360;
-    return from + diff * t;
-  }
-
-  animateDriverMarker(startCoords: [number, number], endCoords: [number, number], targetBearing: number, duration: number = 2500) {
-    this.stopDriverAnimation();
-
-    const startTime = performance.now();
-    const startBearing = this.driverLastBearing;
-
-    const step = (now: number) => {
-      const elapsed = now - startTime;
-      const t = Math.min(elapsed / duration, 1);
-
-      // LERP Posisi
-      const lng = startCoords[0] + (endCoords[0] - startCoords[0]) * t;
-      const lat = startCoords[1] + (endCoords[1] - startCoords[1]) * t;
-
-      // Interpolasi Sudut Bearing
-      const currentBearing = this.interpolateAngle(startBearing, targetBearing, t);
-      this.driverLastBearing = currentBearing;
-
-      if (this.driverMarker) {
-        this.driverMarker.setLngLat([lng, lat]);
-        
-        // Putar image di dalam marker agar tidak mengganggu layout pin Mapbox
-        const el = this.driverMarker.getElement();
-        const img = el.querySelector('img');
-        if (img) {
-          img.style.transform = `rotate(${currentBearing}deg)`;
-          img.style.transition = 'none'; // Matikan transisi CSS agar sinkron dengan requestAnimationFrame
-        } else {
-          // Fallback ke rotasi bawaan Mapbox GL
-          this.driverMarker.setRotation(currentBearing);
+    // Draw route and update ETA
+    this.tomtomService.calculateRoute(start[1], start[0], dest[1], dest[0], order.vehicle_type || this.selectedVehicle).subscribe({
+      next: (res: any) => {
+        if (res.routes && res.routes.length > 0) {
+          res.routes.sort((a: any, b: any) => a.summary.lengthInMeters - b.summary.lengthInMeters);
+          const travelMinutes = Math.ceil(res.routes[0].summary.travelTimeInSeconds / 60);
+          this.driverEtaText = `${travelMinutes} Menit`;
+          // fitBounds hanya pada panggilan pertama agar peta reposisi ke rute driver→pickup/tujuan
+          this.drawRoute(start, dest, isFirstCall);
         }
       }
-
-      if (t < 1 && this.isPageActive) {
-        this.driverAnimationId = requestAnimationFrame(step);
-      } else {
-        this.driverLastCoords = endCoords;
-      }
-    };
-
-    this.driverAnimationId = requestAnimationFrame(step);
+    });
   }
 
-  stopDriverAnimation() {
-    if (this.driverAnimationId) {
-      cancelAnimationFrame(this.driverAnimationId);
-      this.driverAnimationId = null;
+  private ensureDropoffMarker() {
+    if (!this.map || this.dropoffMarker) return;
+    this.dropoffMarker = this.addMarker(this.destCoord, 'dest');
+  }
+
+  private hideDropoffMarkerUntilJourneyStarts() {
+    if (this.dropoffMarker) {
+      this.dropoffMarker.remove();
+      this.dropoffMarker = null;
     }
+  }
+
+  private restorePreOrderRoute() {
+    if (!this.map) return;
+    this.ensureDropoffMarker();
+    this.drawRoute(this.startCoord, this.destCoord);
   }
 
   // ─── Helpers ─────────────────────────────────────────────────────────────
@@ -1034,81 +1201,5 @@ export class MapVisualPage implements OnInit, OnDestroy {
         this.sheetContentEl.nativeElement.scrollTop = 0;
       }
     }
-  }
-
-  private connectWebSocket(orderId: string) {
-    if (this.echo) return;
-
-    const token = this.authService.getToken();
-    if (!token) return;
-
-    (window as any).Pusher = Pusher;
-
-    this.echo = new Echo({
-      broadcaster: 'reverb',
-      key: environment.reverb.key,
-      wsHost: environment.reverb.host,
-      wsPort: environment.reverb.port,
-      wssPort: environment.reverb.port,
-      forceTLS: environment.reverb.scheme === 'https',
-      enabledTransports: ['ws', 'wss'],
-      authEndpoint: `${environment.apiUrl}/broadcasting/auth`,
-      auth: {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
-    });
-
-    this.echo.private(`order.tracking.${orderId}`)
-      .listen('DriverLocationUpdated', (data: any) => {
-        if (!this.map || !this.isPageActive) return;
-
-        const dLat = parseFloat(data.lat as any);
-        const dLng = parseFloat(data.lng as any);
-        const endCoords: [number, number] = [dLng, dLat];
-
-        // Jika dipanggil pertama kali (marker belum ada)
-        const isFirstCall = !this.driverMarker;
-
-        // Update Driver Marker
-        if (!this.driverMarker) {
-          const el = document.createElement('div');
-          el.className = 'driver-marker';
-          const vehicleImg = (this.activeOrder?.vehicle_type || this.selectedVehicle) === 'mobil' ? 'assets/mobil driver.png' : 'assets/Motor driver.png';
-          el.innerHTML = `<img src="${vehicleImg}" style="width:40px;height:40px;object-fit:contain;transition:transform 0.1s ease;" />`;
-          this.driverMarker = new mapboxgl.Marker({ element: el })
-            .setLngLat(endCoords)
-            .addTo(this.map);
-
-          this.driverLastCoords = endCoords;
-          this.driverLastBearing = 0;
-        } else {
-          // Dapatkan koordinat awal (posisi terinterpolasi terakhir atau posisi marker saat ini)
-          const startCoords = this.driverLastCoords || (this.driverMarker.getLngLat().toArray() as [number, number]);
-
-          // Hitung bearing baru jika ada pergeseran yang cukup signifikan (menghindari jittering)
-          let targetBearing = this.driverLastBearing;
-          const distance = Math.sqrt(Math.pow(endCoords[0] - startCoords[0], 2) + Math.pow(endCoords[1] - startCoords[1], 2));
-
-          if (distance > 0.00001) {
-            targetBearing = this.calculateBearing(startCoords[1], startCoords[0], endCoords[1], endCoords[0]);
-          }
-
-          // Mulai animasi pergeseran dan rotasi yang mulus
-          this.animateDriverMarker(startCoords, endCoords, targetBearing, 2500);
-        }
-
-        // Draw route and update ETA
-        this.drawRouteFromBackend(orderId, isFirstCall);
-      });
-  }
-
-  private disconnectWebSocket() {
-    if (this.echo && this.currentOrderId) {
-      this.echo.leave(`order.tracking.${this.currentOrderId}`);
-      this.echo.disconnect();
-    }
-    this.echo = null;
   }
 }

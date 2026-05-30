@@ -35,12 +35,12 @@
       <div class="route-inputs">
         <div class="input-row">
           <div class="hollow-circle-blue"></div>
-          <div class="input-box">{{ jemput || 'Lokasi Jemput' }}</div>
+          <div class="input-box">{{ isInJourney ? (jemput || 'Lokasi Jemput') : (getDriverName() + ' menuju titik jemput') }}</div>
         </div>
         <div class="route-line-dashed"></div>
         <div class="input-row">
           <div class="hollow-circle-orange"></div>
-          <div class="input-box">{{ tujuan || 'Tujuan' }}</div>
+          <div class="input-box">{{ isInJourney ? (tujuan || 'Tujuan') : (jemput || 'Lokasi Jemput') }}</div>
         </div>
       </div>
     </div>
@@ -122,7 +122,7 @@
   <div class="options-pill">
     <div class="pill-btn payment-btn" (click)="goToMetodePembayaran()">
       <ion-icon [name]="selectedPayment === 'tunai' ? 'cash-outline' : 'card-outline'"></ion-icon>
-      <span>{{ selectedPayment === 'tunai' ? 'Tunai' : selectedNonTunai }}</span>
+      <span>{{ getSelectedPaymentLabel() }}</span>
     </div>
     <div class="pill-divider"></div>
     <div class="pill-btn promo-btn">
@@ -162,7 +162,67 @@
   </div>
 </div>
 
-<!-- Modal 3: Mencari Driver -->
+<!-- Modal 3: DompetX Gateway -->
+<div class="custom-backdrop-solid" *ngIf="isPaymentGatewayOpen"></div>
+<div class="custom-bottom-sheet-wrap payment-gateway-wrap" *ngIf="isPaymentGatewayOpen">
+  <div class="payment-gateway-container">
+    <div class="gateway-header">
+      <div>
+        <span class="gateway-eyebrow">DompetX</span>
+        <h2>Payment Gateway</h2>
+      </div>
+      <span class="gateway-status" [class.is-error]="paymentError">
+        {{ paymentError ? 'Gagal' : (isCreatingPayment ? 'Membuat' : getPaymentStatusLabel()) }}
+      </span>
+    </div>
+
+    <p class="gateway-subtitle">Pilih channel QRIS/VA, selesaikan pembayaran, lalu pencarian driver akan dimulai otomatis.</p>
+
+    <div class="gateway-options">
+      <button
+        type="button"
+        *ngFor="let opt of dompetxGatewayOptions"
+        [class.active]="dompetxGatewayMethod === opt.code"
+        [disabled]="isCreatingPayment"
+        (click)="selectDompetxGatewayMethod(opt.code)">
+        {{ opt.label }}
+      </button>
+    </div>
+
+    <div class="dompetx-loading" *ngIf="isCreatingPayment">
+      <ion-spinner name="crescent"></ion-spinner>
+      <span>Menyiapkan pembayaran {{ getDompetxGatewayMethodLabel() }}...</span>
+    </div>
+
+    <div class="dompetx-error" *ngIf="paymentError && !isCreatingPayment">
+      {{ paymentError }}
+    </div>
+
+    <ng-container *ngIf="paymentInfo && !isCreatingPayment">
+      <img *ngIf="getPaymentQrImage()" [src]="getPaymentQrImage()" alt="QRIS DompetX" class="dompetx-qr" />
+
+      <div class="dompetx-code" *ngIf="getPaymentVaNumber()">
+        <span>Nomor VA</span>
+        <strong>{{ getPaymentVaNumber() }}</strong>
+      </div>
+
+      <div class="dompetx-ref">
+        <span>Ref</span>
+        <strong>{{ getPaymentReference() }}</strong>
+      </div>
+    </ng-container>
+
+    <ion-button expand="block" color="warning" class="btn-confirm-payment" [disabled]="isCreatingPayment" (click)="checkPaymentAndContinue()">
+      Saya Sudah Bayar
+    </ion-button>
+
+    <ion-button expand="block" fill="clear" color="medium" class="btn-cancel-payment" (click)="cancelOrder()">
+      Batalkan
+    </ion-button>
+  </div>
+</div>
+
+<!-- Modal 4: Mencari Driver -->
 <div class="custom-backdrop-solid" *ngIf="isSearchingDriver"></div>
 <div class="custom-bottom-sheet-wrap searching-wrap" *ngIf="isSearchingDriver">
   <div class="searching-container">
@@ -180,7 +240,7 @@
           <span class="search-vehicle-name">{{ selectedVehicle === 'motor' ? 'Motor' : 'Mobil' }}</span>
           <div class="search-payment-badge">
             <ion-icon [name]="selectedPayment === 'tunai' ? 'cash-outline' : 'card-outline'" style="font-size:14px;"></ion-icon>
-            <span>{{ selectedPayment === 'tunai' ? 'Tunai' : selectedNonTunai }}</span>
+            <span>{{ getSelectedPaymentLabel() }}</span>
           </div>
         </div>
       </div>
@@ -191,7 +251,7 @@
   </div>
 </div>
 
-<!-- Modal 4: Driver Tidak Ditemukan -->
+<!-- Modal 5: Driver Tidak Ditemukan -->
 <div class="custom-backdrop-solid" *ngIf="isDriverNotFound"></div>
 <div class="custom-bottom-sheet-wrap notfound-wrap" *ngIf="isDriverNotFound">
   <div class="notfound-container">
@@ -218,8 +278,8 @@
     <!-- Status Header -->
     <div class="status-header">
       <div class="status-left">
-        <h2 class="status-title">Pengemudi dalam perjalanan</h2>
-        <p class="status-location">{{ jemput || 'Menunggu lokasi...' }}</p>
+        <h2 class="status-title">{{ isInJourney ? 'Dalam perjalanan ke tujuan' : 'Driver menuju titik jemput' }}</h2>
+        <p class="status-location">{{ isInJourney ? (tujuan || 'Tujuan') : (jemput || 'Lokasi jemput') }}</p>
       </div>
       <div class="status-right">
         <span class="eta-text">{{ driverEtaText || '3 mnt' }}</span>

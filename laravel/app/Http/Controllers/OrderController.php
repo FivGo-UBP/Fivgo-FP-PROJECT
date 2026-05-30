@@ -23,7 +23,9 @@ class OrderController extends Controller
         ]);
 
         $validated['customer_id'] = $request->user()->id;
-        $validated['status'] = 'pending';
+        $validated['status'] = $this->requiresPrepaidPayment($validated['payment_method'] ?? null)
+            ? 'payment_pending'
+            : 'pending';
 
         // Use provided estimated_price or calculate a mock one
         if (!isset($validated['estimated_price'])) {
@@ -71,6 +73,7 @@ class OrderController extends Controller
         } else if ($user->role === 'driver') {
             // Hanya dapatkan order jika driver_id sama dengan id user driver tersebut.
             $query->where('driver_id', $user->id);
+            $query->whereIn('status', ['pending', 'accepted', 'arrived', 'started']);
             // Prioritize orders assigned to this driver over new pending orders
             $query->orderBy('driver_id', 'desc');
         } else {
@@ -169,7 +172,7 @@ class OrderController extends Controller
     public function cancel(Request $request, $id)
     {
         $order = Order::where('customer_id', $request->user()->id)
-            ->whereIn('status', ['pending', 'accepted'])
+            ->whereIn('status', ['payment_pending', 'pending', 'accepted', 'arrived'])
             ->findOrFail($id);
             
         $order->update([
@@ -215,5 +218,14 @@ class OrderController extends Controller
         }
         
         return response()->json($order);
+    }
+
+    private function requiresPrepaidPayment(?string $method): bool
+    {
+        if (! $method) {
+            return false;
+        }
+
+        return ! in_array(strtolower($method), ['tunai', 'cash'], true);
     }
 }

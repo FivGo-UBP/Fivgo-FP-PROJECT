@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    'mapbox' => [
+        'token' => env('MAPBOX_ACCESS_TOKEN', env('VITE_MAPBOX_ACCESS_TOKEN')),
+    ],
+
+    'dompetx' => [
+        'api_key' => env('DOMPETX_API_KEY'),
+        'base_url' => env('DOMPETX_BASE_URL', 'https://api.dompetx.com'),
+    ],
+
 ];

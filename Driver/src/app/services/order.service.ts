@@ -13,7 +13,7 @@ export interface OrderCustomer {
 
 export interface ActiveOrder {
   id: string;
-  status: 'pending' | 'accepted' | 'arrived' | 'started' | 'completed' | 'cancelled' | 'rejected';
+  status: 'payment_pending' | 'pending' | 'accepted' | 'arrived' | 'started' | 'completed' | 'cancelled' | 'rejected';
   vehicle_type: string | null;
   pickup_address: string;
   pickup_lat: number;
