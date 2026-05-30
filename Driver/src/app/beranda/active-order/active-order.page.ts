@@ -70,6 +70,20 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
     if (this.map) { this.map.remove(); this.map = null; }
   }
 
+  private selectPreferredRoute(routes: any[] = []): any | null {
+    if (!routes.length) return null;
+
+    return [...routes].sort((a: any, b: any) => {
+      const aTime = a?.summary?.travelTimeInSeconds ?? Number.MAX_SAFE_INTEGER;
+      const bTime = b?.summary?.travelTimeInSeconds ?? Number.MAX_SAFE_INTEGER;
+      if (aTime !== bTime) return aTime - bTime;
+
+      const aDistance = a?.summary?.lengthInMeters ?? Number.MAX_SAFE_INTEGER;
+      const bDistance = b?.summary?.lengthInMeters ?? Number.MAX_SAFE_INTEGER;
+      return aDistance - bDistance;
+    })[0];
+  }
+
   ionViewWillEnter() {
     this.isPageActive = true;
   }
@@ -163,9 +177,9 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
       next: (res: any) => {
         if (!res.routes || res.routes.length === 0 || !this.map) return;
 
-        // Ambil rute terpendek (sama seperti logic di customer app)
-        res.routes.sort((a: any, b: any) => a.summary.lengthInMeters - b.summary.lengthInMeters);
-        const routeData = res.routes[0];
+        const routeData = this.selectPreferredRoute(res.routes);
+        if (!routeData) return;
+
         const routePoints = routeData.legs[0].points;
         // TomTom mengembalikan {latitude, longitude}, Mapbox butuh [lng, lat]
         const coordinates: [number, number][] = routePoints.map((p: any) => [p.longitude, p.latitude]);

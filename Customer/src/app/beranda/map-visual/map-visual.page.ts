@@ -131,6 +131,20 @@ export class MapVisualPage implements OnInit, OnDestroy {
     }
   }
 
+  private selectPreferredRoute(routes: any[] = []): any | null {
+    if (!routes.length) return null;
+
+    return [...routes].sort((a: any, b: any) => {
+      const aTime = a?.summary?.travelTimeInSeconds ?? Number.MAX_SAFE_INTEGER;
+      const bTime = b?.summary?.travelTimeInSeconds ?? Number.MAX_SAFE_INTEGER;
+      if (aTime !== bTime) return aTime - bTime;
+
+      const aDistance = a?.summary?.lengthInMeters ?? Number.MAX_SAFE_INTEGER;
+      const bDistance = b?.summary?.lengthInMeters ?? Number.MAX_SAFE_INTEGER;
+      return aDistance - bDistance;
+    })[0];
+  }
+
   ionViewWillEnter() {
     if (this.isNavigatingAway) {
       this.isNavigatingAway = false;
@@ -431,9 +445,11 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.tomtomService.calculateRoute(start[1], start[0], dest[1], dest[0], 'motor').subscribe((res: any) => {
       const motor = this.vehicles.find(v => v.type === 'motor');
       if (res.routes && res.routes.length > 0) {
-        res.routes.sort((a: any, b: any) => a.summary.lengthInMeters - b.summary.lengthInMeters);
-        const distanceKm = res.routes[0].summary.lengthInMeters / 1000;
-        const travelMinutes = Math.ceil(res.routes[0].summary.travelTimeInSeconds / 60);
+        const routeData = this.selectPreferredRoute(res.routes);
+        if (!routeData) return;
+
+        const distanceKm = routeData.summary.lengthInMeters / 1000;
+        const travelMinutes = Math.ceil(routeData.summary.travelTimeInSeconds / 60);
         const rawPrice = Math.max(8000, 5000 + (distanceKm * 2000));
         const price = Math.round(rawPrice / 500) * 500;
         if (motor) {
@@ -453,8 +469,11 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.tomtomService.calculateRoute(start[1], start[0], dest[1], dest[0], 'mobil').subscribe((res: any) => {
       const mobil = this.vehicles.find(v => v.type === 'mobil');
       if (res.routes && res.routes.length > 0) {
-        const distanceKm = res.routes[0].summary.lengthInMeters / 1000;
-        const travelMinutes = Math.ceil(res.routes[0].summary.travelTimeInSeconds / 60);
+        const routeData = this.selectPreferredRoute(res.routes);
+        if (!routeData) return;
+
+        const distanceKm = routeData.summary.lengthInMeters / 1000;
+        const travelMinutes = Math.ceil(routeData.summary.travelTimeInSeconds / 60);
         const rawPrice = Math.max(20000, 15000 + (distanceKm * 4000));
         const price = Math.round(rawPrice / 500) * 500;
         if (mobil) {
@@ -484,8 +503,9 @@ export class MapVisualPage implements OnInit, OnDestroy {
       }
 
       if (res.routes && res.routes.length > 0) {
-        res.routes.sort((a: any, b: any) => a.summary.lengthInMeters - b.summary.lengthInMeters);
-        res.routes = [res.routes[0]];
+        const preferredRoute = this.selectPreferredRoute(res.routes);
+        if (!preferredRoute) return;
+        res.routes = [preferredRoute];
 
         const routeData = res.routes[0];
         const routePoints = routeData.legs[0].points;
@@ -1067,8 +1087,10 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.tomtomService.calculateRoute(start[1], start[0], dest[1], dest[0], order.vehicle_type || this.selectedVehicle).subscribe({
       next: (res: any) => {
         if (res.routes && res.routes.length > 0) {
-          res.routes.sort((a: any, b: any) => a.summary.lengthInMeters - b.summary.lengthInMeters);
-          const travelMinutes = Math.ceil(res.routes[0].summary.travelTimeInSeconds / 60);
+          const routeData = this.selectPreferredRoute(res.routes);
+          if (!routeData) return;
+
+          const travelMinutes = Math.ceil(routeData.summary.travelTimeInSeconds / 60);
           this.driverEtaText = `${travelMinutes} Menit`;
           // fitBounds hanya pada panggilan pertama agar peta reposisi ke rute driver→pickup/tujuan
           this.drawRoute(start, dest, isFirstCall);

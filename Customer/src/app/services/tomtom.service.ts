@@ -182,7 +182,7 @@ export class TomtomService {
   ): string {
     const locations = `${startLat},${startLon}:${destLat},${destLon}`;
     const travelMode = vehicleType === 'motor' ? 'motorcycle' : 'car';
-    const routeType = vehicleType === 'motor' ? 'shortest' : 'fastest';
+    const routeType = 'fastest';
     const maxAlternatives = vehicleType === 'motor' ? 4 : 0;
 
     let url = `https://api.tomtom.com/routing/1/calculateRoute/${locations}/json`
