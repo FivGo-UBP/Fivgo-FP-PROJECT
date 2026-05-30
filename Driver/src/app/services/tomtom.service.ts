@@ -37,29 +37,27 @@ export class TomtomService {
     const mapboxUrl = this.buildMapboxRouteUrl(startLat, startLon, destLat, destLon, vehicleType);
     const tomtomUrl = this.buildTomTomRouteUrl(startLat, startLon, destLat, destLon, vehicleType);
 
-    return this.http.get(mapboxUrl).pipe(
-      map((res: any) => {
-        const normalized = this.normalizeMapboxRouteResponse(res);
-        if (!normalized.routes.length) {
-          throw new Error('Mapbox route not found');
-        }
-        return normalized;
-      }),
-      catchError(() => this.http.get(tomtomUrl))
+    const mapboxRoute$ = this.http.get(mapboxUrl).pipe(
+      map((res: any) => this.ensureRouteResponse(this.normalizeMapboxRouteResponse(res), 'Mapbox'))
     );
+    const tomtomRoute$ = this.http.get(tomtomUrl).pipe(
+      map((res: any) => this.ensureRouteResponse(res, 'TomTom'))
+    );
+
+    return vehicleType === 'motor'
+      ? tomtomRoute$.pipe(catchError(() => mapboxRoute$))
+      : mapboxRoute$.pipe(catchError(() => tomtomRoute$));
   }
 
   private buildTomTomRouteUrl(startLat: number, startLon: number, destLat: number, destLon: number, vehicleType: string): string {
     const locations = `${startLat},${startLon}:${destLat},${destLon}`;
     
-    // Trik untuk Motor: Kita pinjam mode 'car' agar tidak masuk gang sempit,
-    // lalu kita minta rute 'eco' beserta alternatifnya agar nanti bisa disortir yang terpendek.
-    // Untuk Mobil: Kita pakai mode murni 'car' dengan rute 'fastest' tanpa alternatif,
-    // karena jalur tercepat (fastest) adalah yang paling nyaman dan masuk akal untuk mobil (jalan besar/arteri).
+    // Motor memakai mode motorcycle agar TomTom bisa mempertimbangkan akses jalan motor.
+    // Mobil tetap memakai car dengan rute tercepat.
     
-    const travelMode = 'car';
-    const routeType = vehicleType === 'motor' ? 'eco' : 'fastest';
-    const maxAlternatives = vehicleType === 'motor' ? 2 : 0;
+    const travelMode = vehicleType === 'motor' ? 'motorcycle' : 'car';
+    const routeType = vehicleType === 'motor' ? 'shortest' : 'fastest';
+    const maxAlternatives = vehicleType === 'motor' ? 4 : 0;
     
     let url = `https://api.tomtom.com/routing/1/calculateRoute/${locations}/json?key=${this.apiKey}&maxAlternatives=${maxAlternatives}&routeType=${routeType}&traffic=true&travelMode=${travelMode}&instructionsType=text&language=id-ID`;
     
@@ -72,6 +70,7 @@ export class TomtomService {
 
   private buildMapboxRouteUrl(startLat: number, startLon: number, destLat: number, destLon: number, vehicleType: string): string {
     const coordinates = `${startLon},${startLat};${destLon},${destLat}`;
+    const profile = vehicleType === 'mobil' ? 'mapbox/driving-traffic' : 'mapbox/driving';
     const params = new URLSearchParams({
       access_token: this.mapboxApiKey,
       geometries: 'geojson',
@@ -85,7 +84,15 @@ export class TomtomService {
       params.set('exclude', 'toll');
     }
 
-    return `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?${params.toString()}`;
+    return `https://api.mapbox.com/directions/v5/${profile}/${coordinates}?${params.toString()}`;
+  }
+
+  private ensureRouteResponse(res: any, provider: string): any {
+    if (!res?.routes?.length) {
+      throw new Error(`${provider} route not found`);
+    }
+
+    return res;
   }
 
   private normalizeMapboxRouteResponse(res: any): any {
