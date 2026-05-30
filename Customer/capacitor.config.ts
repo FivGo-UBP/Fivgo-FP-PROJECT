@@ -5,6 +5,15 @@ const config: CapacitorConfig = {
   appName: 'FivGo',
   webDir: 'www',
   plugins: {
+     SplashScreen: {
+      launchAutoHide: false,
+      backgroundColor: "#079cff",
+      showSpinner: false,
+      androidSpinnerStyle: "small",
+      iosSpinnerStyle: "small",
+      splashFullScreen: false,
+      layoutName: "custom_splash",
+    },
     SocialLogin: {
       providers: {
         google: true,
