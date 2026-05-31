@@ -40,8 +40,9 @@ class OrderController extends Controller
             $validated['estimated_price'] = rand(10000, 50000);
         }
 
-        // Temukan driver aktif terdekat (tanpa limit radius mutlak agar pasti dapat)
+        // Temukan driver aktif terdekat yang benar-benar aktif/online dalam 60 detik terakhir (Heartbeat Check)
         $closestDriver = \App\Models\DriverProfile::where('status', 'online')
+            ->where('updated_at', '>=', now()->subSeconds(60))
             ->whereNotNull('current_lat')
             ->whereNotNull('current_lng')
             ->selectRaw("*, ( 6371 * acos( cos( radians(?) ) *
@@ -118,8 +119,9 @@ class OrderController extends Controller
                     $excludedDriverIds = explode(',', $idsStr);
                 }
 
-                // Find next closest active driver
+                // Find next closest active driver that is truly online/active in the last 60 seconds (Heartbeat Check)
                 $closestDriver = \App\Models\DriverProfile::where('status', 'online')
+                    ->where('updated_at', '>=', now()->subSeconds(60))
                     ->whereNotIn('user_id', $excludedDriverIds)
                     ->whereNotNull('current_lat')
                     ->whereNotNull('current_lng')
@@ -144,12 +146,34 @@ class OrderController extends Controller
                     // Ini agar customer app tetap bisa menampilkan animasi "Mencari Driver..." dan memberikan kesempatan driver lain online
                     if ($secondsSinceRejection >= 30) {
                         // No more drivers found! Terminate order and refund prepaid
-                        // No more drivers found! Terminate order search and mark as rejected (but don't refund yet)
-                        $order->update([
-                            'status' => 'rejected',
-                            'driver_id' => null,
-                            'cancel_reason' => 'No drivers available'
-                        ]);
+                        $payment = \App\Models\Payment::where('order_id', $order->id)
+                            ->whereIn('status', ['paid', 'captured', 'success', 'settled'])
+                            ->first();
+
+                        \Illuminate\Support\Facades\DB::transaction(function () use ($order, $payment) {
+                            $customer = $order->customer;
+
+                            if ($payment && $customer) {
+                                $customer->increment('wallet_balance', $payment->total_amount);
+
+                                \App\Models\WalletTransaction::create([
+                                    'id' => (string) \Illuminate\Support\Str::uuid(),
+                                    'user_id' => $customer->id,
+                                    'amount' => $payment->total_amount,
+                                    'type' => 'refund',
+                                    'status' => 'success',
+                                    'reference' => 'FIVGO-REFUND-REJECT-' . $order->id . '-' . \Illuminate\Support\Str::upper(\Illuminate\Support\Str::random(8)),
+                                    'payment_method' => 'wallet',
+                                    'description' => 'Refund Penolakan Perjalanan oleh Driver (Order #' . substr($order->id, 0, 8) . ')',
+                                ]);
+                            }
+
+                            $order->update([
+                                'status' => 'rejected',
+                                'driver_id' => null,
+                                'cancel_reason' => 'No drivers available'
+                            ]);
+                        });
 
                         return response()->json(null);
                     }
