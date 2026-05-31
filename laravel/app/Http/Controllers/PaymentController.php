@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Payment;
 use App\Models\Order;
 use App\Services\DompetxService;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Throwable;
 
 class PaymentController extends Controller
@@ -28,7 +30,7 @@ class PaymentController extends Controller
 
         $method = DompetxService::normalizeMethod($validated['method']);
 
-        if ($method === 'TUNAI' || $method === 'CASH') {
+        if ($method === 'tunai' || $method === 'cash') {
             $payment = Payment::create([
                 'order_id' => $validated['order_id'],
                 'method' => 'tunai',
@@ -39,16 +41,37 @@ class PaymentController extends Controller
             return response()->json($payment, 201);
         }
 
+        Payment::where('order_id', $order->id)
+            ->where('gateway', 'dompetx')
+            ->where('method', '!=', $method)
+            ->whereNotIn('status', ['failed', 'cancelled', 'paid', 'captured', 'success', 'settled'])
+            ->update(['status' => 'cancelled']);
+
+        $existingPayment = Payment::where('order_id', $order->id)
+            ->where('method', $method)
+            ->where('gateway', 'dompetx')
+            ->whereNotIn('status', ['failed', 'cancelled'])
+            ->whereNotNull('transaction_id')
+            ->latest()
+            ->first();
+
+        if ($existingPayment) {
+            return response()->json($existingPayment);
+        }
+
+        $reference = 'FIVGO-' . $order->id . '-' . strtoupper($method) . '-' . Str::upper(Str::random(8));
+
         try {
             $dompetxPayload = [
                 'method' => $method,
                 'amount' => $validated['amount'],
                 'currency' => 'IDR',
-                'reference' => 'FIVGO-' . $order->id,
+                'reference' => $reference,
                 'settlementSpeed' => 'standard',
                 'metadata' => [
                     'order_id' => $order->id,
                     'customer_id' => $order->customer_id,
+                    'payment_method' => $method,
                     'pickup_address' => $order->pickup_address,
                     'dropoff_address' => $order->dropoff_address,
                 ],
@@ -56,9 +79,11 @@ class PaymentController extends Controller
 
             $dompetx = $this->dompetx->createPayment(
                 $dompetxPayload,
-                'fivgo-payment-' . $order->id . '-' . $method
+                'fivgo-payment-' . $reference
             );
         } catch (Throwable $e) {
+            $gatewayError = $this->getGatewayErrorMessage($e);
+
             $payment = Payment::create([
                 'order_id' => $validated['order_id'],
                 'method' => $method,
@@ -67,27 +92,33 @@ class PaymentController extends Controller
                 'status' => 'failed',
                 'gateway_payload' => [
                     'message' => 'DompetX payment creation failed',
-                    'error' => $e->getMessage(),
+                    'error' => $gatewayError,
+                    'raw_error' => $e->getMessage(),
                 ],
             ]);
 
             return response()->json([
-                'message' => 'Gagal membuat pembayaran DompetX.',
+                'message' => $gatewayError ?: 'Gagal membuat pembayaran DompetX.',
                 'payment' => $payment,
             ], 502);
         }
 
-        $detail = Arr::get($dompetx, 'detail', []);
+        $transactionId = DompetxService::extractTransactionId($dompetx);
 
         $payment = Payment::create([
             'order_id' => $validated['order_id'],
             'method' => $method,
             'gateway' => 'dompetx',
             'total_amount' => $validated['amount'],
-            'status' => Arr::get($detail, 'status', Arr::get($dompetx, 'status', 'pending')),
-            'transaction_id' => Arr::get($dompetx, 'id'),
+            'status' => DompetxService::extractStatus($dompetx, 'pending'),
+            'transaction_id' => $transactionId,
             'gateway_payload' => $dompetx,
-            'expires_at' => Arr::get($detail, 'expiresAt'),
+            'expires_at' => DompetxService::firstPayloadValue($dompetx, [
+                'detail.data.expiresAt',
+                'detail.expiresAt',
+                'data.expiresAt',
+                'expiresAt',
+            ]),
         ]);
 
         $order->update(['payment_method' => $method]);
@@ -132,12 +163,13 @@ class PaymentController extends Controller
     public function status(Request $request, $order_id)
     {
         $payment = Payment::where('order_id', $order_id)->latest()->firstOrFail();
+        $this->syncPaymentFromStoredPayload($payment);
 
-        if ($payment->gateway === 'dompetx' && $payment->transaction_id && ! in_array($payment->status, ['paid', 'captured', 'success', 'settled', 'failed', 'cancelled'], true)) {
+        if ($payment->gateway === 'dompetx' && $payment->transaction_id && ! in_array(strtolower((string) $payment->status), ['paid', 'captured', 'success', 'settled', 'failed', 'cancelled'], true)) {
             try {
                 $dompetxStatus = $this->dompetx->checkStatus($payment->transaction_id);
                 $payment->update([
-                    'status' => Arr::get($dompetxStatus, 'status', Arr::get($dompetxStatus, 'detail.status', Arr::get($dompetxStatus, 'data.status', $payment->status))),
+                    'status' => DompetxService::extractStatus($dompetxStatus, $payment->status),
                     'gateway_payload' => array_replace_recursive($payment->gateway_payload ?? [], ['status_check' => $dompetxStatus]),
                 ]);
                 $payment->refresh();
@@ -155,15 +187,14 @@ class PaymentController extends Controller
     {
         $payload = $request->all();
 
-        $transactionId = Arr::get($payload, 'id')
-            ?? Arr::get($payload, 'transaction_id')
-            ?? Arr::get($payload, 'payment.id');
+        $transactionId = DompetxService::extractTransactionId($payload)
+            ?? Arr::get($payload, 'transaction_id');
 
         if ($transactionId) {
             $payment = Payment::where('transaction_id', $transactionId)->first();
 
             if ($payment) {
-                $status = Arr::get($payload, 'status', Arr::get($payload, 'detail.status', Arr::get($payload, 'payment.status', $payment->status)));
+                $status = DompetxService::extractStatus($payload, $payment->status);
                 $payment->update([
                     'status' => $status,
                     'gateway_payload' => array_replace_recursive($payment->gateway_payload ?? [], ['webhook' => $payload]),
@@ -173,6 +204,34 @@ class PaymentController extends Controller
         }
 
         return response()->json(['status' => 'success']);
+    }
+
+    private function syncPaymentFromStoredPayload(Payment $payment): void
+    {
+        if ($payment->gateway !== 'dompetx') {
+            return;
+        }
+
+        $payload = $payment->gateway_payload ?? [];
+        $updates = [];
+
+        if (! $payment->transaction_id) {
+            $transactionId = DompetxService::extractTransactionId($payload);
+
+            if ($transactionId) {
+                $updates['transaction_id'] = $transactionId;
+            }
+        }
+
+        $payloadStatus = DompetxService::extractStatus($payload);
+        if ($payloadStatus && (ctype_digit((string) $payment->status) || ! $payment->status)) {
+            $updates['status'] = $payloadStatus;
+        }
+
+        if ($updates) {
+            $payment->update($updates);
+            $payment->refresh();
+        }
     }
 
     private function releaseOrderAfterPayment(Payment $payment): void
@@ -188,5 +247,18 @@ class PaymentController extends Controller
         if ($order && $order->status === 'payment_pending') {
             $order->update(['status' => 'pending']);
         }
+    }
+
+    private function getGatewayErrorMessage(Throwable $e): string
+    {
+        if ($e instanceof RequestException && $e->response) {
+            $message = $e->response->json('message');
+
+            if (is_string($message) && $message !== '') {
+                return $message;
+            }
+        }
+
+        return $e->getMessage();
     }
 }

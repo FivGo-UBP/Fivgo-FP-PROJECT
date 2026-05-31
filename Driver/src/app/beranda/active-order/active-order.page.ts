@@ -74,13 +74,13 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
     if (!routes.length) return null;
 
     return [...routes].sort((a: any, b: any) => {
-      const aTime = a?.summary?.travelTimeInSeconds ?? Number.MAX_SAFE_INTEGER;
-      const bTime = b?.summary?.travelTimeInSeconds ?? Number.MAX_SAFE_INTEGER;
-      if (aTime !== bTime) return aTime - bTime;
-
       const aDistance = a?.summary?.lengthInMeters ?? Number.MAX_SAFE_INTEGER;
       const bDistance = b?.summary?.lengthInMeters ?? Number.MAX_SAFE_INTEGER;
-      return aDistance - bDistance;
+      if (aDistance !== bDistance) return aDistance - bDistance;
+
+      const aTime = a?.summary?.travelTimeInSeconds ?? Number.MAX_SAFE_INTEGER;
+      const bTime = b?.summary?.travelTimeInSeconds ?? Number.MAX_SAFE_INTEGER;
+      return aTime - bTime;
     })[0];
   }
 
@@ -528,6 +528,13 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
   formatPaymentMethod(method: string): string {
     const map: Record<string, string> = {
       qris: 'QRIS',
+      bca: 'VA BCA',
+      bni: 'VA BNI',
+      bri: 'VA BRI',
+      mandiri: 'VA Mandiri',
+      permata: 'VA Permata',
+      cimb: 'VA CIMB',
+      danamon: 'VA Danamon',
       va_bca: 'VA BCA',
       va_bni: 'VA BNI',
       va_bri: 'VA BRI',

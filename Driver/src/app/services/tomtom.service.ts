@@ -44,20 +44,22 @@ export class TomtomService {
       map((res: any) => this.ensureRouteResponse(res, 'TomTom'))
     );
 
-    return vehicleType === 'motor'
-      ? tomtomRoute$.pipe(catchError(() => mapboxRoute$))
-      : mapboxRoute$.pipe(catchError(() => tomtomRoute$));
+    // Menggunakan Mapbox sebagai router utama untuk mobil maupun motor (dengan menghindari jalan tol)
+    // karena data jalan Mapbox di Indonesia jauh lebih akurat dan lengkap. TomTom digunakan sebagai fallback.
+    return mapboxRoute$.pipe(
+      catchError(() => tomtomRoute$)
+    );
   }
 
   private buildTomTomRouteUrl(startLat: number, startLon: number, destLat: number, destLon: number, vehicleType: string): string {
     const locations = `${startLat},${startLon}:${destLat},${destLon}`;
     
-    // Motor memakai mode motorcycle agar TomTom bisa mempertimbangkan akses jalan motor.
-    // Mobil tetap memakai car dengan rute tercepat.
+    // Menggunakan travelMode 'car' untuk motor sebagai bentuk emulasi, karena rute 'motorcycle'
+    // bawaan TomTom di Indonesia sangat tidak akurat dan sering memutar jauh.
     
-    const travelMode = vehicleType === 'motor' ? 'motorcycle' : 'car';
+    const travelMode = 'car';
     const routeType = 'fastest';
-    const maxAlternatives = vehicleType === 'motor' ? 4 : 0;
+    const maxAlternatives = 0;
     
     let url = `https://api.tomtom.com/routing/1/calculateRoute/${locations}/json?key=${this.apiKey}&maxAlternatives=${maxAlternatives}&routeType=${routeType}&traffic=true&travelMode=${travelMode}&instructionsType=text&language=id-ID`;
     
@@ -77,7 +79,7 @@ export class TomtomService {
       overview: 'full',
       steps: 'true',
       language: 'id',
-      alternatives: vehicleType === 'motor' ? 'true' : 'false',
+      alternatives: 'false',
     });
 
     if (vehicleType === 'motor') {

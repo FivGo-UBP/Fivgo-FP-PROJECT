@@ -11,7 +11,7 @@ export class TomtomService {
   private apiKey = environment.tomtomApiKey;
   private mapboxApiKey = environment.mapboxApiKey;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // 1. Search TomTom — dioptimasi untuk Indonesia
   // Radius 30km agar POI seperti "Resinda Hotel", "Resinda Mall" semua muncul
@@ -170,9 +170,11 @@ export class TomtomService {
       map((res: any) => this.ensureRouteResponse(res, 'TomTom'))
     );
 
-    return vehicleType === 'motor'
-      ? tomtomRoute$.pipe(catchError(() => mapboxRoute$))
-      : mapboxRoute$.pipe(catchError(() => tomtomRoute$));
+    // Menggunakan Mapbox sebagai router utama untuk mobil maupun motor (dengan menghindari jalan tol)
+    // karena data jalan Mapbox di Indonesia jauh lebih akurat dan lengkap. TomTom digunakan sebagai fallback.
+    return mapboxRoute$.pipe(
+      catchError(() => tomtomRoute$)
+    );
   }
 
   private buildTomTomRouteUrl(
@@ -181,9 +183,11 @@ export class TomtomService {
     vehicleType: string
   ): string {
     const locations = `${startLat},${startLon}:${destLat},${destLon}`;
-    const travelMode = vehicleType === 'motor' ? 'motorcycle' : 'car';
+    // Menggunakan travelMode 'car' untuk motor sebagai bentuk emulasi, karena rute 'motorcycle'
+    // bawaan TomTom di Indonesia sangat tidak akurat dan sering memutar jauh.
+    const travelMode = 'car';
     const routeType = 'fastest';
-    const maxAlternatives = vehicleType === 'motor' ? 4 : 0;
+    const maxAlternatives = 0;
 
     let url = `https://api.tomtom.com/routing/1/calculateRoute/${locations}/json`
       + `?key=${this.apiKey}`
@@ -212,7 +216,7 @@ export class TomtomService {
       overview: 'full',
       steps: 'true',
       language: 'id',
-      alternatives: vehicleType === 'motor' ? 'true' : 'false',
+      alternatives: 'false',
     });
 
     if (vehicleType === 'motor') {

@@ -28,19 +28,23 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
   // Metode pembayaran
   selectedPayment: string = 'tunai';
-  selectedNonTunai: string = 'QRIS_VA';
+  selectedNonTunai: string = 'qris';
   paymentInfo: PaymentRecord | null = null;
   isCreatingPayment: boolean = false;
   paymentError: string = '';
   isPaymentGatewayOpen: boolean = false;
-  dompetxGatewayMethod: string = 'QRIS';
+  dompetxGatewayMethod: string = 'qris';
   dompetxGatewayAmount: number = 0;
+  readonly virtualAccountMinAmount = 15000;
   readonly dompetxGatewayOptions = [
-    { label: 'QRIS', code: 'QRIS' },
-    { label: 'VA BCA', code: 'VA_BCA' },
-    { label: 'VA BNI', code: 'VA_BNI' },
-    { label: 'VA BRI', code: 'VA_BRI' },
-    { label: 'VA Mandiri', code: 'VA_MANDIRI' },
+    { label: 'QRIS', code: 'qris' },
+    { label: 'VA BCA', code: 'bca' },
+    { label: 'VA BNI', code: 'bni' },
+    { label: 'VA BRI', code: 'bri' },
+    { label: 'VA Mandiri', code: 'mandiri' },
+    { label: 'VA Permata', code: 'permata' },
+    { label: 'VA CIMB', code: 'cimb' },
+    { label: 'VA Danamon', code: 'danamon' },
   ];
   private paymentPollingInterval: any = null;
 
@@ -65,6 +69,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
   private orderPollingInterval: any = null;
   
   driverEtaText: string = 'Menghitung...';
+  tripDistanceKm: number = 0;
   private driverMarker: any = null;
   private pickupMarker: any = null;
   private dropoffMarker: any = null;
@@ -135,17 +140,19 @@ export class MapVisualPage implements OnInit, OnDestroy {
     if (!routes.length) return null;
 
     return [...routes].sort((a: any, b: any) => {
-      const aTime = a?.summary?.travelTimeInSeconds ?? Number.MAX_SAFE_INTEGER;
-      const bTime = b?.summary?.travelTimeInSeconds ?? Number.MAX_SAFE_INTEGER;
-      if (aTime !== bTime) return aTime - bTime;
-
       const aDistance = a?.summary?.lengthInMeters ?? Number.MAX_SAFE_INTEGER;
       const bDistance = b?.summary?.lengthInMeters ?? Number.MAX_SAFE_INTEGER;
-      return aDistance - bDistance;
+      if (aDistance !== bDistance) return aDistance - bDistance;
+
+      const aTime = a?.summary?.travelTimeInSeconds ?? Number.MAX_SAFE_INTEGER;
+      const bTime = b?.summary?.travelTimeInSeconds ?? Number.MAX_SAFE_INTEGER;
+      return aTime - bTime;
     })[0];
   }
 
   ionViewWillEnter() {
+    this.loadSavedPaymentPreference();
+
     if (this.isNavigatingAway) {
       this.isNavigatingAway = false;
       this.isPageActive = true;
@@ -173,17 +180,30 @@ export class MapVisualPage implements OnInit, OnDestroy {
             return;
           }
 
+          this.applyActiveOrderRoute(order);
+
           if (order.status === 'payment_pending') {
+            this.loadSavedPaymentPreference();
             this.activeOrder = order;
             this.currentOrderId = order.id;
+            this.dompetxGatewayAmount = order.estimated_price || this.getSelectedVehiclePriceRaw();
             this.isVehicleModalOpen = false;
             this.isPaymentGatewayOpen = true;
             this.cdr.detectChanges();
 
             this.orderService.getPaymentStatus(order.id).subscribe({
               next: (payment) => {
+                const preferredMethod = this.resolveDompetxGatewayMethod();
+                const paymentMethod = this.normalizePaymentCode(payment.method || '');
+
+                if (this.selectedPayment === 'nontunai' && !this.isPaymentPaid(payment) && paymentMethod !== preferredMethod) {
+                  this.dompetxGatewayMethod = preferredMethod;
+                  this.createDompetxPayment(order.id, this.dompetxGatewayAmount, preferredMethod);
+                  return;
+                }
+
                 this.paymentInfo = payment;
-                this.dompetxGatewayMethod = payment.method || this.dompetxGatewayMethod;
+                this.dompetxGatewayMethod = paymentMethod || this.dompetxGatewayMethod;
                 this.startPaymentPolling();
                 this.cdr.detectChanges();
               },
@@ -241,10 +261,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
       }
     });
 
-    const savedPayment = localStorage.getItem('selectedPayment');
-    const savedNonTunai = localStorage.getItem('selectedNonTunai');
-    if (savedPayment) this.selectedPayment = savedPayment;
-    if (savedNonTunai) this.selectedNonTunai = this.normalizePaymentCode(savedNonTunai);
+    this.loadSavedPaymentPreference();
   }
 
   ionViewDidEnter() {
@@ -371,7 +388,11 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.isNoteModalOpen = false;
     this.isPaymentGatewayOpen = false;
     setTimeout(() => {
-      this.router.navigate(['/metode-pembayaran']);
+      this.router.navigate(['/metode-pembayaran'], {
+        queryParams: {
+          amount: this.dompetxGatewayAmount || this.getSelectedVehiclePriceRaw()
+        }
+      });
     }, 300);
   }
 
@@ -449,6 +470,9 @@ export class MapVisualPage implements OnInit, OnDestroy {
         if (!routeData) return;
 
         const distanceKm = routeData.summary.lengthInMeters / 1000;
+        if (this.selectedVehicle === 'motor') {
+          this.tripDistanceKm = distanceKm;
+        }
         const travelMinutes = Math.ceil(routeData.summary.travelTimeInSeconds / 60);
         const rawPrice = Math.max(8000, 5000 + (distanceKm * 2000));
         const price = Math.round(rawPrice / 500) * 500;
@@ -473,6 +497,9 @@ export class MapVisualPage implements OnInit, OnDestroy {
         if (!routeData) return;
 
         const distanceKm = routeData.summary.lengthInMeters / 1000;
+        if (this.selectedVehicle === 'mobil') {
+          this.tripDistanceKm = distanceKm;
+        }
         const travelMinutes = Math.ceil(routeData.summary.travelTimeInSeconds / 60);
         const rawPrice = Math.max(20000, 15000 + (distanceKm * 4000));
         const price = Math.round(rawPrice / 500) * 500;
@@ -508,6 +535,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
         res.routes = [preferredRoute];
 
         const routeData = res.routes[0];
+        this.tripDistanceKm = (routeData?.summary?.lengthInMeters || 0) / 1000;
         const routePoints = routeData.legs[0].points;
         const coordinates = routePoints.map((point: any) => [point.longitude, point.latitude]);
 
@@ -580,49 +608,107 @@ export class MapVisualPage implements OnInit, OnDestroy {
     return parseInt(v.price.replace(/[^0-9]/g, ''), 10);
   }
 
+  isShortDistanceForMobil(): boolean {
+    return this.selectedVehicle === 'mobil' && this.tripDistanceKm > 0 && this.tripDistanceKm < 0.5;
+  }
+
   getSelectedPaymentLabel(): string {
-    return this.selectedPayment === 'tunai' ? 'Tunai' : 'QRIS/VA';
+    if (this.selectedPayment === 'tunai') return 'Tunai';
+
+    const label = this.getNonTunaiLabel(this.selectedNonTunai);
+    const amount = this.getSelectedVehiclePriceRaw();
+    if (this.isVirtualAccountMethod(this.selectedNonTunai) && amount > 0 && amount < this.virtualAccountMinAmount) {
+      return `${label} (Min Rp15rb)`;
+    }
+
+    return label;
   }
 
   getNonTunaiLabel(code: string): string {
     const labels: Record<string, string> = {
       QRIS: 'QRIS',
+      qris: 'QRIS',
       VA_BCA: 'VA BCA',
+      bca: 'VA BCA',
       VA_BNI: 'VA BNI',
+      bni: 'VA BNI',
       VA_BRI: 'VA BRI',
+      bri: 'VA BRI',
       VA_MANDIRI: 'VA Mandiri',
+      mandiri: 'VA Mandiri',
       VA_PERMATA: 'VA Permata',
+      permata: 'VA Permata',
       VA_CIMB: 'VA CIMB',
+      cimb: 'VA CIMB',
       VA_DANAMON: 'VA Danamon',
+      danamon: 'VA Danamon',
       DANA: 'DANA',
+      dana: 'DANA',
       OVO: 'OVO',
+      ovo: 'OVO',
       GOPAY: 'GoPay',
+      gopay: 'GoPay',
       SHOPEEPAY: 'ShopeePay',
+      shopeepay: 'ShopeePay',
       LINKAJA: 'LinkAja',
+      linkaja: 'LinkAja',
     };
 
     return labels[code] || code;
   }
 
   normalizePaymentCode(value: string): string {
-    const normalized = value.trim().toUpperCase().replace(/[\s-]+/g, '_');
-    if (['QRIS_VA', 'QRIS/VA', 'NON_TUNAI', 'NONTUNAI', 'DOMPETX'].includes(normalized)) {
-      return 'QRIS_VA';
+    const raw = (value || '').trim();
+    if (!raw) return 'qris';
+
+    const normalized = raw.toUpperCase().replace(/[\s-]+/g, '_');
+    if (['QRIS', 'QRIS_VA', 'QRIS/VA', 'NON_TUNAI', 'NONTUNAI', 'DOMPETX'].includes(normalized)) {
+      return 'qris';
     }
 
     const aliases: Record<string, string> = {
-      DANA: 'DANA',
-      GOPAY: 'GOPAY',
-      GO_PAY: 'GOPAY',
-      SHOPEEPAY: 'SHOPEEPAY',
-      SHOPEE_PAY: 'SHOPEEPAY',
-      LINKAJA: 'LINKAJA',
-      LINK_AJA: 'LINKAJA',
-      VIRTUAL_ACCOUNT: 'VA_BCA',
-      VA: 'VA_BCA',
+      DANA: 'dana',
+      GOPAY: 'gopay',
+      GO_PAY: 'gopay',
+      SHOPEEPAY: 'shopeepay',
+      SHOPEE_PAY: 'shopeepay',
+      LINKAJA: 'linkaja',
+      LINK_AJA: 'linkaja',
+      VIRTUAL_ACCOUNT: 'bca',
+      VA: 'bca',
+      VA_BCA: 'bca',
+      BCA: 'bca',
+      VA_BNI: 'bni',
+      BNI: 'bni',
+      VA_BRI: 'bri',
+      BRI: 'bri',
+      VA_MANDIRI: 'mandiri',
+      MANDIRI: 'mandiri',
+      VA_PERMATA: 'permata',
+      PERMATA: 'permata',
+      VA_CIMB: 'cimb',
+      CIMB: 'cimb',
+      VA_DANAMON: 'danamon',
+      DANAMON: 'danamon',
     };
 
-    return aliases[normalized] || normalized;
+    return aliases[normalized] || raw.toLowerCase();
+  }
+
+  private loadSavedPaymentPreference() {
+    const savedPayment = localStorage.getItem('selectedPayment');
+    const savedNonTunai = localStorage.getItem('selectedNonTunai');
+
+    if (savedPayment) {
+      const normalizedPayment = savedPayment.trim().toLowerCase().replace(/[\s-]+/g, '_');
+      this.selectedPayment = ['nontunai', 'non_tunai', 'qris_va', 'qris/va', 'dompetx'].includes(normalizedPayment)
+        ? 'nontunai'
+        : 'tunai';
+    }
+
+    if (savedNonTunai) {
+      this.selectedNonTunai = this.normalizePaymentCode(savedNonTunai);
+    }
   }
 
   getDompetxGatewayMethodLabel(): string {
@@ -630,7 +716,21 @@ export class MapVisualPage implements OnInit, OnDestroy {
   }
 
   getDompetxDetail(): any {
-    return this.paymentInfo?.gateway_payload?.detail || this.paymentInfo?.gateway_payload || {};
+    const payload = this.paymentInfo?.gateway_payload || {};
+    const candidates = [
+      payload?.detail?.data,
+      payload?.detail?.payment,
+      payload?.detail?.transaction,
+      payload?.detail,
+      payload?.data,
+      payload?.payment,
+      payload?.transaction,
+      payload,
+    ];
+
+    return candidates.find(candidate => {
+      return candidate && (typeof candidate !== 'object' || Object.keys(candidate).length > 0);
+    }) || {};
   }
 
   getPaymentQrImage(): string {
@@ -643,17 +743,35 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
   getPaymentVaNumber(): string {
     const detail = this.getDompetxDetail();
-    return detail?.vaData?.accountNumber
+    return detail?.vaData?.va_number
+      || detail?.vaData?.vaNumber
+      || detail?.vaData?.account_number
+      || detail?.vaData?.accountNumber
       || detail?.virtualAccount?.accountNumber
       || detail?.virtualAccount?.number
+      || detail?.virtualAccount?.va_number
+      || detail?.virtualAccount?.account_number
+      || detail?.va_number
       || detail?.vaNumber
+      || detail?.account_number
       || detail?.accountNumber
       || '';
   }
 
+  getPaymentVaBankName(): string {
+    const detail = this.getDompetxDetail();
+    return detail?.vaData?.bank_name
+      || detail?.vaData?.bankName
+      || detail?.virtualAccount?.bank_name
+      || detail?.virtualAccount?.bankName
+      || detail?.bank_name
+      || detail?.bankName
+      || (this.getPaymentVaNumber() ? this.getDompetxGatewayMethodLabel() : '');
+  }
+
   getPaymentReference(): string {
     const detail = this.getDompetxDetail();
-    return detail?.qrData?.refId || detail?.reference || this.paymentInfo?.transaction_id || '-';
+    return detail?.qrData?.refId || detail?.refId || detail?.reference || this.paymentInfo?.transaction_id || '-';
   }
 
   getPaymentStatusLabel(): string {
@@ -666,8 +784,20 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
   // ─── CARI DRIVER & ORDER FLOW ─────────────────────────────────────────────
 
-  /** Dipanggil saat tombol "Pesan Sekarang" ditekan */
   startSearch() {
+    this.loadSavedPaymentPreference();
+
+    // Validasi kesesuaian nominal sebelum memproses pesanan ke backend
+    const payableAmount = this.getSelectedVehiclePriceRaw();
+    const selectedMethod = this.selectedPayment === 'nontunai' ? this.normalizePaymentCode(this.selectedNonTunai) : 'tunai';
+    const amountError = this.getDompetxAmountError(selectedMethod, payableAmount);
+
+    if (amountError) {
+      this.showToast(amountError, 'warning');
+      this.goToMetodePembayaran();
+      return;
+    }
+
     this.isVehicleModalOpen = false;
     this.isNoteModalOpen = false;
     this.isPageActive = true;
@@ -683,7 +813,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
       dropoff_address: this.tujuan,
       dropoff_lat: this.destCoord[1],
       dropoff_lng: this.destCoord[0],
-      payment_method: this.selectedPayment === 'nontunai' ? 'QRIS_VA' : 'tunai',
+      payment_method: this.selectedPayment === 'nontunai' ? this.normalizePaymentCode(this.selectedNonTunai) : 'tunai',
       vehicle_type: this.selectedVehicle,
       notes: this.driverNote || undefined,
       estimated_price: this.getSelectedVehiclePriceRaw() || undefined
@@ -727,32 +857,50 @@ export class MapVisualPage implements OnInit, OnDestroy {
   }
 
   openDompetxGateway(orderId: string, amount: number) {
+    this.loadSavedPaymentPreference();
     this.isPaymentGatewayOpen = true;
     this.isSearchingDriver = false;
     this.isDriverNotFound = false;
     this.paymentInfo = null;
     this.paymentError = '';
     this.dompetxGatewayAmount = amount || this.getSelectedVehiclePriceRaw();
-    this.dompetxGatewayMethod = 'QRIS';
+    this.dompetxGatewayMethod = this.resolveDompetxGatewayMethod();
     this.createDompetxPayment(orderId, this.dompetxGatewayAmount, this.dompetxGatewayMethod);
   }
 
   selectDompetxGatewayMethod(code: string) {
     if (this.dompetxGatewayMethod === code || this.isCreatingPayment || !this.currentOrderId) return;
+
     this.dompetxGatewayMethod = code;
     this.paymentInfo = null;
     this.paymentError = '';
     this.createDompetxPayment(this.currentOrderId, this.dompetxGatewayAmount || this.getSelectedVehiclePriceRaw(), code);
   }
 
+  private resolveDompetxGatewayMethod(): string {
+    const preferred = this.normalizePaymentCode(this.selectedNonTunai || this.dompetxGatewayMethod || 'qris');
+    return this.dompetxGatewayOptions.some(opt => opt.code === preferred) ? preferred : 'qris';
+  }
+
   createDompetxPayment(orderId: string, amount: number, method: string = this.dompetxGatewayMethod) {
     this.isCreatingPayment = true;
     this.paymentError = '';
+    const payableAmount = amount || this.getSelectedVehiclePriceRaw();
+    const amountError = this.getDompetxAmountError(method, payableAmount);
+
+    if (amountError) {
+      this.paymentError = amountError;
+      this.paymentInfo = null;
+      this.isCreatingPayment = false;
+      this.showToast(amountError, 'warning');
+      this.cdr.detectChanges();
+      return;
+    }
 
     this.orderService.createPayment({
       order_id: orderId,
       method,
-      amount: amount || this.getSelectedVehiclePriceRaw()
+      amount: payableAmount
     }).subscribe({
       next: (payment) => {
         this.paymentInfo = payment;
@@ -766,12 +914,61 @@ export class MapVisualPage implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Gagal membuat pembayaran DompetX:', err);
-        this.paymentError = 'Pembayaran digital belum bisa dibuat. Coba channel lain atau ganti ke Tunai.';
+        this.paymentError = this.getDompetxErrorMessage(err);
         this.isCreatingPayment = false;
-        this.showToast('Gagal membuat pembayaran DompetX.', 'danger');
+        this.showToast(this.paymentError, 'danger');
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private getDompetxErrorMessage(err: any): string {
+    const message = err?.error?.message
+      || err?.error?.payment?.gateway_payload?.error
+      || 'Pembayaran digital belum bisa dibuat. Coba channel lain atau ganti ke Tunai.';
+
+    return this.formatDompetxErrorMessage(message);
+  }
+
+  private formatDompetxErrorMessage(message: string): string {
+    const minimumMatch = `${message}`.match(/minimum transaction amount is\s*(\d+)/i);
+
+    if (minimumMatch) {
+      const amount = Number(minimumMatch[1]);
+      return `Virtual account minimal Rp ${amount.toLocaleString('id-ID')}. Pilih QRIS atau Tunai untuk tarif ini.`;
+    }
+
+    return message;
+  }
+
+  private getDompetxAmountError(method: string, amount: number): string {
+    if (this.isVirtualAccountMethod(method) && amount < this.virtualAccountMinAmount) {
+      return `Virtual account minimal Rp ${this.virtualAccountMinAmount.toLocaleString('id-ID')}. Pilih QRIS atau Tunai untuk tarif ini.`;
+    }
+
+    return '';
+  }
+
+  canSwitchDompetxToQris(): boolean {
+    return !!this.currentOrderId && !this.isCreatingPayment && this.isVirtualAccountMethod(this.dompetxGatewayMethod);
+  }
+
+  switchDompetxToQris() {
+    if (!this.currentOrderId) return;
+
+    this.selectedPayment = 'nontunai';
+    this.selectedNonTunai = 'qris';
+    this.dompetxGatewayMethod = 'qris';
+    localStorage.setItem('selectedPayment', 'nontunai');
+    localStorage.setItem('selectedNonTunai', 'qris');
+    this.paymentInfo = null;
+    this.paymentError = '';
+    this.createDompetxPayment(this.currentOrderId, this.dompetxGatewayAmount || this.getSelectedVehiclePriceRaw(), 'qris');
+  }
+
+  private isVirtualAccountMethod(method: string): boolean {
+    return ['bca', 'bni', 'bri', 'mandiri', 'permata', 'cimb', 'danamon', 'bsi']
+      .includes(this.normalizePaymentCode(method));
   }
 
   checkPaymentAndContinue(showPendingToast: boolean = true) {
@@ -1045,6 +1242,57 @@ export class MapVisualPage implements OnInit, OnDestroy {
   }
 
   // ─── Map & Tracking Helpers ──────────────────────────────────────────────
+
+  private applyActiveOrderRoute(order: ActiveOrder) {
+    const pickupLat = Number(order.pickup_lat);
+    const pickupLng = Number(order.pickup_lng);
+    const dropoffLat = Number(order.dropoff_lat);
+    const dropoffLng = Number(order.dropoff_lng);
+
+    if (!Number.isFinite(pickupLat) || !Number.isFinite(pickupLng) || !Number.isFinite(dropoffLat) || !Number.isFinite(dropoffLng)) {
+      return;
+    }
+
+    this.startCoord = [pickupLng, pickupLat];
+    this.destCoord = [dropoffLng, dropoffLat];
+    this.jemput = order.pickup_address;
+    this.tujuan = order.dropoff_address;
+
+    if (order.vehicle_type) {
+      this.vehicle = order.vehicle_type;
+      this.selectedVehicle = order.vehicle_type;
+      this.sortVehicles();
+    }
+
+    if (order.payment_method) {
+      this.selectedPayment = ['tunai', 'cash'].includes(order.payment_method.toLowerCase()) ? 'tunai' : 'nontunai';
+      if (this.selectedPayment === 'nontunai') {
+        this.selectedNonTunai = this.normalizePaymentCode(order.payment_method);
+      }
+    }
+
+    if (!this.map) {
+      return;
+    }
+
+    if (this.pickupMarker) {
+      this.pickupMarker.remove();
+    }
+
+    if (this.dropoffMarker) {
+      this.dropoffMarker.remove();
+      this.dropoffMarker = null;
+    }
+
+    this.pickupMarker = this.addMarker(this.startCoord, 'start');
+
+    if (order.status === 'started') {
+      this.ensureDropoffMarker();
+    } else if (!['accepted', 'arrived'].includes(order.status)) {
+      this.ensureDropoffMarker();
+      this.drawRoute(this.startCoord, this.destCoord);
+    }
+  }
 
   updateDriverMapAndETA(order: ActiveOrder) {
     if (!this.map || !order.driver?.current_lat || !order.driver?.current_lng || !this.isPageActive) return;
