@@ -77,6 +77,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('{id}/complete', [OrderController::class, 'complete']);
         Route::post('{id}/cancel', [OrderController::class, 'cancel']);
         Route::post('{id}/reject', [OrderController::class, 'reject']);
+        Route::post('{id}/retry', [OrderController::class, 'retry']);
         Route::post('{id}/rating', [OrderController::class, 'rating']);
         
         // Tracking

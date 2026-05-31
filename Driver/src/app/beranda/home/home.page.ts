@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { OrderService, ActiveOrder } from '../../services/order.service';
 import { ToastController, AlertController } from '@ionic/angular';
 import { environment } from '../../../environments/environment';
+import { AuthService } from '../../services/auth.service';
 
 declare var mapboxgl: any;
 
@@ -26,6 +27,10 @@ export class HomePage implements OnInit, OnDestroy {
   isAccepting: boolean = false;
   isRejecting: boolean = false;
 
+  // Countdown Timer
+  countdownValue: number = 30;
+  private countdownInterval: any = null;
+
   private pollingInterval: any = null;
   private locationInterval: any = null;
   private currentLat: number = 0;
@@ -36,11 +41,28 @@ export class HomePage implements OnInit, OnDestroy {
     private router: Router,
     private orderService: OrderService,
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
+    console.log('[DriverDebug] ngOnInit called');
     this.loadMap();
+    this.syncDriverStatus();
+  }
+
+  ionViewWillEnter() {
+    console.log('[DriverDebug] ionViewWillEnter called');
+    // Bersihkan interval & state lama (mencegah kebocoran timer / modal nyangkut dari sesi sebelumnya)
+    this.stopPolling();
+    this.stopLocationUpdates();
+    this.stopCountdown();
+    this.isOrderModalOpen = false;
+    this.incomingOrder = null;
+    this.isAccepting = false;
+    this.isRejecting = false;
+
+    this.syncDriverStatus();
   }
 
   ionViewDidEnter() {
@@ -54,6 +76,7 @@ export class HomePage implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.stopPolling();
     this.stopLocationUpdates();
+    this.stopCountdown();
     if (this.map) {
       this.map.remove();
       this.map = null;
@@ -133,11 +156,75 @@ export class HomePage implements OnInit, OnDestroy {
     }, 500);
   }
 
+  syncDriverStatus() {
+    console.log('[DriverDebug] syncDriverStatus called');
+    // 1. Coba baca status awal dari localStorage agar instan
+    const userStr = localStorage.getItem('user');
+    console.log('[DriverDebug] LocalStorage user string:', userStr);
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        console.log('[DriverDebug] LocalStorage parsed user status:', user?.driver_profile?.status);
+        if (user?.driver_profile?.status === 'online') {
+          this.isOnline = true;
+          this.startLocationUpdates();
+          this.startPollingOrders();
+        }
+      } catch (e) {
+        console.error('[DriverDebug] Error parsing user from localStorage', e);
+      }
+    }
+
+    // 2. Fetch data terbaru dari server untuk sinkronisasi jika ada perbedaan
+    console.log('[DriverDebug] Fetching latest driver profile from server...');
+    this.authService.getProfile().subscribe({
+      next: (user) => {
+        const status = user?.driver_profile?.status;
+        const shouldBeOnline = status === 'online';
+        console.log('[DriverDebug] Server profile fetched. Status:', status, 'Should be online:', shouldBeOnline);
+        
+        // Selalu update state isOnline sesuai server
+        this.isOnline = shouldBeOnline;
+        
+        if (this.isOnline) {
+          console.log('[DriverDebug] Driver is ONLINE, ensuring location and polling intervals are active');
+          this.startLocationUpdates();
+          this.startPollingOrders();
+        } else {
+          console.log('[DriverDebug] Driver is OFFLINE, stopping location and polling intervals');
+          this.stopPolling();
+          this.stopLocationUpdates();
+          this.isOrderModalOpen = false;
+          this.incomingOrder = null;
+        }
+      },
+      error: (err) => {
+        console.error('[DriverDebug] Error fetching driver profile for status sync', err);
+      }
+    });
+  }
+
+  updateLocalUserStatus(status: string) {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user && user.driver_profile) {
+          user.driver_profile.status = status;
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+      } catch (e) {
+        console.error('Error updating local user status', e);
+      }
+    }
+  }
+
   toggleStatus() {
     const newStatus = this.isOnline ? 'offline' : 'online';
     this.orderService.updateDriverStatus(newStatus).subscribe({
       next: () => {
         this.isOnline = !this.isOnline;
+        this.updateLocalUserStatus(newStatus);
         if (this.isOnline) {
           this.startLocationUpdates();
           this.startPollingOrders();
@@ -154,6 +241,7 @@ export class HomePage implements OnInit, OnDestroy {
         console.error('Error updating status', err);
         // Toggle anyway for demo purposes if backend is unreachable
         this.isOnline = !this.isOnline;
+        this.updateLocalUserStatus(this.isOnline ? 'online' : 'offline');
         if (this.isOnline) {
           this.startLocationUpdates();
           this.startPollingOrders();
@@ -172,6 +260,8 @@ export class HomePage implements OnInit, OnDestroy {
   // ─── Location Updates ────────────────────────────────────────────────────
 
   startLocationUpdates() {
+    console.log('[DriverDebug] startLocationUpdates called. current locationInterval status:', this.locationInterval ? 'active' : 'inactive');
+    if (this.locationInterval) return; // Mencegah duplikasi interval
     this.sendCurrentLocation();
     this.locationInterval = setInterval(() => {
       this.sendCurrentLocation();
@@ -179,6 +269,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   stopLocationUpdates() {
+    console.log('[DriverDebug] stopLocationUpdates called');
     if (this.locationInterval) {
       clearInterval(this.locationInterval);
       this.locationInterval = null;
@@ -186,11 +277,17 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async sendCurrentLocation() {
+    console.log('[DriverDebug] sendCurrentLocation executing...');
     try {
       const coordinates = await Geolocation.getCurrentPosition();
       this.currentLat = coordinates.coords.latitude;
       this.currentLng = coordinates.coords.longitude;
-      this.orderService.updateDriverLocation(this.currentLat, this.currentLng).subscribe();
+      console.log('[DriverDebug] Current coordinates obtained:', this.currentLat, this.currentLng);
+      
+      this.orderService.updateDriverLocation(this.currentLat, this.currentLng).subscribe({
+        next: () => console.log('[DriverDebug] Location successfully sent to backend'),
+        error: (err) => console.error('[DriverDebug] Error sending location to backend', err)
+      });
 
       if (this.map) {
         this.map.easeTo({
@@ -202,13 +299,15 @@ export class HomePage implements OnInit, OnDestroy {
         this.driverMarker.setLngLat([this.currentLng, this.currentLat]);
       }
     } catch (error) {
-      console.error('Error getting location for update', error);
+      console.error('[DriverDebug] Error getting location for update', error);
     }
   }
 
   // ─── Order Polling ───────────────────────────────────────────────────────
 
   startPollingOrders() {
+    console.log('[DriverDebug] startPollingOrders called. current pollingInterval status:', this.pollingInterval ? 'active' : 'inactive');
+    if (this.pollingInterval) return; // Mencegah duplikasi interval
     this.checkForOrders();
     this.pollingInterval = setInterval(() => {
       this.checkForOrders();
@@ -216,6 +315,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   stopPolling() {
+    console.log('[DriverDebug] stopPolling called');
     if (this.pollingInterval) {
       clearInterval(this.pollingInterval);
       this.pollingInterval = null;
@@ -223,18 +323,35 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   checkForOrders() {
+    console.log('[DriverDebug] checkForOrders executing...');
     // Jika sudah ada modal order, jangan polling lagi
-    if (this.isOrderModalOpen) return;
+    if (this.isOrderModalOpen) {
+      console.log('[DriverDebug] checkForOrders skipped because isOrderModalOpen is true');
+      return;
+    }
 
     this.orderService.getActiveOrder().subscribe({
       next: (order) => {
-        if (order && order.status === 'pending' && !this.isOrderModalOpen) {
-          this.incomingOrder = order;
-          this.isOrderModalOpen = true;
+        console.log('[DriverDebug] getActiveOrder response:', order);
+        if (order) {
+          if (order.status === 'pending' && !this.isOrderModalOpen) {
+            console.log('[DriverDebug] New pending order found! Opening modal:', order);
+            this.incomingOrder = order;
+            this.isOrderModalOpen = true;
+            this.startCountdown();
+          } else if (['accepted', 'arrived', 'started'].includes(order.status)) {
+            console.log(`[DriverDebug] Active order with status '${order.status}' found. Navigating to active-order...`);
+            this.stopPolling();
+            this.router.navigate(['/active-order', order.id]);
+          } else {
+            console.log('[DriverDebug] Active order has status:', order.status, '- skipping popup');
+          }
+        } else {
+          console.log('[DriverDebug] No active order returned from server');
         }
       },
       error: (err) => {
-        console.error('Error polling orders', err);
+        console.error('[DriverDebug] Error polling orders', err);
       }
     });
   }
@@ -244,6 +361,7 @@ export class HomePage implements OnInit, OnDestroy {
   acceptOrder() {
     if (!this.incomingOrder || this.isAccepting) return;
     this.isAccepting = true;
+    this.stopCountdown();
 
     this.orderService.acceptOrder(this.incomingOrder.id).subscribe({
       next: () => {
@@ -268,6 +386,7 @@ export class HomePage implements OnInit, OnDestroy {
   rejectOrder() {
     if (!this.incomingOrder || this.isRejecting) return;
     this.isRejecting = true;
+    this.stopCountdown();
 
     this.orderService.rejectOrder(this.incomingOrder.id).subscribe({
       next: () => {
@@ -284,6 +403,33 @@ export class HomePage implements OnInit, OnDestroy {
         this.incomingOrder = null;
       }
     });
+  }
+
+  // ─── Countdown Timer Actions ─────────────────────────────────────────────
+
+  startCountdown() {
+    console.log('[DriverDebug] startCountdown called');
+    this.stopCountdown();
+    this.countdownValue = 30;
+    
+    this.countdownInterval = setInterval(() => {
+      this.countdownValue--;
+      console.log('[DriverDebug] Countdown tick:', this.countdownValue);
+      
+      if (this.countdownValue <= 0) {
+        console.log('[DriverDebug] Countdown finished! Automatically rejecting order...');
+        this.stopCountdown();
+        this.rejectOrder();
+      }
+    }, 1000);
+  }
+
+  stopCountdown() {
+    console.log('[DriverDebug] stopCountdown called');
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+      this.countdownInterval = null;
+    }
   }
 
   // ─── Helpers ─────────────────────────────────────────────────────────────

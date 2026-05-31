@@ -425,7 +425,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.isNoteModalOpen = false;
     this.isPaymentGatewayOpen = false;
     setTimeout(() => {
-      this.router.navigate(['/metode-pembayaran'], {
+      this.navCtrl.navigateForward(['/metode-pembayaran'], {
         queryParams: {
           amount: this.dompetxGatewayAmount || this.getSelectedVehiclePriceRaw()
         }
@@ -1156,9 +1156,14 @@ export class MapVisualPage implements OnInit, OnDestroy {
             // Navigate to rating page
             this.router.navigate(['/rating-driver'], { queryParams: { order_id: order.id } });
             
-          } else if (order.status === 'rejected' || order.status === 'cancelled') {
+          } else if (order.status === 'rejected') {
+            this.stopSearch();
             this.stopOrderPolling();
-            this.showToast('Pesanan dibatalkan atau ditolak oleh driver. Silakan pesan ulang.', 'danger');
+            this.isSearchingDriver = false;
+            this.isDriverNotFound = true;
+          } else if (order.status === 'cancelled') {
+            this.stopOrderPolling();
+            this.showToast('Pesanan dibatalkan.', 'danger');
             this.cancelOrder();
           }
         },
@@ -1183,9 +1188,14 @@ export class MapVisualPage implements OnInit, OnDestroy {
             this.isNavigatingAway = true;
             
             this.router.navigate(['/rating-driver'], { queryParams: { order_id: order.id } });
-          } else if (order.status === 'rejected' || order.status === 'cancelled') {
+          } else if (order.status === 'rejected') {
+            this.stopSearch();
             this.stopOrderPolling();
-            this.showToast('Pesanan dibatalkan atau ditolak.', 'danger');
+            this.isSearchingDriver = false;
+            this.isDriverNotFound = true;
+          } else if (order.status === 'cancelled') {
+            this.stopOrderPolling();
+            this.showToast('Pesanan dibatalkan.', 'danger');
             this.cancelOrder();
           }
         }
@@ -1240,13 +1250,28 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
 
   retrySearch() {
-    this.isDriverNotFound = false;
-    this.activeOrder = null;
-    this.currentOrderId = null;
-    
-    setTimeout(() => {
-      this.startSearch();
-    }, 350);
+    if (this.currentOrderId) {
+      this.orderService.retryOrder(this.currentOrderId).subscribe({
+        next: () => {
+          this.isDriverNotFound = false;
+          this.activeOrder = null;
+          this.beginDriverSearch();
+        },
+        error: (err) => {
+          console.error('Gagal mengulang pencarian driver:', err);
+          this.showToast('Gagal mengulang pencarian driver. Silakan pesan ulang.', 'danger');
+          this.cancelOrder();
+        }
+      });
+    } else {
+      this.isDriverNotFound = false;
+      this.activeOrder = null;
+      this.currentOrderId = null;
+      
+      setTimeout(() => {
+        this.startSearch();
+      }, 350);
+    }
   }
 
   cancelOrder() {

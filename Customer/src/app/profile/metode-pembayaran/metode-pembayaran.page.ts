@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActionSheetController, ToastController } from '@ionic/angular';
+import { ActionSheetController, ToastController, NavController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OrderService } from '../../services/order.service';
 
@@ -41,7 +41,8 @@ export class MetodePembayaranPage implements OnInit {
     private router: Router,
     private actionSheetCtrl: ActionSheetController,
     private toastCtrl: ToastController,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private navCtrl: NavController
   ) {}
 
   ngOnInit() {
@@ -246,9 +247,13 @@ export class MetodePembayaranPage implements OnInit {
     }).then(toast => {
       toast.present();
       setTimeout(() => {
-        window.history.back();
+        this.navCtrl.navigateBack(this.backHref);
       }, 1000);
     });
+  }
+
+  goBack() {
+    this.navCtrl.navigateBack(this.backHref);
   }
 
   private persistNonTunai() {

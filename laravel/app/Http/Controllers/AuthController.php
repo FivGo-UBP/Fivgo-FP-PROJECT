@@ -184,6 +184,11 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        $user = $request->user();
+        if ($user && $user->role === 'driver' && $user->driverProfile) {
+            $user->driverProfile->update(['status' => 'offline']);
+        }
+
         auth('api')->logout();
 
         return response()->json(['message' => 'Berhasil logout']);

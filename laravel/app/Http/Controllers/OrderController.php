@@ -73,6 +73,12 @@ class OrderController extends Controller
     public function active(Request $request)
     {
         $user = $request->user();
+        
+        \Illuminate\Support\Facades\Log::info("Active order queried by User ID: " . $user->id . " with Role: " . $user->role);
+        
+        // Clean up any stale rejected orders first (older than 3 minutes)
+        Order::cleanUpStaleRejectedOrders($user->id);
+
         $query = Order::with(['customer', 'driver.driverProfile'])
             ->whereNotIn('status', ['completed', 'cancelled', 'rejected']);
         
@@ -138,34 +144,12 @@ class OrderController extends Controller
                     // Ini agar customer app tetap bisa menampilkan animasi "Mencari Driver..." dan memberikan kesempatan driver lain online
                     if ($secondsSinceRejection >= 30) {
                         // No more drivers found! Terminate order and refund prepaid
-                        $payment = \App\Models\Payment::where('order_id', $order->id)
-                            ->whereIn('status', ['paid', 'captured', 'success', 'settled'])
-                            ->first();
-
-                        \Illuminate\Support\Facades\DB::transaction(function () use ($order, $payment) {
-                            $customer = $order->customer;
-
-                            if ($payment && $customer) {
-                                $customer->increment('wallet_balance', $payment->total_amount);
-
-                                \App\Models\WalletTransaction::create([
-                                    'id' => (string) \Illuminate\Support\Str::uuid(),
-                                    'user_id' => $customer->id,
-                                    'amount' => $payment->total_amount,
-                                    'type' => 'refund',
-                                    'status' => 'success',
-                                    'reference' => 'FIVGO-REFUND-REJECT-' . $order->id . '-' . \Illuminate\Support\Str::upper(\Illuminate\Support\Str::random(8)),
-                                    'payment_method' => 'wallet',
-                                    'description' => 'Refund Penolakan Perjalanan oleh Driver (Order #' . substr($order->id, 0, 8) . ')',
-                                ]);
-                            }
-
-                            $order->update([
-                                'status' => 'rejected',
-                                'driver_id' => null,
-                                'cancel_reason' => 'No drivers available'
-                            ]);
-                        });
+                        // No more drivers found! Terminate order search and mark as rejected (but don't refund yet)
+                        $order->update([
+                            'status' => 'rejected',
+                            'driver_id' => null,
+                            'cancel_reason' => 'No drivers available'
+                        ]);
 
                         return response()->json(null);
                     }
@@ -258,7 +242,7 @@ class OrderController extends Controller
     public function cancel(Request $request, $id)
     {
         $order = Order::where('customer_id', $request->user()->id)
-            ->whereIn('status', ['payment_pending', 'pending', 'accepted', 'arrived'])
+            ->whereIn('status', ['payment_pending', 'pending', 'accepted', 'arrived', 'rejected'])
             ->findOrFail($id);
 
         $payment = \App\Models\Payment::where('order_id', $order->id)
@@ -377,6 +361,21 @@ class OrderController extends Controller
             $profile->save();
         }
         
+        return response()->json($order);
+    }
+
+    public function retry(Request $request, $id)
+    {
+        $order = Order::where('customer_id', $request->user()->id)
+            ->where('status', 'rejected')
+            ->findOrFail($id);
+
+        $order->update([
+            'status' => 'pending',
+            'driver_id' => null,
+            'cancel_reason' => null
+        ]);
+
         return response()->json($order);
     }
 

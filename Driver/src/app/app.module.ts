@@ -1,8 +1,9 @@
 import { NgModule, Injectable } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { RouteReuseStrategy } from '@angular/router';
+import { RouteReuseStrategy, Router } from '@angular/router';
 import { HttpClientModule, HTTP_INTERCEPTORS, HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 
@@ -12,7 +13,7 @@ import { AuthService } from './services/auth.service';
 
 @Injectable()
 export class InlineAuthInterceptor implements HttpInterceptor {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const token = this.authService.getToken();
@@ -25,7 +26,17 @@ export class InlineAuthInterceptor implements HttpInterceptor {
         }
       });
     }
-    return next.handle(request);
+    
+    return next.handle(request).pipe(
+      catchError((error) => {
+        if (error.status === 401) {
+          localStorage.removeItem('jwt_token');
+          localStorage.removeItem('user');
+          this.router.navigate(['/landing-page']);
+        }
+        return throwError(() => error);
+      })
+    );
   }
 }
 

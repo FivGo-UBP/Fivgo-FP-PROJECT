@@ -23,6 +23,9 @@ class WalletController extends Controller
     {
         $user = $request->user();
         
+        // Clean up any stale rejected orders first (older than 3 minutes)
+        \App\Models\Order::cleanUpStaleRejectedOrders($user->id);
+        
         // Cek apakah ada topup pending yang perlu di-sync dari DompetX
         $pendingTopups = WalletTransaction::where('user_id', $user->id)
             ->where('type', 'topup')

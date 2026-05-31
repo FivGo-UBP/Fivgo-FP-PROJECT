@@ -95,6 +95,10 @@ export class OrderService {
     return this.http.post<any>(`${environment.apiUrl}/orders/${id}/cancel`, { reason });
   }
 
+  retryOrder(id: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/orders/${id}/retry`, {});
+  }
+
   createPayment(data: {
     order_id: string;
     method: string;
