@@ -59,12 +59,18 @@ export interface DriverPerformance {
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
+  hasPendingCancelNotification: boolean = false;
+
   constructor(private http: HttpClient) {}
 
   // ─── Active Order ──────────────────────────────────────────────────────────
 
   getActiveOrder(): Observable<ActiveOrder | null> {
     return this.http.get<ActiveOrder | null>(`${environment.apiUrl}/orders/active`);
+  }
+
+  getOrderDetail(id: string): Observable<ActiveOrder> {
+    return this.http.get<ActiveOrder>(`${environment.apiUrl}/orders/${id}`);
   }
 
   acceptOrder(id: string): Observable<any> {

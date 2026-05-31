@@ -26,6 +26,22 @@ export class MapVisualPage implements OnInit, OnDestroy {
   isNoteModalOpen: boolean = false;
   driverNote: string = '';
 
+  // ─── State Modal Batal ────────────────────────────────────────────────────
+  isCancelReasonModalOpen: boolean = false;
+  isCancelSuccessOpen: boolean = false;
+  cancelFee: number = 0;
+  cancelReasons: string[] = [
+    'Ganti lokasi penjemputan/tujuan',
+    'Driver tidak merespon chat/telpon',
+    'Waktu tunggu terlalu lama',
+    'Driver meminta pembatalan.',
+    'Posisi driver tidak bergerak',
+    'Sudah dapat transportasi lain.',
+    'Alasan Lainnya'
+  ];
+  selectedCancelReason: string = '';
+  isDriverCloseForPenalty: boolean = false;
+
   // Metode pembayaran
   selectedPayment: string = 'tunai';
   selectedNonTunai: string = 'QRIS_VA';
@@ -1042,6 +1058,82 @@ export class MapVisualPage implements OnInit, OnDestroy {
       this.driverMarker = null;
     }
     this.hideDropoffMarkerUntilJourneyStarts();
+  }
+
+  // ─── Modal Alasan Batal ──────────────────────────────────────────────────
+
+  openCancelReasonModal() {
+    this.isCancelReasonModalOpen = true;
+    this.selectedCancelReason = '';
+    
+    // Periksa apakah driver dekat (< 1km) atau sudah tiba
+    if (this.activeOrder) {
+      if (this.activeOrder.status === 'arrived' || this.activeOrder.status === 'started') {
+        this.isDriverCloseForPenalty = true;
+      } else if (this.activeOrder.driver?.current_lat && this.activeOrder.driver?.current_lng) {
+        const dLat = parseFloat(this.activeOrder.driver.current_lat as any);
+        const dLng = parseFloat(this.activeOrder.driver.current_lng as any);
+        const pLat = this.startCoord[1];
+        const pLng = this.startCoord[0];
+        
+        // Jarak dalam meter
+        const distLat = (dLat - pLat) * 111000;
+        const distLng = (dLng - pLng) * 111000 * Math.cos(pLat * Math.PI / 180);
+        const dist = Math.sqrt(distLat * distLat + distLng * distLng);
+        
+        this.isDriverCloseForPenalty = dist <= 1000;
+      } else {
+        this.isDriverCloseForPenalty = false;
+      }
+    }
+  }
+
+  closeCancelReasonModal() {
+    this.isCancelReasonModalOpen = false;
+    this.selectedCancelReason = '';
+  }
+
+  selectCancelReason(reason: string) {
+    this.selectedCancelReason = reason;
+  }
+
+  confirmCancelOrder() {
+    this.isCancelReasonModalOpen = false;
+    this.stopSearch();
+    this.stopOrderPolling();
+    this.stopPaymentPolling();
+
+    if (this.currentOrderId) {
+      this.orderService.cancelOrder(this.currentOrderId, this.selectedCancelReason || 'Customer cancelled').subscribe();
+      this.currentOrderId = null;
+    }
+
+    this.cancelFee = this.isDriverCloseForPenalty ? 2500 : 0;
+    this.isCancelSuccessOpen = true;
+
+    this.isSearchingDriver = false;
+    this.isPaymentGatewayOpen = false;
+    this.isDriverNotFound = false;
+    this.isDriverFound = false;
+    this.isDriverArrived = false;
+    this.isInJourney = false;
+    this.showInitialSuccessBanner = false;
+    this.activeOrder = null;
+    this.paymentInfo = null;
+    this.paymentError = '';
+    this.searchProgress = 0;
+    this.searchElapsed = 0;
+    
+    if (this.driverMarker) {
+      this.driverMarker.remove();
+      this.driverMarker = null;
+    }
+    this.hideDropoffMarkerUntilJourneyStarts();
+  }
+
+  finishCancelFlow() {
+    this.isCancelSuccessOpen = false;
+    this.router.navigate(['/tabs/beranda']);
   }
 
   // ─── Map & Tracking Helpers ──────────────────────────────────────────────

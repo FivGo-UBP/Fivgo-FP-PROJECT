@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, NgZone } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, ToastController } from '@ionic/angular';
 import { OrderService, ActiveOrder } from '../../services/order.service';
@@ -50,6 +50,7 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
     private tomtomService: TomtomService,
     private alertCtrl: AlertController,
     private toastCtrl: ToastController,
+    private zone: NgZone
   ) {}
 
   ngOnInit() {
@@ -100,7 +101,7 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
 
   loadOrder() {
     this.isLoading = true;
-    this.orderService.getActiveOrder().subscribe({
+    this.orderService.getOrderDetail(this.orderId).subscribe({
       next: (order) => {
         this.order = order;
         this.isLoading = false;
@@ -372,12 +373,15 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   startPolling() {
+    this.stopPolling(); // Pastikan interval sebelumnya dihapus
     this.pollingInterval = setInterval(() => {
-      this.orderService.getActiveOrder().subscribe({
+      this.orderService.getOrderDetail(this.orderId).subscribe({
         next: (order) => {
           if (!order) {
             this.stopPolling();
-            this.router.navigate(['/tabs/beranda']);
+            this.zone.run(() => {
+              this.router.navigate(['/tabs/beranda']);
+            });
             return;
           }
           const prevStatus = this.order?.status;
@@ -391,12 +395,19 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
           if (order.status === 'completed') {
             this.stopPolling();
             this.showToast('Perjalanan selesai!', 'success');
-            setTimeout(() => this.router.navigate(['/tabs/beranda']), 2000);
+            setTimeout(() => this.zone.run(() => this.router.navigate(['/tabs/beranda'])), 2000);
+          } else if (order.status === 'cancelled') {
+            this.stopPolling();
+            this.showToast('Pesanan dibatalkan oleh pelanggan.', 'danger');
+            this.orderService.hasPendingCancelNotification = true;
+            this.zone.run(() => {
+              this.router.navigate(['/tabs/beranda']);
+            });
           }
         },
         error: (err) => console.error('Polling error:', err)
       });
-    }, 6000);
+    }, 3000); // Polling setiap 3 detik agar sangat responsif dan instan
   }
 
   stopPolling() {
