@@ -120,4 +120,14 @@ export class OrderService {
   getHistoryDetail(id: string): Observable<{ data: OrderDetail }> {
     return this.http.get<{ data: OrderDetail }>(`${environment.apiUrl}/customers/history/${id}`);
   }
+
+  // ─── Wallet Endpoints ──────────────────────────────────────────────────────
+
+  getWalletBalance(): Observable<{ balance: number; transactions: any[] }> {
+    return this.http.get<{ balance: number; transactions: any[] }>(`${environment.apiUrl}/wallet/balance`);
+  }
+
+  initiateTopUp(amount: number, method: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/wallet/topup`, { amount, method });
+  }
 }

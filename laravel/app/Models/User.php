@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-#[Fillable(['name', 'email', 'phone', 'role', 'phone_verified_at', 'email_verified_at', 'password', 'photo', 'gender'])]
+#[Fillable(['name', 'email', 'phone', 'role', 'phone_verified_at', 'email_verified_at', 'password', 'photo', 'gender', 'wallet_balance'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements JWTSubject
 {
@@ -58,5 +58,10 @@ class User extends Authenticatable implements JWTSubject
     public function driverDocuments()
     {
         return $this->hasMany(DriverDocument::class);
+    }
+
+    public function walletTransactions()
+    {
+        return $this->hasMany(WalletTransaction::class);
     }
 }

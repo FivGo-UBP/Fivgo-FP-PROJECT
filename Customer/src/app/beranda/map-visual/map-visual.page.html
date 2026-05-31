@@ -129,7 +129,7 @@
 <div class="fixed-order-footer" *ngIf="isVehicleModalOpen && !isSearchingDriver && !isDriverFound">
   <div class="options-pill">
     <div class="pill-btn payment-btn" (click)="goToMetodePembayaran()">
-      <ion-icon [name]="selectedPayment === 'tunai' ? 'cash-outline' : 'card-outline'"></ion-icon>
+      <ion-icon [name]="selectedPayment === 'tunai' ? 'cash-outline' : (selectedPayment === 'wallet' ? 'wallet-outline' : 'card-outline')"></ion-icon>
       <span>{{ getSelectedPaymentLabel() }}</span>
     </div>
     <div class="pill-divider"></div>
@@ -206,6 +206,13 @@
     <ng-container *ngIf="paymentInfo && !isCreatingPayment">
       <img *ngIf="getPaymentQrImage()" [src]="getPaymentQrImage()" alt="QRIS DompetX" class="dompetx-qr" />
 
+      <div class="dompetx-download-container" *ngIf="getPaymentQrImage()" style="text-align: center; margin-bottom: 14px; margin-top: -6px;">
+        <ion-button size="small" fill="outline" color="warning" style="--border-radius: 20px; font-weight: 700; text-transform: none; --border-width: 1px;" (click)="downloadQrCode()">
+          <ion-icon slot="start" name="download-outline"></ion-icon>
+          Simpan QR ke Galeri
+        </ion-button>
+      </div>
+
       <div class="dompetx-code" *ngIf="getPaymentVaBankName()">
         <span>Bank</span>
         <strong>{{ getPaymentVaBankName() }}</strong>
@@ -236,8 +243,14 @@
 <div class="custom-backdrop-solid" *ngIf="isSearchingDriver"></div>
 <div class="custom-bottom-sheet-wrap searching-wrap" *ngIf="isSearchingDriver">
   <div class="searching-container">
-    <h2 class="searching-title">Mencari Driver....</h2>
-    <p class="searching-subtitle">Mohon tunggu sebentar, kami sedang mencarikan driver terdekat untukmu</p>
+    <h2 class="searching-title">
+      {{ (activeOrder && activeOrder.driver) ? 'Driver Ditemukan!' : 'Mencari Driver....' }}
+    </h2>
+    <p class="searching-subtitle">
+      {{ (activeOrder && activeOrder.driver) 
+          ? 'Menunggu konfirmasi perjalanan dari driver ' + activeOrder.driver.name + '...' 
+          : 'Mohon tunggu sebentar, kami sedang mencarikan driver terdekat untukmu' }}
+    </p>
 
     <div class="search-progress-track">
       <div class="search-progress-fill" [style.width.%]="searchProgress"></div>
@@ -249,7 +262,7 @@
         <div class="search-vehicle-text">
           <span class="search-vehicle-name">{{ selectedVehicle === 'motor' ? 'Motor' : 'Mobil' }}</span>
           <div class="search-payment-badge">
-            <ion-icon [name]="selectedPayment === 'tunai' ? 'cash-outline' : 'card-outline'" style="font-size:14px;"></ion-icon>
+            <ion-icon [name]="selectedPayment === 'tunai' ? 'cash-outline' : (selectedPayment === 'wallet' ? 'wallet-outline' : 'card-outline')" style="font-size:14px;"></ion-icon>
             <span>{{ getSelectedPaymentLabel() }}</span>
           </div>
         </div>

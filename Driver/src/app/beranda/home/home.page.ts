@@ -4,6 +4,9 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { OrderService, ActiveOrder } from '../../services/order.service';
 import { ToastController, AlertController } from '@ionic/angular';
+import { environment } from '../../../environments/environment';
+
+declare var mapboxgl: any;
 
 @Component({
   selector: 'app-home',
@@ -14,6 +17,8 @@ import { ToastController, AlertController } from '@ionic/angular';
 export class HomePage implements OnInit, OnDestroy {
   isOnline: boolean = false;
   mapUrl: SafeResourceUrl | null = null;
+  private map: any = null;
+  private driverMarker: any = null;
 
   // State orderan masuk
   incomingOrder: ActiveOrder | null = null;
@@ -67,9 +72,21 @@ export class HomePage implements OnInit, OnDestroy {
     this.loadMap();
   }
 
+  ionViewDidEnter() {
+    if (this.map) {
+      setTimeout(() => {
+        this.map.resize();
+      }, 200);
+    }
+  }
+
   ngOnDestroy() {
     this.stopPolling();
     this.stopLocationUpdates();
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+    }
   }
 
   ionViewWillLeave() {
@@ -84,19 +101,65 @@ export class HomePage implements OnInit, OnDestroy {
       this.currentLat = lat;
       this.currentLng = lon;
 
-      const offset = 0.01;
-      const minLon = lon - offset;
-      const minLat = lat - offset;
-      const maxLon = lon + offset;
-      const maxLat = lat + offset;
-
-      const url = `https://www.openstreetmap.org/export/embed.html?bbox=${minLon}%2C${minLat}%2C${maxLon}%2C${maxLat}&layer=mapnik`;
-      this.mapUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+      this.initMapbox(lat, lon);
     } catch (error) {
       console.error('Error getting location', error);
-      const fallbackUrl = `https://www.openstreetmap.org/export/embed.html?bbox=107.288%2C-6.311%2C107.318%2C-6.291&layer=mapnik`;
-      this.mapUrl = this.sanitizer.bypassSecurityTrustResourceUrl(fallbackUrl);
+      this.initMapbox(-6.301, 107.303);
     }
+  }
+
+  initMapbox(lat: number, lon: number) {
+    if (typeof mapboxgl === 'undefined') {
+      setTimeout(() => this.initMapbox(lat, lon), 500);
+      return;
+    }
+
+    const container = document.getElementById('driver-home-map');
+    if (!container) return;
+
+    mapboxgl.accessToken = environment.mapboxApiKey;
+    this.map = new mapboxgl.Map({
+      container: 'driver-home-map',
+      style: 'mapbox://styles/mapbox/streets-v12',
+      center: [lon, lat],
+      zoom: 15
+    });
+
+    this.map.on('load', () => {
+      setTimeout(() => {
+        if (this.map) this.map.resize();
+      }, 100);
+
+      // Ambil tipe kendaraan driver untuk marker yang sesuai
+      const userStr = localStorage.getItem('user');
+      let vehicleType = 'motor';
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          vehicleType = user?.driver_profile?.vehicle_type || 'motor';
+        } catch (e) {}
+      }
+
+      const vehicleImg = vehicleType === 'mobil' ? 'assets/mobil driver.png' : 'assets/Motor driver.png';
+
+      // Buat elemen penanda kustom untuk driver
+      const el = document.createElement('div');
+      el.className = 'driver-home-marker';
+      el.style.width = '40px';
+      el.style.height = '40px';
+      el.style.display = 'flex';
+      el.style.alignItems = 'center';
+      el.style.justifyContent = 'center';
+      el.innerHTML = `<img src="${vehicleImg}" alt="driver" style="width:100%;height:100%;object-fit:contain;" />`;
+
+      this.driverMarker = new mapboxgl.Marker({ element: el, anchor: 'center' })
+        .setLngLat([lon, lat])
+        .addTo(this.map);
+    });
+
+    setTimeout(() => {
+      if (this.map) this.map.resize();
+    }, 500);
   }
 
   toggleStatus() {
@@ -157,6 +220,16 @@ export class HomePage implements OnInit, OnDestroy {
       this.currentLat = coordinates.coords.latitude;
       this.currentLng = coordinates.coords.longitude;
       this.orderService.updateDriverLocation(this.currentLat, this.currentLng).subscribe();
+
+      if (this.map) {
+        this.map.easeTo({
+          center: [this.currentLng, this.currentLat],
+          duration: 1000
+        });
+      }
+      if (this.driverMarker) {
+        this.driverMarker.setLngLat([this.currentLng, this.currentLat]);
+      }
     } catch (error) {
       console.error('Error getting location for update', error);
     }

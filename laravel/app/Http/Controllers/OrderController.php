@@ -99,6 +99,80 @@ class OrderController extends Controller
             return response()->json(null);
         }
 
+        // AUTO DISPATCH/RE-ASSIGNMENT LOGIC FOR CUSTOMER ACTIVE ORDER
+        if ($user->role === 'customer' && $order->status === 'pending' && is_null($order->driver_id)) {
+            // Hanya cari driver berikutnya jika penolakan terjadi lebih dari 2 detik yang lalu
+            // Ini agar aplikasi customer sempat menampilkan status "Mencari Driver..." selama 1 kali interval polling
+            $secondsSinceRejection = now()->timestamp - $order->updated_at->timestamp;
+            if ($secondsSinceRejection >= 2) {
+                // Extract already rejected driver IDs
+                $excludedDriverIds = [];
+                if ($order->cancel_reason && str_starts_with($order->cancel_reason, 'rejected:')) {
+                    $idsStr = substr($order->cancel_reason, 9);
+                    $excludedDriverIds = explode(',', $idsStr);
+                }
+
+                // Find next closest active driver
+                $closestDriver = \App\Models\DriverProfile::where('status', 'online')
+                    ->whereNotIn('user_id', $excludedDriverIds)
+                    ->whereNotNull('current_lat')
+                    ->whereNotNull('current_lng')
+                    ->selectRaw("*, ( 6371 * acos( cos( radians(?) ) *
+                        cos( radians( current_lat ) )
+                        * cos( radians( current_lng ) - radians(?)
+                        ) + sin( radians(?) ) *
+                        sin( radians( current_lat ) ) )
+                    ) AS distance", [$order->pickup_lat, $order->pickup_lng, $order->pickup_lat])
+                    ->orderBy('distance', 'asc')
+                    ->first();
+
+                if ($closestDriver) {
+                    // Assign to new driver
+                    $order->update([
+                        'driver_id' => $closestDriver->user_id
+                    ]);
+                    // Reload relation
+                    $order->load('driver.driverProfile');
+                } else {
+                    // Jika belum 30 detik sejak penolakan, tetap biarkan mencari (pending, driver_id null)
+                    // Ini agar customer app tetap bisa menampilkan animasi "Mencari Driver..." dan memberikan kesempatan driver lain online
+                    if ($secondsSinceRejection >= 30) {
+                        // No more drivers found! Terminate order and refund prepaid
+                        $payment = \App\Models\Payment::where('order_id', $order->id)
+                            ->whereIn('status', ['paid', 'captured', 'success', 'settled'])
+                            ->first();
+
+                        \Illuminate\Support\Facades\DB::transaction(function () use ($order, $payment) {
+                            $customer = $order->customer;
+
+                            if ($payment && $customer) {
+                                $customer->increment('wallet_balance', $payment->total_amount);
+
+                                \App\Models\WalletTransaction::create([
+                                    'id' => (string) \Illuminate\Support\Str::uuid(),
+                                    'user_id' => $customer->id,
+                                    'amount' => $payment->total_amount,
+                                    'type' => 'refund',
+                                    'status' => 'success',
+                                    'reference' => 'FIVGO-REFUND-REJECT-' . $order->id . '-' . \Illuminate\Support\Str::upper(\Illuminate\Support\Str::random(8)),
+                                    'payment_method' => 'wallet',
+                                    'description' => 'Refund Penolakan Perjalanan oleh Driver (Order #' . substr($order->id, 0, 8) . ')',
+                                ]);
+                            }
+
+                            $order->update([
+                                'status' => 'rejected',
+                                'driver_id' => null,
+                                'cancel_reason' => 'No drivers available'
+                            ]);
+                        });
+
+                        return response()->json(null);
+                    }
+                }
+            }
+        }
+
         return response()->json([
             'id'              => $order->id,
             'status'          => $order->status,
@@ -186,26 +260,100 @@ class OrderController extends Controller
         $order = Order::where('customer_id', $request->user()->id)
             ->whereIn('status', ['payment_pending', 'pending', 'accepted', 'arrived'])
             ->findOrFail($id);
+
+        $payment = \App\Models\Payment::where('order_id', $order->id)
+            ->whereIn('status', ['paid', 'captured', 'success', 'settled'])
+            ->first();
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($order, $request, $payment) {
+            $customer = $order->customer;
             
-        $order->update([
-            'status' => 'cancelled',
-            'cancel_reason' => $request->input('reason', 'User cancelled')
-        ]);
-        
+            // 1. Refund to customer wallet if prepaid and paid
+            if ($payment && $customer) {
+                $customer->increment('wallet_balance', $payment->total_amount);
+                
+                \App\Models\WalletTransaction::create([
+                    'id' => (string) \Illuminate\Support\Str::uuid(),
+                    'user_id' => $customer->id,
+                    'amount' => $payment->total_amount,
+                    'type' => 'refund',
+                    'status' => 'success',
+                    'reference' => 'FIVGO-REFUND-' . $order->id . '-' . \Illuminate\Support\Str::upper(\Illuminate\Support\Str::random(8)),
+                    'payment_method' => 'wallet',
+                    'description' => 'Refund Pembatalan Perjalanan (Order #' . substr($order->id, 0, 8) . ')',
+                ]);
+            }
+
+            // 2. Apply cancel fee if driver accepted or arrived
+            if (in_array($order->status, ['accepted', 'arrived'], true)) {
+                $penaltyAmount = 2500;
+                
+                // Deduct penalty from customer
+                if ($customer) {
+                    $customer->decrement('wallet_balance', $penaltyAmount);
+                    
+                    \App\Models\WalletTransaction::create([
+                        'id' => (string) \Illuminate\Support\Str::uuid(),
+                        'user_id' => $customer->id,
+                        'amount' => -$penaltyAmount,
+                        'type' => 'penalty',
+                        'status' => 'success',
+                        'reference' => 'FIVGO-CANCEL-PENALTY-' . $order->id,
+                        'payment_method' => 'wallet',
+                        'description' => 'Denda Pembatalan Perjalanan (Order #' . substr($order->id, 0, 8) . ')',
+                    ]);
+                }
+
+                // Credit compensation to driver
+                if ($order->driver) {
+                    $order->driver->increment('wallet_balance', $penaltyAmount);
+                    
+                    \App\Models\WalletTransaction::create([
+                        'id' => (string) \Illuminate\Support\Str::uuid(),
+                        'user_id' => $order->driver->id,
+                        'amount' => $penaltyAmount,
+                        'type' => 'income',
+                        'status' => 'success',
+                        'reference' => 'FIVGO-CANCEL-COMPENSATION-' . $order->id,
+                        'payment_method' => 'wallet',
+                        'description' => 'Kompensasi Pembatalan oleh Pelanggan (Order #' . substr($order->id, 0, 8) . ')',
+                    ]);
+                }
+            }
+
+            // 3. Perform the actual cancel status update
+            $order->update([
+                'status' => 'cancelled',
+                'cancel_reason' => $request->input('reason', 'User cancelled')
+            ]);
+        });
+
         return response()->json($order);
     }
 
     public function reject(Request $request, $id)
     {
         $order = Order::where('driver_id', $request->user()->id)
-            ->where('status', 'accepted')
+            ->whereIn('status', ['pending', 'accepted'])
             ->findOrFail($id);
-            
+
+        $driverId = $request->user()->id;
+
+        // Append driver to rejected list in cancel_reason
+        $rejectedList = $order->cancel_reason;
+        if ($rejectedList && str_starts_with($rejectedList, 'rejected:')) {
+            $rejectedList .= ',' . $driverId;
+        } else {
+            $rejectedList = 'rejected:' . $driverId;
+        }
+
+        // Set driver_id to null and status to pending to search for another driver
         $order->update([
-            'status' => 'rejected',
-            'driver_id' => null // Re-assignable to another driver
+            'driver_id' => null,
+            'status' => 'pending',
+            'cancel_reason' => $rejectedList
         ]);
-        
+
         return response()->json($order);
     }
 

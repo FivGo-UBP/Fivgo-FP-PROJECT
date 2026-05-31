@@ -98,6 +98,12 @@ Route::middleware('auth:api')->group(function () {
         Route::get('{order_id}', [PaymentController::class, 'status']);
     });
 
+    // Wallet Endpoints
+    Route::prefix('wallet')->group(function () {
+        Route::get('balance', [\App\Http\Controllers\WalletController::class, 'balance']);
+        Route::post('topup', [\App\Http\Controllers\WalletController::class, 'topup']);
+    });
+
     // Chat Endpoints
     Route::prefix('chats')->group(function () {
         Route::get('{order_id}', [ChatController::class, 'listMessages']);
@@ -132,3 +138,4 @@ Route::middleware('auth:api')->group(function () {
 
 // Webhook outside sanctum middleware
 Route::post('/payments/webhook', [PaymentController::class, 'webhook']);
+Route::post('/wallet/webhook', [\App\Http\Controllers\WalletController::class, 'webhook']);

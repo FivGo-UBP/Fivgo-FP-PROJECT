@@ -21,6 +21,43 @@
 
     <ion-list class="payment-list" lines="none">
 
+      <!-- FivGo Pay -->
+      <ion-item-sliding>
+        <ion-item class="payment-item" [class.selected]="selectedPayment === 'wallet'" (click)="selectPayment('wallet')">
+          <div class="payment-icon-box payment-icon-box--orange" slot="start">
+            <ion-icon name="wallet" class="payment-icon payment-icon--white"></ion-icon>
+          </div>
+          <ion-label class="payment-label">
+            <div class="wallet-title">FivGo Pay</div>
+            <div class="wallet-subtitle" *ngIf="!isLoadingWallet">
+              Saldo: Rp {{ walletBalance.toLocaleString('id-ID') }}
+            </div>
+            <div class="wallet-subtitle" *ngIf="isLoadingWallet">
+              <ion-spinner name="crescent" style="width: 14px; height: 14px; color: #FF9800;"></ion-spinner> Loading...
+            </div>
+          </ion-label>
+          <div slot="end" class="radio-circle" [class.radio-active]="selectedPayment === 'wallet'">
+            <div class="radio-inner" *ngIf="selectedPayment === 'wallet'"></div>
+          </div>
+        </ion-item>
+        <ion-item-options side="start">
+          <ion-item-option color="primary" (click)="setUtama('wallet')">
+            <ion-icon name="star-outline" slot="icon-only"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+
+      <!-- Wallet Warning Banner -->
+      <div class="wallet-warning-banner" *ngIf="selectedPayment === 'wallet' && currentAmount > 0 && currentAmount > walletBalance">
+        <ion-icon name="warning-outline" class="warn-icon"></ion-icon>
+        <div class="warn-text">
+          <span>Saldo kurang Rp {{ (currentAmount - walletBalance).toLocaleString('id-ID') }} untuk perjalanan ini.</span>
+          <button type="button" class="btn-topup-inline" (click)="goToTopUp(); $event.stopPropagation()">Top Up Sekarang</button>
+        </div>
+      </div>
+
+      <div class="item-divider"></div>
+
       <!-- Tunai -->
       <ion-item-sliding>
         <ion-item class="payment-item" [class.selected]="selectedPayment === 'tunai'">

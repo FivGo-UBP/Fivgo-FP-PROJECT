@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActionSheetController, ToastController } from '@ionic/angular';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { OrderService } from '../../services/order.service';
 
 interface NonTunaiOption {
   label: string;
@@ -21,6 +22,9 @@ export class MetodePembayaranPage implements OnInit {
   readonly virtualAccountMinAmount = 15000;
   currentAmount = 0;
   backHref: string = '/kelola-profile';
+  walletBalance = 0;
+  isLoadingWallet = false;
+
   readonly nonTunaiOptions: NonTunaiOption[] = [
     { label: 'QRIS', code: 'qris' },
     { label: 'VA BCA', code: 'bca', minAmount: this.virtualAccountMinAmount },
@@ -34,8 +38,10 @@ export class MetodePembayaranPage implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private actionSheetCtrl: ActionSheetController,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private orderService: OrderService
   ) {}
 
   ngOnInit() {
@@ -53,6 +59,28 @@ export class MetodePembayaranPage implements OnInit {
     if (this.selectedPayment === 'nontunai') {
       this.persistNonTunai();
     }
+  }
+
+  ionViewWillEnter() {
+    this.loadWalletBalance();
+  }
+
+  loadWalletBalance() {
+    this.isLoadingWallet = true;
+    this.orderService.getWalletBalance().subscribe({
+      next: (res) => {
+        this.walletBalance = res.balance;
+        this.isLoadingWallet = false;
+      },
+      error: (err) => {
+        console.error('Error fetching wallet balance:', err);
+        this.isLoadingWallet = false;
+      }
+    });
+  }
+
+  goToTopUp() {
+    this.router.navigate(['/beranda/pembayaran']);
   }
 
   selectPayment(method: string) {
@@ -200,6 +228,16 @@ export class MetodePembayaranPage implements OnInit {
   }
 
   confirmSelection() {
+    if (this.selectedPayment === 'wallet' && this.currentAmount > 0 && this.walletBalance < this.currentAmount) {
+      this.toastCtrl.create({
+        message: `Saldo FivGo Pay tidak cukup untuk perjalanan ini. Silakan lakukan Top Up terlebih dahulu atau ganti metode pembayaran.`,
+        duration: 3000,
+        color: 'danger',
+        position: 'top'
+      }).then(toast => toast.present());
+      return;
+    }
+
     this.toastCtrl.create({
       message: 'Metode pembayaran berhasil disimpan!',
       duration: 1500,

@@ -122,11 +122,25 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
+      let isGpsFailed = false;
+
       if (params['jLat'] && params['jLng']) {
-        this.startCoord = [parseFloat(params['jLng']), parseFloat(params['jLat'])];
+        const jLng = parseFloat(params['jLng']);
+        const jLat = parseFloat(params['jLat']);
+        if (jLng === 0 || jLat === 0 || isNaN(jLng) || isNaN(jLat)) {
+          isGpsFailed = true;
+        } else {
+          this.startCoord = [jLng, jLat];
+        }
       }
       if (params['tLat'] && params['tLng']) {
-        this.destCoord = [parseFloat(params['tLng']), parseFloat(params['tLat'])];
+        const tLng = parseFloat(params['tLng']);
+        const tLat = parseFloat(params['tLat']);
+        if (tLng === 0 || tLat === 0 || isNaN(tLng) || isNaN(tLat)) {
+          isGpsFailed = true;
+        } else {
+          this.destCoord = [tLng, tLat];
+        }
       }
       if (params['jemput']) this.jemput = params['jemput'];
       if (params['tujuan']) this.tujuan = params['tujuan'];
@@ -134,6 +148,13 @@ export class MapVisualPage implements OnInit, OnDestroy {
         this.vehicle = params['vehicle'];
         this.selectedVehicle = this.vehicle;
         this.sortVehicles();
+      }
+
+      if (isGpsFailed) {
+        this.showToast('Gagal mendeteksi lokasi GPS Anda. Pastikan Izin Lokasi aktif lalu cari kembali.', 'danger');
+        setTimeout(() => {
+          this.navCtrl.back();
+        }, 1500);
       }
     });
   }
@@ -212,7 +233,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
                 const preferredMethod = this.resolveDompetxGatewayMethod();
                 const paymentMethod = this.normalizePaymentCode(payment.method || '');
 
-                if (this.selectedPayment === 'nontunai' && !this.isPaymentPaid(payment) && paymentMethod !== preferredMethod) {
+                if ((this.selectedPayment === 'nontunai' || this.selectedPayment === 'wallet') && !this.isPaymentPaid(payment) && paymentMethod !== preferredMethod) {
                   this.dompetxGatewayMethod = preferredMethod;
                   this.createDompetxPayment(order.id, this.dompetxGatewayAmount, preferredMethod);
                   return;
@@ -630,6 +651,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
   getSelectedPaymentLabel(): string {
     if (this.selectedPayment === 'tunai') return 'Tunai';
+    if (this.selectedPayment === 'wallet') return 'FivGo Pay';
 
     const label = this.getNonTunaiLabel(this.selectedNonTunai);
     const amount = this.getSelectedVehiclePriceRaw();
@@ -717,9 +739,13 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
     if (savedPayment) {
       const normalizedPayment = savedPayment.trim().toLowerCase().replace(/[\s-]+/g, '_');
-      this.selectedPayment = ['nontunai', 'non_tunai', 'qris_va', 'qris/va', 'dompetx'].includes(normalizedPayment)
-        ? 'nontunai'
-        : 'tunai';
+      if (['nontunai', 'non_tunai', 'qris_va', 'qris/va', 'dompetx'].includes(normalizedPayment)) {
+        this.selectedPayment = 'nontunai';
+      } else if (normalizedPayment === 'wallet') {
+        this.selectedPayment = 'wallet';
+      } else {
+        this.selectedPayment = 'tunai';
+      }
     }
 
     if (savedNonTunai) {
@@ -805,7 +831,9 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
     // Validasi kesesuaian nominal sebelum memproses pesanan ke backend
     const payableAmount = this.getSelectedVehiclePriceRaw();
-    const selectedMethod = this.selectedPayment === 'nontunai' ? this.normalizePaymentCode(this.selectedNonTunai) : 'tunai';
+    const selectedMethod = this.selectedPayment === 'nontunai' 
+      ? this.normalizePaymentCode(this.selectedNonTunai) 
+      : (this.selectedPayment === 'wallet' ? 'wallet' : 'tunai');
     const amountError = this.getDompetxAmountError(selectedMethod, payableAmount);
 
     if (amountError) {
@@ -829,7 +857,9 @@ export class MapVisualPage implements OnInit, OnDestroy {
       dropoff_address: this.tujuan,
       dropoff_lat: this.destCoord[1],
       dropoff_lng: this.destCoord[0],
-      payment_method: this.selectedPayment === 'nontunai' ? this.normalizePaymentCode(this.selectedNonTunai) : 'tunai',
+      payment_method: this.selectedPayment === 'nontunai' 
+        ? this.normalizePaymentCode(this.selectedNonTunai) 
+        : (this.selectedPayment === 'wallet' ? 'wallet' : 'tunai'),
       vehicle_type: this.selectedVehicle,
       notes: this.driverNote || undefined,
       estimated_price: this.getSelectedVehiclePriceRaw() || undefined
@@ -838,7 +868,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.orderService.createOrder(orderData).subscribe({
       next: (order) => {
         this.currentOrderId = order.id;
-        if (this.selectedPayment === 'nontunai') {
+        if (this.selectedPayment === 'nontunai' || this.selectedPayment === 'wallet') {
           this.openDompetxGateway(order.id, order.estimated_price || this.getSelectedVehiclePriceRaw());
           return;
         }
@@ -894,6 +924,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
   }
 
   private resolveDompetxGatewayMethod(): string {
+    if (this.selectedPayment === 'wallet') return 'wallet';
     const preferred = this.normalizePaymentCode(this.selectedNonTunai || this.dompetxGatewayMethod || 'qris');
     return this.dompetxGatewayOptions.some(opt => opt.code === preferred) ? preferred : 'qris';
   }
@@ -1357,7 +1388,9 @@ export class MapVisualPage implements OnInit, OnDestroy {
     }
 
     if (order.payment_method) {
-      this.selectedPayment = ['tunai', 'cash'].includes(order.payment_method.toLowerCase()) ? 'tunai' : 'nontunai';
+      this.selectedPayment = ['tunai', 'cash'].includes(order.payment_method.toLowerCase()) 
+        ? 'tunai' 
+        : (order.payment_method.toLowerCase() === 'wallet' ? 'wallet' : 'nontunai');
       if (this.selectedPayment === 'nontunai') {
         this.selectedNonTunai = this.normalizePaymentCode(order.payment_method);
       }
@@ -1494,6 +1527,19 @@ export class MapVisualPage implements OnInit, OnDestroy {
       this.isNavigatingAway = true;
       this.router.navigate(['/tabs/pesan'], { queryParams: { order_id: this.currentOrderId } });
     }
+  }
+
+  downloadQrCode() {
+    const qrImage = this.getPaymentQrImage();
+    if (!qrImage) return;
+
+    const link = document.createElement('a');
+    link.href = qrImage;
+    link.download = `FIVGO-QRIS-${this.getPaymentReference()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.showToast('QR Code berhasil disimpan ke galeri/unduhan.', 'success');
   }
 
   // ─── Drag Methods ────────────────────────────────────────────────────────

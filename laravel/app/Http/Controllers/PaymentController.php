@@ -28,7 +28,58 @@ class PaymentController extends Controller
         $order = Order::findOrFail($validated['order_id']);
         abort_unless($order->customer_id === $request->user()->id, 403);
 
-        $method = DompetxService::normalizeMethod($validated['method']);
+        $method = strtolower(DompetxService::normalizeMethod($validated['method']));
+
+        if ($method === 'wallet' || $method === 'fivgopay' || $method === 'fivgo_pay') {
+            $user = $request->user();
+            if ($user->wallet_balance < $validated['amount']) {
+                return response()->json([
+                    'message' => 'Saldo FivGo Pay tidak cukup. Silakan top up terlebih dahulu.',
+                ], 400);
+            }
+
+            $payment = null;
+
+            \Illuminate\Support\Facades\DB::transaction(function () use ($user, $validated, &$payment, $order) {
+                // Deduct from wallet balance
+                $user->decrement('wallet_balance', $validated['amount']);
+
+                // Create ledger entry in wallet transactions
+                \App\Models\WalletTransaction::create([
+                    'id' => (string) \Illuminate\Support\Str::uuid(),
+                    'user_id' => $user->id,
+                    'amount' => -$validated['amount'],
+                    'type' => 'payment',
+                    'status' => 'success',
+                    'reference' => 'FIVGO-PAY-' . $order->id . '-' . \Illuminate\Support\Str::upper(\Illuminate\Support\Str::random(8)),
+                    'payment_method' => 'wallet',
+                    'description' => 'Pembayaran Perjalanan FivGo (Order #' . substr($order->id, 0, 8) . ')',
+                ]);
+
+                // Calculate platform fee (20%)
+                $commission = (int)($validated['amount'] * 0.20);
+                $netIncome = $validated['amount'] - $commission;
+
+                // Create captured payment record
+                $payment = Payment::create([
+                    'order_id' => $validated['order_id'],
+                    'method' => 'wallet',
+                    'gateway' => 'wallet',
+                    'total_amount' => $validated['amount'],
+                    'status' => 'captured',
+                    'commission' => $commission,
+                    'net_income' => $netIncome,
+                ]);
+
+                // Update order to pending status immediately
+                $order->update([
+                    'payment_method' => 'wallet',
+                    'status' => 'pending'
+                ]);
+            });
+
+            return response()->json($payment, 201);
+        }
 
         if ($method === 'tunai' || $method === 'cash') {
             $payment = Payment::create([

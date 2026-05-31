@@ -11,13 +11,31 @@ ion-content {
   z-index: 0;
   overflow: hidden;
   pointer-events: auto;
+  width: 100%;
+  height: 100%;
+}
 
-  iframe {
-    position: absolute;
-    top: -80px;
-    left: -80px;
-    width: calc(100% + 160px);
-    height: calc(100% + 160px);
+:host ::ng-deep #driver-home-map {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+:host ::ng-deep .mapboxgl-canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.driver-home-marker {
+  img {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3));
   }
 }
 

@@ -281,3 +281,69 @@ ion-footer.bg-grey {
   text-transform: none;
   --box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
 }
+
+// ── Wallet Payment Styles ───────────────────────────────────────────
+.payment-icon-box--orange {
+  background: linear-gradient(135deg, #FF9800 0%, #FF5722 100%) !important;
+}
+
+.wallet-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.wallet-subtitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wallet-warning-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fff7ed;
+  margin: 8px 16px 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #ffedd5;
+
+  .warn-icon {
+    font-size: 20px;
+    color: #ea580c;
+    flex-shrink: 0;
+  }
+
+  .warn-text {
+    font-size: 12px;
+    color: #9a3412;
+    font-weight: 600;
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+  }
+
+  .btn-topup-inline {
+    border: 0;
+    background: #ea580c;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(234, 88, 12, 0.2);
+    transition: background 0.2s;
+
+    &:hover, &:active {
+      background: #c2410c;
+    }
+  }
+}

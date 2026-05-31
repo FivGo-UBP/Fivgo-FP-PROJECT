@@ -1,13 +1,213 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>payment</ion-title>
+<ion-header class="ion-no-border">
+  <ion-toolbar class="bg-orange">
+    <ion-title class="text-white font-bold">FivGo Pay</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">payment</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="bg-grey" [scrollY]="true">
+
+  <!-- Spinner saat loading awal -->
+  <div class="initial-spinner-container" *ngIf="isLoading && transactions.length === 0">
+    <ion-spinner name="crescent" color="warning"></ion-spinner>
+    <p>Memuat akun dompet Anda...</p>
+  </div>
+
+  <ng-container *ngIf="!isLoading || transactions.length > 0">
+    <!-- Dashboard Card FivGo Pay -->
+    <div class="card-wrapper">
+      <div class="digital-card">
+        <div class="card-header">
+          <div class="card-logo">
+            <span class="logo-text">FivGo</span>
+            <span class="logo-accent">Pay</span>
+          </div>
+          <div class="card-chip">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M4 17h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2z" fill="#FFF" opacity="0.3"/>
+              <rect x="5" y="9" width="4" height="6" rx="1" fill="#FFF" opacity="0.8"/>
+              <rect x="15" y="9" width="4" height="6" rx="1" fill="#FFF" opacity="0.8"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <p class="balance-label">Total Saldo Aktif</p>
+          <h1 class="balance-value">{{ formatPrice(balance) }}</h1>
+        </div>
+
+        <div class="card-footer">
+          <span class="card-holder">AKUN UTAMA</span>
+          <div class="card-contactless">
+            <svg class="wifi-icon" viewBox="0 0 24 24">
+              <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19C2.9 17.11 2 14.66 2 12c0-5.52 4.48-10 10-10s10 4.48 10 10c0 2.66-.9 5.11-2.35 7l-1.62-1.39C19.26 16.07 20 14.12 20 12c0-4.97-4.03-9-9-9zM12 6c-3.31 0-6 2.69-6 6 0 1.41.49 2.71 1.31 3.74L8.7 14.35C8.26 13.66 8 12.86 8 12c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .86-.26 1.66-.7 2.35l1.39 1.39C17.51 14.71 18 13.41 18 12c0-3.31-2.69-6-6-6zm0 3c-1.66 0-3 1.34-3 3 0 .71.25 1.35.66 1.86l1.34-1.34C10.38 12.35 10 12.19 10 12c0-1.1.9-2 2-2s2 .9 2 2c0 .19-.38.35-.66.52l1.34 1.34c.41-.51.66-1.15.66-1.86 0-1.66-1.34-3-3-3z" fill="#FFF"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="actions-container">
+      <div class="action-btn-card-full" (click)="openTopUpModal()">
+        <div class="action-icon-wrapper">
+          <ion-icon name="add-outline"></ion-icon>
+        </div>
+        <span>Top Up Saldo</span>
+      </div>
+    </div>
+
+    <!-- Riwayat Transaksi -->
+    <div class="section-container">
+      <div class="section-header">
+        <h2 class="section-title">Aktivitas Terakhir</h2>
+      </div>
+
+      <!-- Tampilan kosong jika tidak ada riwayat -->
+      <div class="empty-state-container" *ngIf="transactions.length === 0">
+        <ion-icon name="wallet-outline" class="empty-icon"></ion-icon>
+        <h3>Belum ada transaksi</h3>
+        <p>Semua mutasi saldo FivGo Pay Anda akan tercatat di sini.</p>
+      </div>
+
+      <!-- List Riwayat -->
+      <ion-list class="transaction-list" lines="none" *ngIf="transactions.length > 0">
+        <ion-item class="transaction-item" *ngFor="let tx of transactions">
+          <!-- Icon berdasarkan tipe -->
+          <div class="tx-icon-box" [class.is-topup]="tx.type === 'topup'" slot="start">
+            <ion-icon [name]="getTransactionIcon(tx.type)"></ion-icon>
+          </div>
+
+          <ion-label class="tx-label">
+            <div class="tx-row-top">
+              <span class="tx-title">{{ tx.description }}</span>
+              <span class="tx-amount" [class.is-positive]="tx.amount > 0">
+                {{ tx.amount > 0 ? '+' : '' }}{{ formatPrice(tx.amount) }}
+              </span>
+            </div>
+            <div class="tx-row-bottom">
+              <span class="tx-date">{{ formatDate(tx.created_at) }}</span>
+              <span class="tx-status-badge" [class.is-pending]="tx.status === 'pending'" [class.is-success]="tx.status === 'success'" [class.is-failed]="tx.status === 'failed'">
+                {{ tx.status === 'pending' ? 'Pending' : (tx.status === 'success' ? 'Sukses' : 'Gagal') }}
+              </span>
+            </div>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </div>
+  </ng-container>
+
 </ion-content>
+
+<!-- ============================================================ -->
+<!-- MODAL SHEET: INPUT NOMINAL TOP UP                           -->
+<!-- ============================================================ -->
+<div class="custom-backdrop-solid" *ngIf="isTopUpModalOpen" (click)="closeTopUpModal()"></div>
+<div class="custom-bottom-sheet-wrap topup-modal-wrap" *ngIf="isTopUpModalOpen">
+  <div class="sheet-header">
+    <div class="modal-handle"></div>
+    <h3 class="sheet-title">Top Up FivGo Pay</h3>
+  </div>
+
+  <div class="sheet-body">
+    <!-- Presets Nominal -->
+    <p class="input-label">Pilih Nominal Cepat</p>
+    <div class="presets-grid">
+      <button class="preset-btn" [class.active]="topUpAmount === 20000 && !customAmount" (click)="selectAmount(20000)">Rp20.000</button>
+      <button class="preset-btn" [class.active]="topUpAmount === 50000 && !customAmount" (click)="selectAmount(50000)">Rp50.000</button>
+      <button class="preset-btn" [class.active]="topUpAmount === 100000 && !customAmount" (click)="selectAmount(100000)">Rp100.000</button>
+      <button class="preset-btn" [class.active]="topUpAmount === 200000 && !customAmount" (click)="selectAmount(200000)">Rp200.000</button>
+    </div>
+
+    <!-- Input Custom -->
+    <p class="input-label" style="margin-top: 18px;">Atau Masukkan Nominal Lain</p>
+    <div class="custom-input-wrapper">
+      <span class="currency-prefix">Rp</span>
+      <input
+        type="text"
+        placeholder="Minimal Rp10.000"
+        [value]="customAmount"
+        (input)="onCustomAmountInput($event)"
+        class="custom-amount-input"
+        inputmode="numeric"
+      />
+    </div>
+
+    <!-- Pemicu Pilihan Metode -->
+    <p class="input-label" style="margin-top: 20px;">Metode Pembayaran</p>
+    <div class="payment-method-trigger" (click)="selectPaymentMethod()">
+      <div class="trigger-left">
+        <ion-icon [name]="topUpMethod === 'qris' ? 'qr-code-outline' : 'card-outline'" class="trigger-icon"></ion-icon>
+        <span>{{ topUpMethod === 'qris' ? 'QRIS (Gopay/OVO/DANA)' : 'Transfer VA ' + topUpMethod.toUpperCase() }}</span>
+      </div>
+      <ion-icon name="chevron-forward-outline" class="trigger-arrow"></ion-icon>
+    </div>
+
+    <!-- Peringatan batas minimum Virtual Account -->
+    <div class="minimum-warning-box" *ngIf="topUpMethod !== 'qris' && topUpAmount < virtualAccountMinAmount">
+      <ion-icon name="information-circle-outline"></ion-icon>
+      <span>Metode Virtual Account memerlukan isi saldo minimal Rp15.000. Silakan naikkan nominal atau gunakan metode QRIS.</span>
+    </div>
+  </div>
+
+  <div class="sheet-footer">
+    <ion-button expand="block" color="warning" class="btn-primary-action" [disabled]="topUpAmount < 10000 || (topUpMethod !== 'qris' && topUpAmount < virtualAccountMinAmount)" (click)="initiateTopUp()">
+      Lanjutkan Pembayaran
+    </ion-button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODAL SHEET: INSTRUKSI PEMBAYARAN TOP UP (DOMPETX)           -->
+<!-- ============================================================ -->
+<div class="custom-backdrop-solid" *ngIf="isPaymentInfoOpen"></div>
+<div class="custom-bottom-sheet-wrap gateway-modal-wrap" *ngIf="isPaymentInfoOpen">
+  <div class="payment-gateway-container" *ngIf="paymentInfo">
+    <div class="gateway-header">
+      <div>
+        <span class="gateway-eyebrow">DompetX</span>
+        <h2>Instruksi Top Up</h2>
+      </div>
+      <span class="gateway-status">Pending</span>
+    </div>
+
+    <p class="gateway-subtitle">
+      Segera selesaikan pembayaran top up sebesar **{{ formatPrice(paymentInfo.amount) }}** agar saldo FivGo Pay Anda langsung terisi.
+    </p>
+
+    <!-- QRIS Tampilan QR -->
+    <ng-container *ngIf="getPaymentQrImage()">
+      <img [src]="getPaymentQrImage()" alt="QRIS DompetX" class="dompetx-qr" />
+      <p class="qr-help-text">Simpan/Screenshot kode QR di atas lalu buka aplikasi e-wallet Anda (Gopay/DANA/OVO/LinkAja) untuk melakukan pembayaran.</p>
+    </ng-container>
+
+    <!-- Virtual Account Tampilan Nomor VA -->
+    <ng-container *ngIf="getPaymentVaNumber()">
+      <div class="dompetx-code-card">
+        <div class="code-row">
+          <span>Nama Bank</span>
+          <strong>{{ getPaymentVaBankName() }}</strong>
+        </div>
+        <div class="code-row" style="margin-top: 8px;">
+          <span>Nomor Virtual Account</span>
+          <strong class="va-number">{{ getPaymentVaNumber() }}</strong>
+        </div>
+      </div>
+      <p class="qr-help-text">Salin nomor Virtual Account di atas, lalu bayar melalui Mobile Banking atau ATM terdekat Anda.</p>
+    </ng-container>
+
+    <div class="dompetx-ref-row">
+      <span>Referensi:</span>
+      <strong>{{ getPaymentReference() }}</strong>
+    </div>
+
+    <!-- Tombol aksi -->
+    <ion-button expand="block" color="warning" class="btn-confirm-payment" [disabled]="isCheckingPayment" (click)="checkPaymentStatus()">
+      <ion-spinner name="crescent" *ngIf="isCheckingPayment" style="width: 20px; height: 20px; color: white; margin-right: 8px;"></ion-spinner>
+      Saya Sudah Bayar
+    </ion-button>
+
+    <ion-button expand="block" fill="clear" color="medium" class="btn-cancel-payment" (click)="closePaymentInfo()">
+      Nanti Saja
+    </ion-button>
+  </div>
+</div>
