@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Geolocation } from '@capacitor/geolocation';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -26,42 +26,13 @@ export class HomePage implements OnInit, OnDestroy {
   private currentLat: number = 0;
   private currentLng: number = 0;
 
-  showCancelNotification: boolean = false;
-
   constructor(
     private sanitizer: DomSanitizer,
     private router: Router,
     private orderService: OrderService,
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController,
-    private cdr: ChangeDetectorRef
-  ) {
-    if (this.orderService.hasPendingCancelNotification) {
-      this.orderService.hasPendingCancelNotification = false;
-      this.showCancelNotification = true;
-      setTimeout(() => {
-        this.showCancelNotification = false;
-        this.cdr.detectChanges();
-      }, 10000);
-    }
-  }
-
-  ionViewWillEnter() {
-    if (this.orderService.hasPendingCancelNotification) {
-      this.orderService.hasPendingCancelNotification = false;
-      this.showCancelNotification = true;
-      this.cdr.detectChanges(); // Render instan tanpa delay 1 milidetik pun!
-      setTimeout(() => {
-        this.showCancelNotification = false;
-        this.cdr.detectChanges();
-      }, 10000);
-    }
-  }
-
-  dismissCancelNotification() {
-    this.showCancelNotification = false;
-    this.cdr.detectChanges();
-  }
+    private alertCtrl: AlertController
+  ) {}
 
   ngOnInit() {
     this.loadMap();
