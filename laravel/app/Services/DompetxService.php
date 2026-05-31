@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -21,10 +22,11 @@ class DompetxService
     public function createPayment(array $payload, ?string $idempotencyKey = null): array
     {
         $response = $this->request('POST', '/v1/payments', $payload, $idempotencyKey);
+        $transactionId = self::extractTransactionId($response);
 
-        if (! empty($response['id'])) {
+        if ($transactionId) {
             try {
-                $detail = $this->getPaymentDetail($response['id']);
+                $detail = $this->getPaymentDetail($transactionId);
                 return array_replace_recursive($response, ['detail' => $detail]);
             } catch (RequestException) {
                 return $response;
@@ -86,21 +88,79 @@ class DompetxService
         $key = Str::upper(str_replace([' ', '-'], '_', trim($method)));
 
         return match ($key) {
-            'QRIS_VA', 'NON_TUNAI', 'NONTUNAI', 'DOMPETX' => 'QRIS',
-            'DANA' => 'DANA',
-            'OVO' => 'OVO',
-            'GOPAY', 'GO_PAY' => 'GOPAY',
-            'SHOPEEPAY', 'SHOPEE_PAY' => 'SHOPEEPAY',
-            'LINKAJA', 'LINK_AJA' => 'LINKAJA',
-            'VA', 'VIRTUAL_ACCOUNT' => 'VA_BCA',
-            'BCA' => 'VA_BCA',
-            'BNI' => 'VA_BNI',
-            'BRI' => 'VA_BRI',
-            'MANDIRI' => 'VA_MANDIRI',
-            'PERMATA' => 'VA_PERMATA',
-            'CIMB' => 'VA_CIMB',
-            'DANAMON' => 'VA_DANAMON',
+            'TUNAI', 'CASH' => 'tunai',
+            'QRIS', 'QRIS_VA', 'NON_TUNAI', 'NONTUNAI', 'DOMPETX' => 'qris',
+            'DANA' => 'dana',
+            'OVO' => 'ovo',
+            'GOPAY', 'GO_PAY' => 'gopay',
+            'SHOPEEPAY', 'SHOPEE_PAY' => 'shopeepay',
+            'LINKAJA', 'LINK_AJA' => 'linkaja',
+            'VA', 'VIRTUAL_ACCOUNT', 'VA_BCA', 'BCA' => 'bca',
+            'VA_BNI', 'BNI' => 'bni',
+            'VA_BRI', 'BRI' => 'bri',
+            'VA_MANDIRI', 'MANDIRI' => 'mandiri',
+            'VA_PERMATA', 'PERMATA' => 'permata',
+            'VA_CIMB', 'CIMB' => 'cimb',
+            'VA_DANAMON', 'DANAMON' => 'danamon',
+            'VA_BSI', 'BSI' => 'bsi',
             default => $key,
         };
+    }
+
+    public static function extractTransactionId(array $payload): ?string
+    {
+        $value = self::firstPayloadValue($payload, [
+            'id',
+            'transaction_id',
+            'data.id',
+            'data.transaction_id',
+            'payment.id',
+            'payment.transaction_id',
+            'transaction.id',
+            'transaction.transaction_id',
+            'detail.id',
+            'detail.transaction_id',
+            'detail.data.id',
+            'detail.data.transaction_id',
+            'detail.payment.id',
+            'detail.payment.transaction_id',
+        ]);
+
+        return is_scalar($value) && (string) $value !== '' ? (string) $value : null;
+    }
+
+    public static function extractStatus(array $payload, ?string $default = null): ?string
+    {
+        $value = self::firstPayloadValue($payload, [
+            'data.status',
+            'payment.status',
+            'transaction.status',
+            'detail.data.status',
+            'detail.payment.status',
+            'detail.transaction.status',
+            'detail.status',
+            'status',
+        ]);
+
+        if (! is_scalar($value)) {
+            return $default;
+        }
+
+        $status = strtolower(trim((string) $value));
+
+        return $status !== '' && ! ctype_digit($status) ? $status : $default;
+    }
+
+    public static function firstPayloadValue(array $payload, array $paths, mixed $default = null): mixed
+    {
+        foreach ($paths as $path) {
+            $value = Arr::get($payload, $path);
+
+            if ($value !== null && $value !== '') {
+                return $value;
+            }
+        }
+
+        return $default;
     }
 }

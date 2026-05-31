@@ -275,6 +275,13 @@ export class HomePage implements OnInit, OnDestroy {
   formatPaymentMethod(method: string): string {
     const map: Record<string, string> = {
       qris: 'QRIS',
+      bca: 'VA BCA',
+      bni: 'VA BNI',
+      bri: 'VA BRI',
+      mandiri: 'VA Mandiri',
+      permata: 'VA Permata',
+      cimb: 'VA CIMB',
+      danamon: 'VA Danamon',
       va_bca: 'VA BCA',
       va_bni: 'VA BNI',
       va_bri: 'VA BRI',

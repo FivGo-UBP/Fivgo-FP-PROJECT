@@ -114,6 +114,14 @@
         </div>
       </div>
     </div>
+    <!-- Warning Banner for Short Distance on Mobil -->
+    <div class="short-distance-warning" *ngIf="isShortDistanceForMobil()">
+      <div class="warning-header">
+        <ion-icon name="warning-outline" class="warning-icon"></ion-icon>
+        <h4>Jarak Sangat Dekat</h4>
+      </div>
+      <p>Pastikan lokasi jemput/tujuan dapat diakses Mobil (bukan gang sempit) agar penjemputan lancar.</p>
+    </div>
   </div>
 </div>
 
@@ -176,18 +184,7 @@
       </span>
     </div>
 
-    <p class="gateway-subtitle">Pilih channel QRIS/VA, selesaikan pembayaran, lalu pencarian driver akan dimulai otomatis.</p>
-
-    <div class="gateway-options">
-      <button
-        type="button"
-        *ngFor="let opt of dompetxGatewayOptions"
-        [class.active]="dompetxGatewayMethod === opt.code"
-        [disabled]="isCreatingPayment"
-        (click)="selectDompetxGatewayMethod(opt.code)">
-        {{ opt.label }}
-      </button>
-    </div>
+    <p class="gateway-subtitle">Selesaikan pembayaran {{ getDompetxGatewayMethodLabel() }} langsung di aplikasi. Channel bisa diubah dari halaman Metode Pembayaran.</p>
 
     <div class="dompetx-loading" *ngIf="isCreatingPayment">
       <ion-spinner name="crescent"></ion-spinner>
@@ -195,11 +192,24 @@
     </div>
 
     <div class="dompetx-error" *ngIf="paymentError && !isCreatingPayment">
-      {{ paymentError }}
+      <span>{{ paymentError }}</span>
+      <ion-button
+        *ngIf="canSwitchDompetxToQris()"
+        size="small"
+        fill="outline"
+        color="warning"
+        (click)="switchDompetxToQris()">
+        Pakai QRIS
+      </ion-button>
     </div>
 
     <ng-container *ngIf="paymentInfo && !isCreatingPayment">
       <img *ngIf="getPaymentQrImage()" [src]="getPaymentQrImage()" alt="QRIS DompetX" class="dompetx-qr" />
+
+      <div class="dompetx-code" *ngIf="getPaymentVaBankName()">
+        <span>Bank</span>
+        <strong>{{ getPaymentVaBankName() }}</strong>
+      </div>
 
       <div class="dompetx-code" *ngIf="getPaymentVaNumber()">
         <span>Nomor VA</span>
@@ -212,7 +222,7 @@
       </div>
     </ng-container>
 
-    <ion-button expand="block" color="warning" class="btn-confirm-payment" [disabled]="isCreatingPayment" (click)="checkPaymentAndContinue()">
+    <ion-button expand="block" color="warning" class="btn-confirm-payment" [disabled]="isCreatingPayment || !paymentInfo" (click)="checkPaymentAndContinue()">
       Saya Sudah Bayar
     </ion-button>
 

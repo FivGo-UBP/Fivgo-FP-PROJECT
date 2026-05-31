@@ -7,6 +7,14 @@ use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
+    private const STALE_ACTIVE_ORDER_MINUTES = [
+        'payment_pending' => 30,
+        'pending' => 30,
+        'accepted' => 360,
+        'arrived' => 360,
+        'started' => 720,
+    ];
+
     public function create(Request $request)
     {
         $validated = $request->validate([
@@ -84,6 +92,10 @@ class OrderController extends Controller
         $order = $query->latest()->first();
 
         if (!$order) {
+            return response()->json(null);
+        }
+
+        if ($this->cancelStaleActiveOrder($order)) {
             return response()->json(null);
         }
 
@@ -227,5 +239,21 @@ class OrderController extends Controller
         }
 
         return ! in_array(strtolower($method), ['tunai', 'cash'], true);
+    }
+
+    private function cancelStaleActiveOrder(Order $order): bool
+    {
+        $staleAfterMinutes = self::STALE_ACTIVE_ORDER_MINUTES[$order->status] ?? null;
+
+        if (! $staleAfterMinutes || $order->created_at->gt(now()->subMinutes($staleAfterMinutes))) {
+            return false;
+        }
+
+        $order->update([
+            'status' => 'cancelled',
+            'cancel_reason' => "Auto cancelled stale {$order->status} order",
+        ]);
+
+        return true;
     }
 }

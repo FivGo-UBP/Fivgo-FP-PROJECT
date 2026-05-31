@@ -1,7 +1,7 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="bg-orange">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/kelola-profile" text="Metode Pembayaran" icon="chevron-back-outline" class="text-white"></ion-back-button>
+      <ion-back-button [defaultHref]="backHref" text="Metode Pembayaran" icon="chevron-back-outline" class="text-white"></ion-back-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -62,7 +62,36 @@
         </ion-item-options>
       </ion-item-sliding>
 
+      <div class="nontunai-dropdown" *ngIf="selectedPayment === 'nontunai'">
+        <ion-item class="select-item" lines="none">
+          <div class="select-icon-box" slot="start">
+            <ion-icon name="wallet-outline"></ion-icon>
+          </div>
+          <ion-label>Channel pembayaran</ion-label>
+          <button
+            type="button"
+            slot="end"
+            class="channel-trigger"
+            (click)="openNonTunaiSheet($event)">
+            <span>{{ getSelectedNonTunaiLabel() }}</span>
+            <ion-icon name="chevron-down-outline"></ion-icon>
+          </button>
+        </ion-item>
+        <div class="minimum-warning" *ngIf="shouldShowVaMinimumWarning()">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <span>{{ getVaMinimumWarning() }}</span>
+        </div>
+      </div>
+
     </ion-list>
   </div>
 
 </ion-content>
+
+<ion-footer class="ion-no-border bg-grey">
+  <div class="footer-btn-container">
+    <ion-button expand="block" color="warning" class="btn-confirm-selection" (click)="confirmSelection()">
+      Gunakan Metode Ini
+    </ion-button>
+  </div>
+</ion-footer>
