@@ -398,11 +398,8 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
             setTimeout(() => this.zone.run(() => this.router.navigate(['/tabs/beranda'])), 2000);
           } else if (order.status === 'cancelled') {
             this.stopPolling();
-            this.showToast('Pesanan dibatalkan oleh pelanggan.', 'danger');
-            this.orderService.hasPendingCancelNotification = true;
-            this.zone.run(() => {
-              this.router.navigate(['/tabs/beranda']);
-            });
+            this.showToast('Pelanggan membatalkan pesanan ini. Jangan khawatir, performa akunmu dijamin tetap aman kok. Yuk, siap terima orderan lagi!.', 'danger');
+            setTimeout(() => this.zone.run(() => this.router.navigate(['/tabs/beranda'])), 5000);
           }
         },
         error: (err) => console.error('Polling error:', err)

@@ -91,7 +91,7 @@ class OrderController extends Controller
         // Ambil data terbaru (jika ada order lama yang tersangkut)
         $order = $query->latest()->first();
 
-        if (!$order) {
+        if (!($order instanceof Order)) {
             return response()->json(null);
         }
 

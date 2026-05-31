@@ -59,8 +59,6 @@ export interface DriverPerformance {
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
-  hasPendingCancelNotification: boolean = false;
-
   constructor(private http: HttpClient) {}
 
   // ─── Active Order ──────────────────────────────────────────────────────────
