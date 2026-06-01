@@ -26,9 +26,11 @@ export class HomePage implements OnInit, OnDestroy {
   isOrderModalOpen: boolean = false;
   isAccepting: boolean = false;
   isRejecting: boolean = false;
+  profileImage: string = 'https://ionicframework.com/docs/img/demos/avatar.svg';
 
   // Countdown Timer
   countdownValue: number = 30;
+  maxCountdownValue: number = 30;
   private countdownInterval: any = null;
 
   private pollingInterval: any = null;
@@ -49,6 +51,14 @@ export class HomePage implements OnInit, OnDestroy {
     console.log('[DriverDebug] ngOnInit called');
     this.loadMap();
     this.syncDriverStatus();
+
+    this.authService.currentUser.subscribe(user => {
+      if (user?.photo) {
+        this.profileImage = user.photo;
+      } else {
+        this.profileImage = 'https://ionicframework.com/docs/img/demos/avatar.svg';
+      }
+    });
   }
 
   ionViewWillEnter() {
@@ -410,7 +420,8 @@ export class HomePage implements OnInit, OnDestroy {
   startCountdown() {
     console.log('[DriverDebug] startCountdown called');
     this.stopCountdown();
-    this.countdownValue = 30;
+    this.maxCountdownValue = 30;
+    this.countdownValue = this.maxCountdownValue;
     
     this.countdownInterval = setInterval(() => {
       this.countdownValue--;
@@ -430,6 +441,13 @@ export class HomePage implements OnInit, OnDestroy {
       clearInterval(this.countdownInterval);
       this.countdownInterval = null;
     }
+  }
+
+  getStrokeDashoffset(): number {
+    const circumference = 2 * Math.PI * 21; // ~131.95
+    if (!this.maxCountdownValue) return circumference;
+    const progress = Math.max(0, Math.min(1, this.countdownValue / this.maxCountdownValue));
+    return circumference * (1 - progress);
   }
 
   // ─── Helpers ─────────────────────────────────────────────────────────────

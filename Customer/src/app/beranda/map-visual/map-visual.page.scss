@@ -129,13 +129,20 @@ ion-content.transparent-content {
   bottom: 0;
   left: 0;
   width: 100%;
-  z-index: 10001; /* Above backdrops */
+  z-index: 30001; /* Elevated above fixed-order-footer (20001) */
   background: white;
   border-radius: 24px 24px 0 0;
   box-shadow: 0 -8px 24px rgba(0,0,0,0.1);
   animation: slideUpModal 0.3s ease-out forwards;
   display: flex;
   flex-direction: column;
+  will-change: transform;
+  transition: transform 0.2s ease-out;
+
+  &.dragging {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 @keyframes slideUpModal {
@@ -147,7 +154,7 @@ ion-content.transparent-content {
   position: fixed;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.4);
-  z-index: 10000;
+  z-index: 30000; /* Elevated above fixed-order-footer (20001) */
   animation: fadeIn 0.3s ease-out forwards;
 }
 
@@ -1175,7 +1182,7 @@ ion-content.transparent-content {
   z-index: 10002;
   display: flex;
   flex-direction: column;
-  padding: 40px 24px 24px;
+  padding: 24px 20px 20px;
   overflow-y: auto;
   animation: fadeIn 0.3s ease-out forwards;
 }
@@ -1235,3 +1242,281 @@ ion-content.transparent-content {
     transform: translateY(0);
   }
 }
+
+// ─── ADDED CLEAN MODULAR CLASSES FOR STATIC INLINE STYLES ───
+
+.vehicle-list {
+  padding-top: 0 !important;
+}
+
+.v-spinner {
+  width: 20px;
+  height: 20px;
+  color: #ffb347;
+}
+
+.note-modal-wrap {
+  .note-modal-header {
+    padding: 8px 20px 0;
+  }
+
+  .note-input-container {
+    padding: 20px;
+  }
+
+  .note-modal-footer {
+    padding: 0 20px 20px;
+  }
+}
+
+.dompetx-download-container {
+  text-align: center;
+  margin-bottom: 14px;
+  margin-top: -6px;
+
+  .btn-download-qr {
+    --border-radius: 20px;
+    font-weight: 700;
+    text-transform: none;
+    --border-width: 1px;
+  }
+}
+
+.search-payment-icon {
+  font-size: 14px;
+}
+
+.notfound-back-wrapper {
+  margin-top: 16px;
+  width: 100%;
+}
+
+.cancel-reason-wrap {
+  justify-content: flex-end;
+  border-radius: 24px 24px 0 0;
+  padding: 24px;
+  max-height: 90vh;
+  overflow-y: auto;
+
+  .cancel-header-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+
+    .confirm-cancel-img {
+      width: 50px;
+      height: 50px;
+      margin-right: 16px;
+    }
+
+    .cancel-header-text {
+      h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #1f2937;
+      }
+      p {
+        margin: 4px 0 0 0;
+        font-size: 13px;
+        color: #6b7280;
+        line-height: 1.4;
+      }
+    }
+  }
+
+  .cancel-warning-box {
+    background: #f3f4f6;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: flex-start;
+
+    ion-icon {
+      font-size: 24px;
+      color: #374151;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+
+    .warning-text-container {
+      p {
+        margin: 0;
+        font-size: 13px;
+        color: #374151;
+        line-height: 1.5;
+        
+        &.limit-text {
+          margin: 4px 0 0 0;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
+  .cancel-reason-title {
+    margin: 0 0 16px 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .cancel-reason-list {
+    margin-bottom: 24px;
+
+    ion-item {
+      --padding-start: 0;
+      --inner-padding-end: 0;
+
+      ion-label {
+        font-size: 15px;
+        color: #374151;
+      }
+
+      ion-icon {
+        font-size: 24px;
+      }
+
+      .circle-placeholder {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #e5e7eb;
+      }
+    }
+  }
+
+  .cancel-actions-row {
+    display: flex;
+    gap: 12px;
+
+    .cancel-btn-light {
+      flex: 1;
+      --border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .cancel-btn-confirm {
+      flex: 1;
+      --border-radius: 20px;
+      font-weight: 600;
+    }
+  }
+}
+
+.cancel-success-content {
+  .cancel-success-header {
+    text-align: center;
+    margin-bottom: 8px;
+
+    .cancel-success-icon-wrap {
+      width: 72px;
+      height: 72px;
+      background: #a7f3d0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 10px;
+
+      ion-icon {
+        font-size: 40px;
+        color: #10b981;
+      }
+    }
+
+    h2 {
+      margin: 0 0 4px 0;
+      font-size: 19px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    p {
+      margin: 0;
+      font-size: 13px;
+      color: #4b5563;
+      line-height: 1.4;
+    }
+  }
+
+  .cancel-success-img {
+    width: 100%;
+    border-radius: 16px;
+    margin-top: -10px;
+    margin-bottom: -10px;
+  }
+
+  .cancel-receipt-card {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+    h4 {
+      margin: 0 0 12px 0;
+      font-size: 14px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+
+      span {
+        font-size: 13px;
+        color: #4b5563;
+        font-weight: 600;
+      }
+
+      &.border-bottom {
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      &.total {
+        margin-bottom: 16px;
+        span {
+          font-size: 15px;
+          font-weight: 700;
+          color: #111827;
+        }
+      }
+    }
+
+    .receipt-warning-box {
+      background: #f3f4f6;
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      align-items: flex-start;
+
+      ion-icon {
+        font-size: 16px;
+        color: #374151;
+        margin-right: 6px;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+
+      p {
+        margin: 0;
+        font-size: 11px;
+        color: #4b5563;
+        line-height: 1.45;
+      }
+    }
+  }
+
+  .btn-back-home {
+    --border-radius: 24px;
+    height: 46px;
+    font-weight: 600;
+  }
+}
+

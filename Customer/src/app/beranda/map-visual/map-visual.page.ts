@@ -105,6 +105,12 @@ export class MapVisualPage implements OnInit, OnDestroy {
   backdropOpacity: number = 0;
   contentOverflowY: string = 'hidden';
 
+  // ─── Dragging State for Note Modal ────────────────────────────────────────
+  isDraggingNote: boolean = false;
+  noteY: number = 0;
+  noteStartY: number = 0;
+  noteStartTranslateY: number = 0;
+
   readonly COLLAPSED = 60;
   readonly HALF = 30;
   readonly FULL = 0;
@@ -624,6 +630,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
   openNoteModal() {
     this.isNoteModalOpen = true;
+    this.noteY = 0;
   }
 
   closeNoteModal() {
@@ -1589,49 +1596,81 @@ export class MapVisualPage implements OnInit, OnDestroy {
     }
   }
 
+  handleNoteStart(e: any) {
+    this.isDraggingNote = true;
+    this.noteStartY = e.type === 'mousedown' ? e.pageY : e.touches[0].pageY;
+    this.noteStartTranslateY = this.noteY;
+  }
+
   @HostListener('document:touchmove', ['$event'])
   @HostListener('document:mousemove', ['$event'])
   onMove(e: any) {
-    if (!this.isDragging) return;
-    
-    const y = e.type === 'mousemove' ? e.pageY : e.touches[0].pageY;
-    const delta = y - this.startY;
-    
-    const sheetHeight = window.innerHeight - 160; // Approximate height of sheet
-    const deltaPercent = (delta / sheetHeight) * 100;
-    
-    let nextY = this.startTranslateY + deltaPercent;
-    
-    if (nextY < this.FULL) {
-      nextY = this.FULL - (Math.pow(this.FULL - nextY, 0.5)); 
-    }
-    if (nextY > 75) nextY = 75; 
-    
-    this.setSheetPosition(nextY);
-    
-    // Prevent default only for touch events (avoid error on mousemove)
-    if (e.cancelable && e.type !== 'mousemove') {
-      e.preventDefault();
+    if (this.isDragging) {
+      const y = e.type === 'mousemove' ? e.pageY : e.touches[0].pageY;
+      const delta = y - this.startY;
+      
+      const sheetHeight = window.innerHeight - 160; // Approximate height of sheet
+      const deltaPercent = (delta / sheetHeight) * 100;
+      
+      let nextY = this.startTranslateY + deltaPercent;
+      
+      if (nextY < this.FULL) {
+        nextY = this.FULL - (Math.pow(this.FULL - nextY, 0.5)); 
+      }
+      if (nextY > 75) nextY = 75; 
+      
+      this.setSheetPosition(nextY);
+      
+      // Prevent default only for touch events (avoid error on mousemove)
+      if (e.cancelable && e.type !== 'mousemove') {
+        e.preventDefault();
+      }
+    } else if (this.isDraggingNote) {
+      const y = e.type === 'mousemove' ? e.pageY : e.touches[0].pageY;
+      const delta = y - this.noteStartY;
+      
+      const sheetHeight = 350; // Approximate height of note modal
+      const deltaPercent = (delta / sheetHeight) * 100;
+      
+      let nextY = this.noteStartTranslateY + deltaPercent;
+      if (nextY < 0) {
+        nextY = nextY * 0.2; // Resistance when pulling up
+      }
+      this.noteY = nextY;
+      
+      if (e.cancelable && e.type !== 'mousemove') {
+        e.preventDefault();
+      }
     }
   }
 
   @HostListener('document:touchend')
   @HostListener('document:mouseup')
   onEnd() {
-    if (!this.isDragging) return;
-    this.isDragging = false;
+    if (this.isDragging) {
+      this.isDragging = false;
 
-    if (this.currentY < 15) {
-      this.setSheetPosition(this.FULL);
-      this.contentOverflowY = 'auto';
-    } else if (this.currentY < 45) {
-      this.setSheetPosition(this.HALF);
-      this.contentOverflowY = 'hidden';
-    } else {
-      this.setSheetPosition(this.COLLAPSED);
-      this.contentOverflowY = 'hidden';
-      if (this.sheetContentEl) {
-        this.sheetContentEl.nativeElement.scrollTop = 0;
+      if (this.currentY < 15) {
+        this.setSheetPosition(this.FULL);
+        this.contentOverflowY = 'auto';
+      } else if (this.currentY < 45) {
+        this.setSheetPosition(this.HALF);
+        this.contentOverflowY = 'hidden';
+      } else {
+        this.setSheetPosition(this.COLLAPSED);
+        this.contentOverflowY = 'hidden';
+        if (this.sheetContentEl) {
+          this.sheetContentEl.nativeElement.scrollTop = 0;
+        }
+      }
+    } else if (this.isDraggingNote) {
+      this.isDraggingNote = false;
+      // If dragged down by more than 25%, close the modal
+      if (this.noteY > 25) {
+        this.closeNoteModal();
+      } else {
+        // Snap back
+        this.noteY = 0;
       }
     }
   }

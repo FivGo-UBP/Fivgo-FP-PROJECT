@@ -91,7 +91,7 @@
        [style.overflow-y]="contentOverflowY"
        #sheetContent
        (touchstart)="handleContentStart($event)" (mousedown)="handleContentStart($event)">
-    <div class="vehicle-list" style="padding-top: 0px;">
+    <div class="vehicle-list">
       <div class="vehicle-item" *ngFor="let v of vehicles" [class.selected]="v.type === selectedVehicle" (click)="selectVehicle(v.type)">
         <div class="v-img-container">
           <img [src]="v.image" [alt]="v.name">
@@ -109,7 +109,7 @@
           </div>
         </div>
         <div class="v-price-container">
-          <ion-spinner name="circles" *ngIf="v.isLoading" style="width: 20px; height: 20px; color: #ffb347;"></ion-spinner>
+          <ion-spinner name="circles" *ngIf="v.isLoading" class="v-spinner"></ion-spinner>
           <h4 *ngIf="!v.isLoading">{{ v.price }}</h4>
         </div>
       </div>
@@ -148,12 +148,21 @@
 
 <!-- Modal 2: Catatan Pengemudi -->
 <div class="custom-backdrop-solid" *ngIf="isNoteModalOpen" (click)="closeNoteModal()"></div>
-<div class="custom-bottom-sheet-wrap note-modal-wrap" *ngIf="isNoteModalOpen">
-  <div class="note-modal-header" style="padding: 20px 20px 0;">
+<div class="custom-bottom-sheet-wrap note-modal-wrap" 
+     *ngIf="isNoteModalOpen"
+     [class.dragging]="isDraggingNote"
+     [style.transform]="'translateY(' + noteY + '%)'">
+  <!-- Visual handle to make it match sheet design and allow drag/tap to close -->
+  <div class="sheet-header" 
+       (touchstart)="handleNoteStart($event)" (mousedown)="handleNoteStart($event)">
+    <div class="modal-handle"></div>
+  </div>
+
+  <div class="note-modal-header">
     <h3 class="note-title">Catatan Untuk Pengemudi</h3>
   </div>
   
-  <div class="note-input-container" style="padding: 20px;">
+  <div class="note-input-container">
     <textarea 
       placeholder="Masukkan catatan disini..."
       [(ngModel)]="driverNote"
@@ -163,7 +172,7 @@
     <div class="char-count">{{ driverNote.length }}/150 Karakter</div>
   </div>
   
-  <div style="padding: 0 20px 20px;">
+  <div class="note-modal-footer">
     <ion-button expand="block" color="warning" class="save-note-btn" (click)="saveNote()">
       Simpan
     </ion-button>
@@ -206,8 +215,8 @@
     <ng-container *ngIf="paymentInfo && !isCreatingPayment">
       <img *ngIf="getPaymentQrImage()" [src]="getPaymentQrImage()" alt="QRIS DompetX" class="dompetx-qr" />
 
-      <div class="dompetx-download-container" *ngIf="getPaymentQrImage()" style="text-align: center; margin-bottom: 14px; margin-top: -6px;">
-        <ion-button size="small" fill="outline" color="warning" style="--border-radius: 20px; font-weight: 700; text-transform: none; --border-width: 1px;" (click)="downloadQrCode()">
+      <div class="dompetx-download-container" *ngIf="getPaymentQrImage()">
+        <ion-button size="small" fill="outline" color="warning" class="btn-download-qr" (click)="downloadQrCode()">
           <ion-icon slot="start" name="download-outline"></ion-icon>
           Simpan QR ke Galeri
         </ion-button>
@@ -223,7 +232,7 @@
         <strong>{{ getPaymentVaNumber() }}</strong>
       </div>
 
-      <div class="dompetx-ref">
+      <div class="dompetx-ref" *ngIf="getPaymentReference()">
         <span>Ref</span>
         <strong>{{ getPaymentReference() }}</strong>
       </div>
@@ -262,7 +271,7 @@
         <div class="search-vehicle-text">
           <span class="search-vehicle-name">{{ selectedVehicle === 'motor' ? 'Motor' : 'Mobil' }}</span>
           <div class="search-payment-badge">
-            <ion-icon [name]="selectedPayment === 'tunai' ? 'cash-outline' : (selectedPayment === 'wallet' ? 'wallet-outline' : 'card-outline')" style="font-size:14px;"></ion-icon>
+            <ion-icon [name]="selectedPayment === 'tunai' ? 'cash-outline' : (selectedPayment === 'wallet' ? 'wallet-outline' : 'card-outline')" class="search-payment-icon"></ion-icon>
             <span>{{ getSelectedPaymentLabel() }}</span>
           </div>
         </div>
@@ -286,7 +295,7 @@
       Coba Lagi
     </ion-button>
 
-    <div style="margin-top: 16px; width: 100%;">
+    <div class="notfound-back-wrapper">
       <ion-button expand="block" fill="outline" color="danger" class="back-btn-notfound" (click)="cancelOrder()">
         <ion-icon name="close-outline" slot="start"></ion-icon>
         Batal
@@ -348,39 +357,39 @@
 
 <!-- Modal 6: Alasan Batal -->
 <div class="custom-backdrop-solid" *ngIf="isCancelReasonModalOpen"></div>
-<div class="custom-bottom-sheet-wrap cancel-reason-wrap" *ngIf="isCancelReasonModalOpen" style="border-radius: 24px 24px 0 0; padding: 24px; max-height: 90vh; overflow-y: auto;">
-  <div style="display: flex; align-items: center; margin-bottom: 20px;">
-    <img src="assets/confirm cancel.png" alt="Confirm Cancel" style="width: 50px; height: 50px; margin-right: 16px;">
-    <div>
-      <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #1f2937;">Yakin mau batal?</h3>
-      <p style="margin: 4px 0 0 0; font-size: 13px; color: #6b7280; line-height: 1.4;">Terlalu sering membatalkan pesanan bisa bikin kamu lebih sulit dapet driver di orderan berikutnya, lho</p>
+<div class="custom-bottom-sheet-wrap cancel-reason-wrap" *ngIf="isCancelReasonModalOpen">
+  <div class="cancel-header-row">
+    <img src="assets/confirm cancel.png" alt="Confirm Cancel" class="confirm-cancel-img">
+    <div class="cancel-header-text">
+      <h3>Yakin mau batal?</h3>
+      <p>Terlalu sering membatalkan pesanan bisa bikin kamu lebih sulit dapet driver di orderan berikutnya, lho</p>
     </div>
   </div>
 
-  <div style="background: #f3f4f6; border-radius: 12px; padding: 16px; margin-bottom: 24px; display: flex; align-items: flex-start;">
-    <ion-icon name="alert-circle-outline" style="font-size: 24px; color: #374151; margin-right: 12px; flex-shrink: 0;"></ion-icon>
-    <div>
-      <p style="margin: 0; font-size: 13px; color: #374151; line-height: 1.5;">
+  <div class="cancel-warning-box">
+    <ion-icon name="alert-circle-outline"></ion-icon>
+    <div class="warning-text-container">
+      <p>
         {{ isDriverCloseForPenalty ? 'Driver sudah dekat dengan lokasi jemputmu, nih. Membatalkan pesanan sekarang akan dikenakan biaya kompensasi' : 'Driver masih jauh dengan lokasi jemputmu, nih. Membatalkan pesanan sekarang tidak akan dikenakan biaya kompensasi' }}
       </p>
-      <p style="margin: 4px 0 0 0; font-size: 13px; font-weight: 600; color: #374151;">(BATAS HARIAN: 2/3)</p>
+      <p class="limit-text">(BATAS HARIAN: 2/3)</p>
     </div>
   </div>
 
-  <h4 style="margin: 0 0 16px 0; font-size: 15px; font-weight: 700; color: #1f2937;">Kenapa Pesanan nya di batalin?</h4>
-  <ion-list lines="full" class="cancel-reason-list" style="margin-bottom: 24px;">
-    <ion-item *ngFor="let reason of cancelReasons" button (click)="selectCancelReason(reason)" style="--padding-start: 0; --inner-padding-end: 0;">
-      <ion-label style="font-size: 15px; color: #374151;">{{ reason }}</ion-label>
-      <ion-icon *ngIf="selectedCancelReason === reason" name="checkmark-circle" color="success" slot="end" style="font-size: 24px;"></ion-icon>
-      <div *ngIf="selectedCancelReason !== reason" slot="end" style="width: 24px; height: 24px; border-radius: 50%; background: #e5e7eb;"></div>
+  <h4 class="cancel-reason-title">Kenapa Pesanan nya di batalin?</h4>
+  <ion-list lines="full" class="cancel-reason-list">
+    <ion-item *ngFor="let reason of cancelReasons" button (click)="selectCancelReason(reason)">
+      <ion-label>{{ reason }}</ion-label>
+      <ion-icon *ngIf="selectedCancelReason === reason" name="checkmark-circle" color="success" slot="end"></ion-icon>
+      <div *ngIf="selectedCancelReason !== reason" slot="end" class="circle-placeholder"></div>
     </ion-item>
   </ion-list>
 
-  <div style="display: flex; gap: 12px;">
-    <ion-button expand="block" color="light" style="flex: 1; --border-radius: 20px; font-weight: 600;" (click)="closeCancelReasonModal()">
+  <div class="cancel-actions-row">
+    <ion-button expand="block" color="light" class="cancel-btn-light" (click)="closeCancelReasonModal()">
       Tunggu Driver
     </ion-button>
-    <ion-button expand="block" color="warning" style="flex: 1; --border-radius: 20px; font-weight: 600;" [disabled]="!selectedCancelReason" (click)="confirmCancelOrder()">
+    <ion-button expand="block" color="warning" class="cancel-btn-confirm" [disabled]="!selectedCancelReason" (click)="confirmCancelOrder()">
       Batalkan Pesanan
     </ion-button>
   </div>
@@ -389,43 +398,43 @@
 <!-- Full Screen Modal: Sukses Batal -->
 <div class="cancel-success-overlay" *ngIf="isCancelSuccessOpen">
   <div class="cancel-success-content">
-    <div style="text-align: center; margin-bottom: 24px;">
-      <div style="width: 80px; height: 80px; background: #a7f3d0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-        <ion-icon name="checkmark" style="font-size: 48px; color: #10b981;"></ion-icon>
+    <div class="cancel-success-header">
+      <div class="cancel-success-icon-wrap">
+        <ion-icon name="checkmark"></ion-icon>
       </div>
-      <h2 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 700; color: #111827;">Pesanan Berhasil di batalkan</h2>
-      <p style="margin: 0; font-size: 14px; color: #4b5563; line-height: 1.5;">Jangan khawatir, kami sudah memberitahu Driver agar tidak melanjutkan penjemputan.</p>
+      <h2>Pesanan Berhasil di batalkan</h2>
+      <p>Jangan khawatir, kami sudah memberitahu Driver agar tidak melanjutkan penjemputan.</p>
     </div>
 
-    <img src="assets/cancel ilustration.png" alt="Cancel Illustration" style="width: 100%; border-radius: 16px; margin-bottom: 24px;">
+    <img src="assets/cancel ilustration.png" alt="Cancel Illustration" class="cancel-success-img">
 
-    <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-      <h4 style="margin: 0 0 16px 0; font-size: 15px; font-weight: 700; color: #111827;">Rincian Biaya</h4>
+    <div class="cancel-receipt-card">
+      <h4>Rincian Biaya</h4>
       
-      <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-        <span style="font-size: 14px; color: #4b5563; font-weight: 600;">Biaya Perjalanan</span>
-        <span style="font-size: 14px; color: #4b5563; font-weight: 600;">Rp0</span>
+      <div class="receipt-row">
+        <span>Biaya Perjalanan</span>
+        <span>Rp0</span>
       </div>
       
-      <div style="display: flex; justify-content: space-between; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #e5e7eb;">
-        <span style="font-size: 14px; color: #4b5563; font-weight: 600;">Biaya Pembatalan</span>
-        <span style="font-size: 14px; color: #4b5563; font-weight: 600;">{{ cancelFee > 0 ? 'Rp2.500' : 'Rp0' }}</span>
+      <div class="receipt-row border-bottom">
+        <span>Biaya Pembatalan</span>
+        <span>{{ cancelFee > 0 ? 'Rp2.500' : 'Rp0' }}</span>
       </div>
       
-      <div style="display: flex; justify-content: space-between; margin-bottom: 24px;">
-        <span style="font-size: 16px; font-weight: 700; color: #111827;">Total</span>
-        <span style="font-size: 16px; font-weight: 700; color: #111827;">{{ cancelFee > 0 ? 'Rp 2.500' : 'Rp0' }}</span>
+      <div class="receipt-row total">
+        <span>Total</span>
+        <span>{{ cancelFee > 0 ? 'Rp 2.500' : 'Rp0' }}</span>
       </div>
 
-      <div style="background: #f3f4f6; border-radius: 12px; padding: 12px; display: flex; align-items: flex-start;">
-        <ion-icon name="alert-circle-outline" style="font-size: 18px; color: #374151; margin-right: 8px; flex-shrink: 0; margin-top: 2px;"></ion-icon>
-        <p style="margin: 0; font-size: 12px; color: #4b5563; line-height: 1.4;">
+      <div class="receipt-warning-box">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <p>
           Biaya pembatalan diberikan sepenuhnya kepada driver sebagai kompensasi waktu/bahan bakar.
         </p>
       </div>
     </div>
 
-    <ion-button expand="block" color="warning" style="--border-radius: 24px; height: 48px; font-weight: 600;" (click)="finishCancelFlow()">
+    <ion-button expand="block" color="warning" class="btn-back-home" (click)="finishCancelFlow()">
       Kembali ke Beranda
     </ion-button>
   </div>

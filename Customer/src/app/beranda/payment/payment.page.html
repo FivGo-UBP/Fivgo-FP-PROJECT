@@ -70,14 +70,14 @@
       </div>
 
       <!-- List Riwayat -->
-      <ion-list class="transaction-list" lines="none" *ngIf="transactions.length > 0">
-        <ion-item class="transaction-item" *ngFor="let tx of transactions">
+      <div class="transaction-list" *ngIf="transactions.length > 0">
+        <div class="transaction-item" *ngFor="let tx of transactions">
           <!-- Icon berdasarkan tipe -->
-          <div class="tx-icon-box" [class.is-topup]="tx.type === 'topup'" slot="start">
+          <div class="tx-icon-box" [class.is-topup]="tx.type === 'topup'">
             <ion-icon [name]="getTransactionIcon(tx.type)"></ion-icon>
           </div>
 
-          <ion-label class="tx-label">
+          <div class="tx-label">
             <div class="tx-row-top">
               <span class="tx-title">{{ tx.description }}</span>
               <span class="tx-amount" [class.is-positive]="tx.amount > 0">
@@ -90,9 +90,9 @@
                 {{ tx.status === 'pending' ? 'Pending' : (tx.status === 'success' ? 'Sukses' : 'Gagal') }}
               </span>
             </div>
-          </ion-label>
-        </ion-item>
-      </ion-list>
+          </div>
+        </div>
+      </div>
     </div>
   </ng-container>
 
@@ -156,9 +156,6 @@
   </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- MODAL SHEET: INSTRUKSI PEMBAYARAN TOP UP (DOMPETX)           -->
-<!-- ============================================================ -->
 <div class="custom-backdrop-solid" *ngIf="isPaymentInfoOpen"></div>
 <div class="custom-bottom-sheet-wrap gateway-modal-wrap" *ngIf="isPaymentInfoOpen">
   <div class="payment-gateway-container" *ngIf="paymentInfo">

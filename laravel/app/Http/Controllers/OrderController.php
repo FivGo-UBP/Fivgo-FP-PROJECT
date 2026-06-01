@@ -288,7 +288,7 @@ class OrderController extends Controller
                     'status' => 'success',
                     'reference' => 'FIVGO-REFUND-' . $order->id . '-' . \Illuminate\Support\Str::upper(\Illuminate\Support\Str::random(8)),
                     'payment_method' => 'wallet',
-                    'description' => 'Refund Pembatalan Perjalanan (Order #' . substr($order->id, 0, 8) . ')',
+                    'description' => 'Refund Pembatalan Perjalanan',
                 ]);
             }
 
@@ -308,7 +308,7 @@ class OrderController extends Controller
                         'status' => 'success',
                         'reference' => 'FIVGO-CANCEL-PENALTY-' . $order->id,
                         'payment_method' => 'wallet',
-                        'description' => 'Denda Pembatalan Perjalanan (Order #' . substr($order->id, 0, 8) . ')',
+                        'description' => 'Denda Pembatalan Order',
                     ]);
                 }
 
@@ -324,7 +324,7 @@ class OrderController extends Controller
                         'status' => 'success',
                         'reference' => 'FIVGO-CANCEL-COMPENSATION-' . $order->id,
                         'payment_method' => 'wallet',
-                        'description' => 'Kompensasi Pembatalan oleh Pelanggan (Order #' . substr($order->id, 0, 8) . ')',
+                        'description' => 'Kompensasi Pembatalan oleh Pelanggan',
                     ]);
                 }
             }
