@@ -4,6 +4,9 @@
       <ion-searchbar readonly="true" routerLink="/cari-lokasi" class="custom-search" searchIcon="undefined" [placeholder]="t('home.search')"></ion-searchbar>
       <div class="profile-circle" routerLink="/kelola-profile" style="overflow: hidden;">
         <img *ngIf="user?.photo" [src]="user?.photo" style="width: 100%; height: 100%; object-fit: cover;" referrerpolicy="no-referrer" />
+        <div *ngIf="!user?.photo" class="avatar-fallback">
+          {{ user?.name?.charAt(0)?.toUpperCase() || 'U' }}
+        </div>
       </div>
     </div>
   </div>
@@ -31,21 +34,100 @@
 
     <!-- Edukasi & keamanan -->
     <h3 class="section-title">{{ t('home.education') }}</h3>
-    <div class="grey-card box-large">
-      <img src="https://i.pinimg.com/736x/e0/3b/81/e03b8158a61555aa01de34320d898eda.jpg" alt="Foto Edukasi" />
+    <div class="grey-card box-large" (click)="openEducation(educations[0])" style="cursor: pointer; margin-bottom: 30px;">
+      <img [src]="educations[0].image" alt="Foto Edukasi" />
     </div>
 
     <!-- promosi -->
     <h3 class="section-title">{{ t('home.promotion') }}</h3>
     <div class="scroll-container">
-      <div class="grey-card box-medium">
-        <img src="https://i.pinimg.com/736x/51/7e/8e/517e8e74a8cb89bbba898401941a53da.jpg" alt="Foto Promosi 1" />
+      <div class="grey-card box-medium" *ngFor="let promo of promotions" (click)="openPromo(promo)" style="cursor: pointer;">
+        <img [src]="promo.image" [alt]="promo.title" />
       </div>
-      <div class="grey-card box-medium">
-        <img src="https://i.pinimg.com/736x/51/a1/ce/51a1ce5143f27103ba293728bae17cc6.jpg" alt="Foto Promosi 2" />
+    </div>
+  </div>
+
+  <!-- Promotion Detail Bottom Sheet -->
+  <div class="bottom-sheet-overlay" *ngIf="selectedPromo">
+    <div class="bottom-sheet-backdrop" (click)="selectedPromo = null"></div>
+    <div class="bottom-sheet-card">
+      <div class="drag-handle"></div>
+      
+      <div class="sheet-header">
+        <h3 class="sheet-title">{{ isIndonesian ? 'Detail Promosi' : 'Promotion Details' }}</h3>
+        <ion-icon name="close-circle" class="btn-close" (click)="selectedPromo = null"></ion-icon>
       </div>
-      <div class="grey-card box-medium">
-        <img src="https://i.pinimg.com/736x/a7/21/f1/a721f122317f41415d31812539214762.jpg" alt="Foto Promosi 3" />
+
+      <div class="sheet-banner-img">
+        <img [src]="selectedPromo.image" [alt]="selectedPromo.title" />
+      </div>
+
+      <div class="sheet-body-content">
+        <h2 class="promo-title">{{ isIndonesian ? selectedPromo.title : selectedPromo.titleEn }}</h2>
+        <p class="promo-description">{{ isIndonesian ? selectedPromo.desc : selectedPromo.descEn }}</p>
+
+        <!-- Promo Code Box -->
+        <div class="promo-code-box">
+          <div class="code-details">
+            <span class="code-label">{{ isIndonesian ? 'Kode Promo' : 'Promo Code' }}</span>
+            <span class="code-value">{{ selectedPromo.code }}</span>
+          </div>
+          <button class="btn-copy" (click)="copyPromoCode(selectedPromo.code)">
+            <ion-icon [name]="isCopied ? 'checkmark-circle' : 'copy-outline'" slot="start"></ion-icon>
+            {{ isCopied ? (isIndonesian ? 'Disalin!' : 'Copied!') : (isIndonesian ? 'Salin' : 'Copy') }}
+          </button>
+        </div>
+
+        <!-- Terms and Conditions -->
+        <h4 class="terms-title">{{ isIndonesian ? 'Syarat & Ketentuan' : 'Terms & Conditions' }}</h4>
+        <ul class="terms-list">
+          <li *ngFor="let term of (isIndonesian ? selectedPromo.terms : selectedPromo.termsEn)">
+            {{ term }}
+          </li>
+        </ul>
+      </div>
+
+      <div class="sheet-footer">
+        <button class="btn-use" (click)="usePromo(selectedPromo)">
+          {{ isIndonesian ? 'Gunakan Promo' : 'Use Promo' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Education Detail Bottom Sheet -->
+  <div class="bottom-sheet-overlay" *ngIf="selectedEducation">
+    <div class="bottom-sheet-backdrop" (click)="selectedEducation = null"></div>
+    <div class="bottom-sheet-card">
+      <div class="drag-handle"></div>
+      
+      <div class="sheet-header">
+        <h3 class="sheet-title">{{ isIndonesian ? 'Panduan Keamanan' : 'Safety Guide' }}</h3>
+        <ion-icon name="close-circle" class="btn-close" (click)="selectedEducation = null"></ion-icon>
+      </div>
+
+      <div class="sheet-banner-img">
+        <img [src]="selectedEducation.image" [alt]="selectedEducation.title" />
+      </div>
+
+      <div class="sheet-body-content">
+        <h2 class="promo-title">{{ isIndonesian ? selectedEducation.title : selectedEducation.titleEn }}</h2>
+        <p class="promo-description">{{ isIndonesian ? selectedEducation.desc : selectedEducation.descEn }}</p>
+
+        <!-- Tips and Checklist -->
+        <h4 class="terms-title">{{ isIndonesian ? 'Tips Keamanan Perjalanan:' : 'Trip Safety Tips:' }}</h4>
+        <div class="tips-checklist">
+          <div class="tip-check-item" *ngFor="let tip of (isIndonesian ? selectedEducation.tips : selectedEducation.tipsEn)">
+            <ion-icon name="shield-checkmark" class="tip-check-icon"></ion-icon>
+            <p class="tip-check-text">{{ tip }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="sheet-footer">
+        <button class="btn-use btn-paham" (click)="selectedEducation = null">
+          {{ isIndonesian ? 'Saya Paham' : 'I Understand' }}
+        </button>
       </div>
     </div>
   </div>

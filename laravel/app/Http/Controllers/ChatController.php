@@ -15,7 +15,16 @@ class ChatController extends Controller
         $order = Order::findOrFail($order_id);
         $userId = $request->user()->id;
 
-        if ($order->customer_id !== $userId && $order->driver_id !== $userId) {
+        // Check if user is either current customer, current driver, or has participated in the chat
+        $isParticipant = $order->customer_id === $userId 
+            || $order->driver_id === $userId 
+            || Chat::where('order_id', $order_id)
+                ->where(function ($q) use ($userId) {
+                    $q->where('sender_id', $userId)
+                      ->orWhere('receiver_id', $userId);
+                })->exists();
+
+        if (!$isParticipant) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -71,7 +80,11 @@ class ChatController extends Controller
             'image_url'   => $imageUrl,
         ]);
 
-        broadcast(new MessageSent($chat))->toOthers();
+        try {
+            broadcast(new MessageSent($chat))->toOthers();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Broadcasting failed: ' . $e->getMessage());
+        }
 
         return response()->json($chat, 201);
     }
@@ -104,6 +117,24 @@ class ChatController extends Controller
                 $otherUser = $order->driver;
             } else if ($order->driver_id === $userId) {
                 $otherUser = $order->customer;
+            }
+
+            // Fallback: if order participant is null (e.g. cancelled/cleared driver), determine other user from chats
+            if (!$otherUser) {
+                $otherUserId = null;
+                foreach ($orderChats as $chat) {
+                    if ($chat->sender_id !== $userId) {
+                        $otherUserId = $chat->sender_id;
+                        break;
+                    }
+                    if ($chat->receiver_id !== $userId) {
+                        $otherUserId = $chat->receiver_id;
+                        break;
+                    }
+                }
+                if ($otherUserId) {
+                    $otherUser = \App\Models\User::find($otherUserId);
+                }
             }
 
             // Calculate unread count for current user

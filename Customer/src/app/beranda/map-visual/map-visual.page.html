@@ -80,6 +80,11 @@
      [class.dragging]="isDragging"
      [style.transform]="'translateY(' + currentY + '%)'">
 
+  <!-- Floating GPS Recenter Button -->
+  <div class="recenter-gps-btn inside-sheet" (click)="recenterMapOnUser(); $event.stopPropagation();" *ngIf="isMapPanned && lastUserLngLat">
+    <ion-icon name="locate-outline"></ion-icon>
+  </div>
+
   <!-- Header/Handle -->
   <div class="sheet-header" 
        (touchstart)="handleStart($event)" (mousedown)="handleStart($event)">
@@ -124,6 +129,7 @@
     </div>
   </div>
 </div>
+
 
 <!-- Sticky footer: payment pill + order button (Outside Modal, Fixed) -->
 <div class="fixed-order-footer" *ngIf="isVehicleModalOpen && !isSearchingDriver && !isDriverFound">
@@ -306,6 +312,10 @@
 
 <!-- Modal 5: Driver Ditemukan (Bottom Sheet Konsisten) -->
 <div class="custom-bottom-sheet-wrap driver-found-wrap" *ngIf="isDriverFound && activeOrder">
+  <!-- Floating GPS Recenter Button -->
+  <div class="recenter-gps-btn inside-sheet" (click)="recenterMapOnUser(); $event.stopPropagation();" *ngIf="isMapPanned && lastUserLngLat">
+    <ion-icon name="locate-outline"></ion-icon>
+  </div>
   <div class="driver-found-container">
     <!-- Status Header -->
     <div class="status-header">

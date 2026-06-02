@@ -160,3 +160,120 @@ ion-content.profile-content {
   font-size: 16px;
   --color: #F04444; /* red color */
 }
+
+/* Custom Logout Modal */
+.logout-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 24px;
+}
+
+.logout-modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 1;
+}
+
+.logout-modal-card {
+  position: relative;
+  background: #ffffff;
+  border-radius: 20px;
+  border: 3px solid #3b82f6; /* Custom vibrant blue border from user's image */
+  padding: 30px 24px 24px;
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  animation: modalFadeIn 0.25s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.logout-modal-icon-container {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background-color: #fee2e2; /* Light red/pinkish badge background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+
+  ion-icon {
+    font-size: 36px;
+    color: #ef4444; /* Bright red icon */
+  }
+}
+
+.logout-modal-title {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a; /* Slate 900 */
+  text-align: center;
+}
+
+.logout-modal-message {
+  margin: 0 0 24px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #475569; /* Slate 600 */
+  text-align: center;
+  font-weight: 500;
+}
+
+.logout-modal-actions {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+
+  button {
+    flex: 1;
+    height: 48px;
+    border-radius: 24px;
+    border: none;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    outline: none;
+
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+
+  .btn-cancel {
+    background-color: #e2e8f0; /* Grey background */
+    color: #0f172a; /* Slate 900 */
+  }
+
+  .btn-confirm {
+    background-color: #ef4444; /* Red background */
+    color: #ffffff; /* White text */
+  }
+}

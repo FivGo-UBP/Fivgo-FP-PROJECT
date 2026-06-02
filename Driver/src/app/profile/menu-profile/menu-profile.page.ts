@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService, User } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-menu-profile',
@@ -11,8 +12,13 @@ import { Router } from '@angular/router';
 export class MenuProfilePage implements OnInit {
   user: User | null = null;
   profileImage: string = 'https://ionicframework.com/docs/img/demos/avatar.svg';
+  showLogoutConfirm: boolean = false;
 
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private alertCtrl: AlertController
+  ) { }
 
   ngOnInit() {
     this.authService.getProfile().subscribe(); // Fetch latest from server
@@ -28,7 +34,12 @@ export class MenuProfilePage implements OnInit {
     this.router.navigate(['/kinerja-driver']);
   }
 
+  confirmLogout() {
+    this.showLogoutConfirm = true;
+  }
+
   logout() {
+    sessionStorage.removeItem('driver_session_initialized');
     this.authService.logout().subscribe({
       next: () => this.router.navigate(['/landing-page']),
       error: () => this.router.navigate(['/landing-page'])

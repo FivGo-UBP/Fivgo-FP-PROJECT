@@ -1,4 +1,4 @@
-import { NgModule, Injectable } from '@angular/core';
+import { NgModule, Injectable, LOCALE_ID } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy, Router } from '@angular/router';
 import { HttpClientModule, HTTP_INTERCEPTORS, HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
@@ -10,6 +10,10 @@ import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AuthService } from './services/auth.service';
+
+import { registerLocaleData } from '@angular/common';
+import localeId from '@angular/common/locales/id';
+registerLocaleData(localeId, 'id-ID');
 
 @Injectable()
 export class InlineAuthInterceptor implements HttpInterceptor {
@@ -45,7 +49,8 @@ export class InlineAuthInterceptor implements HttpInterceptor {
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, HttpClientModule],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    { provide: HTTP_INTERCEPTORS, useClass: InlineAuthInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: InlineAuthInterceptor, multi: true },
+    { provide: LOCALE_ID, useValue: 'id-ID' }
   ],
   bootstrap: [AppComponent],
 })

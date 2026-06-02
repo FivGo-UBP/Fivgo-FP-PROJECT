@@ -103,6 +103,7 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('wallet')->group(function () {
         Route::get('balance', [\App\Http\Controllers\WalletController::class, 'balance']);
         Route::post('topup', [\App\Http\Controllers\WalletController::class, 'topup']);
+        Route::post('withdraw', [\App\Http\Controllers\WalletController::class, 'withdraw']);
     });
 
     // Chat Endpoints
@@ -135,6 +136,11 @@ Route::middleware('auth:api')->group(function () {
         Route::post('withdrawals/{id}/process', [AdminController::class, 'processWithdrawal']);
         Route::get('messages', [AdminController::class, 'messages']);
         Route::post('messages', [AdminController::class, 'sendMessage']);
+    });
+
+    // Custom Broadcast Auth for JWT
+    Route::post('/broadcasting/auth', function (Request $request) {
+        return \Illuminate\Support\Facades\Broadcast::auth($request);
     });
 });
 

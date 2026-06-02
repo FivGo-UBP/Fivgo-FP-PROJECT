@@ -12,6 +12,7 @@ import { LanguageService, LanguageType } from '../../services/language.service';
 })
 export class KelolaProfilePage implements OnInit {
   user: User | null = null;
+  showLogoutConfirm: boolean = false;
 
   constructor(
     private authService: AuthService,
@@ -32,26 +33,8 @@ export class KelolaProfilePage implements OnInit {
     });
   }
 
-  async confirmLogout() {
-    const alert = await this.alertController.create({
-      header: this.t('alert.logout.title'),
-      message: this.t('alert.logout.msg'),
-      buttons: [
-        {
-          text: this.t('alert.cancel'),
-          role: 'cancel',
-          cssClass: 'alert-btn-batal-hitam'
-        }, {
-          text: this.t('menu.logout'),
-          cssClass: 'alert-btn-keluar-merah',
-          handler: () => {
-            this.logout();
-          }
-        }
-      ]
-    });
-
-    await alert.present();
+  confirmLogout() {
+    this.showLogoutConfirm = true;
   }
 
   logout() {

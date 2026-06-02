@@ -153,19 +153,24 @@ class DriverController extends Controller
             'user'    => $user->load('driverProfile'),
         ]);
     }
-
     public function updateStatus(Request $request)
     {
         $validated = $request->validate([
             'status' => 'required|string|in:online,offline,busy'
         ]);
 
-        $profile = DriverProfile::where('user_id', $request->user()->id)->firstOrFail();
+        $user = $request->user();
+        if ($validated['status'] !== 'offline' && $user->wallet_balance < -50000) {
+            return response()->json([
+                'message' => 'Status tidak dapat diubah ke online. Saldo Anda saat ini minus Rp ' . number_format(abs($user->wallet_balance), 0, ',', '.') . '. Harap lakukan Top Up minimal agar saldo berada di atas -Rp 50.000 untuk menerima pesanan kembali.'
+            ], 403);
+        }
+
+        $profile = DriverProfile::where('user_id', $user->id)->firstOrFail();
         $profile->update(['status' => $validated['status']]);
 
         return response()->json($profile);
     }
-
     public function updateLocation(Request $request)
     {
         $validated = $request->validate([

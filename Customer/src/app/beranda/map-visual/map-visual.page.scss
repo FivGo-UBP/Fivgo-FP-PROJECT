@@ -87,18 +87,19 @@ ion-content.transparent-content {
 .vehicle-sheet-wrap {
   position: fixed;
   left: 0;
+  bottom: 0;
   width: 100%;
-  bottom: 140px; /* Fixed order footer height roughly */
-  height: calc(100vh - 140px);
+  height: auto;
+  max-height: 80vh;
   z-index: 10000;
   display: flex;
   flex-direction: column;
   border-radius: 20px 20px 0 0;
   background: white;
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  overflow: visible;
   touch-action: none;
-  transform: translateY(60%);
+  transform: translateY(100%);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;
 
@@ -108,9 +109,8 @@ ion-content.transparent-content {
 }
 
 .vehicle-sheet-body {
-  flex: 1;
-  overflow-y: hidden; /* Controlled by JS based on snap point */
-  padding: 0 20px;
+  overflow-y: auto;
+  padding: 0 20px calc(150px + env(safe-area-inset-bottom, 0px));
   -webkit-overflow-scrolling: touch;
 }
 
@@ -269,6 +269,36 @@ ion-content.transparent-content {
       }
     }
   }
+}
+
+.recenter-gps-btn {
+  position: absolute;
+  top: -60px; /* Floating 60px above the bottom sheet */
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20002;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+
+  &:active {
+    transform: scale(0.92);
+  }
+
+  ion-icon {
+    font-size: 24px;
+    color: #f19b16; /* Brand orange color */
+  }
+}
+
+.user-location-pulse {
+  transition: transform 0.6s ease-out; /* Smooth slide transition for GPS updates */
 }
 
 /* ───────────────────────────────────────────────────────────────── */

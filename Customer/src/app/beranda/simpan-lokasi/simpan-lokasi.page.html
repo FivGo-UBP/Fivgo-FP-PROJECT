@@ -8,11 +8,14 @@
     <ion-searchbar 
       placeholder="Masukkan lokasi" 
       class="custom-searchbar"
-      search-icon="none">
+      search-icon="none"
+      (ionInput)="onSearch($event)"
+      [value]="searchKeyword">
     </ion-searchbar>
   </div>
 
-  <div class="content-container">
+  <!-- Default Illustration Screen -->
+  <div class="content-container" *ngIf="searchKeyword.trim() === ''">
     <div class="illustration-wrap">
       <img
         src="assets/alamat.png"
@@ -26,5 +29,64 @@
     </div>
   </div>
 
+  <!-- Search Results List -->
+  <div class="location-list" *ngIf="searchKeyword.trim() !== ''">
+    <div *ngIf="isSearching && searchResults.length === 0" class="searching-placeholder">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <p>Mencari lokasi...</p>
+    </div>
+    <div *ngIf="!isSearching && searchResults.length === 0" class="no-results-placeholder">
+      <p>Lokasi tidak ditemukan</p>
+    </div>
+    
+    <div class="loc-item" *ngFor="let result of searchResults" (click)="selectLocation(result)">
+      <div class="icon-wrap">
+        <ion-icon name="location" class="target-icon"></ion-icon>
+      </div>
+      <div class="text-wrap">
+        <h4>{{ result.name }}</h4>
+        <p>{{ result.address }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Labeling Bottom Sheet -->
+  <div class="bottom-sheet-overlay" *ngIf="selectedLocation">
+    <div class="bottom-sheet-backdrop" (click)="selectedLocation = null"></div>
+    <div class="bottom-sheet-card">
+      <div class="drag-handle"></div>
+      
+      <div class="sheet-header">
+        <h3 class="sheet-title">Simpan Lokasi Ini</h3>
+        <ion-icon name="close-circle" class="btn-close" (click)="selectedLocation = null"></ion-icon>
+      </div>
+
+      <div class="location-summary">
+        <div class="marker-container">
+          <ion-icon name="location" class="location-pin"></ion-icon>
+        </div>
+        <div class="loc-text">
+          <h4 class="loc-name">{{ selectedLocation.name }}</h4>
+          <p class="loc-address">{{ selectedLocation.address }}</p>
+        </div>
+      </div>
+      
+      <div class="label-input-container">
+        <label class="input-label">Beri nama lokasi ini</label>
+        <input type="text" [(ngModel)]="locationLabel" placeholder="Contoh: Rumah, Kantor, Kosan" class="custom-label-input" />
+      </div>
+      
+      <div class="quick-tags">
+        <span class="tag-chip" [class.active]="locationLabel === 'Rumah'" (click)="locationLabel = 'Rumah'">🏠 Rumah</span>
+        <span class="tag-chip" [class.active]="locationLabel === 'Kantor'" (click)="locationLabel = 'Kantor'">💼 Kantor</span>
+        <span class="tag-chip" [class.active]="locationLabel === 'Lainnya'" (click)="locationLabel = 'Lainnya'">📍 Lainnya</span>
+      </div>
+      
+      <div class="sheet-actions">
+        <button class="btn-cancel" (click)="selectedLocation = null">Batal</button>
+        <button class="btn-save" (click)="saveLocation()">Simpan</button>
+      </div>
+    </div>
+  </div>
 
 </ion-content>

@@ -193,4 +193,44 @@ class WalletController extends Controller
 
         return response()->json(['status' => 'success']);
     }
+
+    public function withdraw(Request $request) 
+    {
+        $user = $request->user();
+        
+        $validated = $request->validate([
+            'amount' => 'required|integer|min:20000',
+            'bank_name' => 'required|string',
+            'account_number' => 'required|string',
+            'account_name' => 'required|string',
+        ]);
+
+        if ($user->wallet_balance < $validated['amount']) {
+            return response()->json(['message' => 'Saldo tidak mencukupi untuk melakukan penarikan.'], 400);
+        }
+
+        // 1. Kurangi saldo driver terlebih dahulu
+        $user->decrement('wallet_balance', $validated['amount']);
+
+        // 2. Catat transaksi sebagai payout dengan status pending
+        $reference = 'FIVGO-WD-' . $user->id . '-' . Str::upper(Str::random(8));
+        $transaction = WalletTransaction::create([
+            'user_id' => $user->id,
+            'amount' => -$validated['amount'], // Debit
+            'type' => 'payout',
+            'status' => 'pending',
+            'reference' => $reference,
+            'payment_method' => $validated['bank_name'],
+            'description' => 'Penarikan Dana ke ' . strtoupper($validated['bank_name']) . ' a.n ' . $validated['account_name'],
+            'gateway_payload' => [
+                'account_number' => $validated['account_number'],
+                'account_name' => $validated['account_name']
+            ]
+        ]);
+
+        return response()->json([
+            'message' => 'Pengajuan penarikan dana berhasil dikirim.',
+            'transaction' => $transaction
+        ], 201);
+    }
 }

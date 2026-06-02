@@ -11,7 +11,7 @@ import { LanguageService } from '../../services/language.service';
   standalone: false,
 })
 export class EditProfilePage implements OnInit {
-  profileImage: string | ArrayBuffer | null = 'https://i.pinimg.com/736x/6e/80/c1/6e80c11f8b13904ee1319ed0f85637c4.jpg';
+  profileImage: string | ArrayBuffer | null = null;
   selectedFile: File | null = null;
   
   name: string = '';
@@ -42,6 +42,8 @@ export class EditProfilePage implements OnInit {
         }
         if (user.photo) {
           this.profileImage = user.photo;
+        } else {
+          this.profileImage = null;
         }
       }
     });

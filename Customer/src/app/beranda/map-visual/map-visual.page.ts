@@ -87,6 +87,8 @@ export class MapVisualPage implements OnInit, OnDestroy {
   
   driverEtaText: string = 'Menghitung...';
   tripDistanceKm: number = 0;
+  lastUserLngLat: number[] | null = null;
+  isMapPanned: boolean = false;
   private driverMarker: any = null;
   private pickupMarker: any = null;
   private dropoffMarker: any = null;
@@ -101,8 +103,8 @@ export class MapVisualPage implements OnInit, OnDestroy {
   @ViewChild('sheetContent', { static: false }) sheetContentEl!: ElementRef;
   isDragging: boolean = false;
   startY: number = 0;
-  currentY: number = 60; // 60% down (COLLAPSED)
-  startTranslateY: number = 60;
+  currentY: number = 100; // 100% down (HIDDEN, for initial slide-up)
+  startTranslateY: number = 100;
   backdropOpacity: number = 0;
   contentOverflowY: string = 'hidden';
 
@@ -112,8 +114,8 @@ export class MapVisualPage implements OnInit, OnDestroy {
   noteStartY: number = 0;
   noteStartTranslateY: number = 0;
 
-  readonly COLLAPSED = 60;
-  readonly HALF = 30;
+  readonly COLLAPSED = 0;
+  readonly HALF = 0;
   readonly FULL = 0;
 
 
@@ -266,8 +268,13 @@ export class MapVisualPage implements OnInit, OnDestroy {
               // Order lama yang nyangkut, otomatis batalkan
               this.orderService.cancelOrder(order.id, 'Auto cancelled stale order').subscribe();
               if (!this.isVehicleModalOpen) {
+                this.currentY = 100;
                 this.isVehicleModalOpen = true;
                 this.cdr.detectChanges();
+                setTimeout(() => {
+                  this.setSheetPosition(this.COLLAPSED);
+                  this.cdr.detectChanges();
+                }, 50);
               }
             } else {
               // Order pending yang masih valid
@@ -313,9 +320,13 @@ export class MapVisualPage implements OnInit, OnDestroy {
     // Memberikan sedikit waktu setelah transisi halaman selesai agar modal tidak crash
     setTimeout(() => {
       if (!this.currentOrderId && !this.isSearchingDriver && !this.isDriverFound) {
+        this.currentY = 100;
         this.isVehicleModalOpen = true;
-        this.setSheetPosition(this.COLLAPSED); // Reset position
         this.cdr.detectChanges();
+        setTimeout(() => {
+          this.setSheetPosition(this.COLLAPSED); // Reset position
+          this.cdr.detectChanges();
+        }, 50);
       }
     }, 150);
 
@@ -392,8 +403,13 @@ export class MapVisualPage implements OnInit, OnDestroy {
     }
 
     this.isPageActive = true;
+    this.currentY = 100;
     this.isVehicleModalOpen = true;
-    this.setSheetPosition(this.COLLAPSED);
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.setSheetPosition(this.COLLAPSED);
+      this.cdr.detectChanges();
+    }, 50);
     this.restorePreOrderRoute();
     this.cdr.detectChanges();
   }
@@ -487,6 +503,11 @@ export class MapVisualPage implements OnInit, OnDestroy {
       style: 'mapbox://styles/mapbox/streets-v12',
       center: [this.startCoord[0], this.startCoord[1]] as any,
       zoom: 12
+    });
+
+    this.map.on('dragstart', () => {
+      this.isMapPanned = true;
+      this.cdr.detectChanges();
     });
 
     setTimeout(() => {
@@ -1275,11 +1296,15 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.isNoteModalOpen = false;
 
     setTimeout(() => {
+      this.currentY = 100;
       this.isVehicleModalOpen = true;
-      this.setSheetPosition(this.COLLAPSED);
-      this.isPageActive = true;
-      this.restorePreOrderRoute();
       this.cdr.detectChanges();
+      setTimeout(() => {
+        this.setSheetPosition(this.COLLAPSED);
+        this.isPageActive = true;
+        this.restorePreOrderRoute();
+        this.cdr.detectChanges();
+      }, 50);
     }, 350);
   }
 
@@ -1334,11 +1359,15 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.isNoteModalOpen = false;
     
     setTimeout(() => {
+      this.currentY = 100;
       this.isVehicleModalOpen = true;
-      this.setSheetPosition(this.COLLAPSED);
-      this.isPageActive = true;
-      this.restorePreOrderRoute();
       this.cdr.detectChanges();
+      setTimeout(() => {
+        this.setSheetPosition(this.COLLAPSED);
+        this.isPageActive = true;
+        this.restorePreOrderRoute();
+        this.cdr.detectChanges();
+      }, 50);
     }, 350);
     
     if (this.driverMarker) {
@@ -1606,7 +1635,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
   setSheetPosition(percentage: number) {
     this.currentY = percentage;
-    this.backdropOpacity = Math.max(0, (60 - percentage) / 60) * 0.4;
+    this.backdropOpacity = 0;
   }
 
   handleStart(e: any) {
@@ -1637,7 +1666,8 @@ export class MapVisualPage implements OnInit, OnDestroy {
       const y = e.type === 'mousemove' ? e.pageY : e.touches[0].pageY;
       const delta = y - this.startY;
       
-      const sheetHeight = window.innerHeight - 160; // Approximate height of sheet
+      const element = this.sheetContentEl?.nativeElement?.parentElement;
+      const sheetHeight = element ? element.offsetHeight : 350;
       const deltaPercent = (delta / sheetHeight) * 100;
       
       let nextY = this.startTranslateY + deltaPercent;
@@ -1645,7 +1675,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
       if (nextY < this.FULL) {
         nextY = this.FULL - (Math.pow(this.FULL - nextY, 0.5)); 
       }
-      if (nextY > 75) nextY = 75; 
+      if (nextY > 100) nextY = 100; 
       
       this.setSheetPosition(nextY);
       
@@ -1678,18 +1708,13 @@ export class MapVisualPage implements OnInit, OnDestroy {
     if (this.isDragging) {
       this.isDragging = false;
 
-      if (this.currentY < 15) {
-        this.setSheetPosition(this.FULL);
-        this.contentOverflowY = 'auto';
-      } else if (this.currentY < 45) {
-        this.setSheetPosition(this.HALF);
-        this.contentOverflowY = 'hidden';
+      if (this.currentY > 40) {
+        // Dragged down significantly, cancel/go back
+        this.goBack();
       } else {
-        this.setSheetPosition(this.COLLAPSED);
+        // Snap back to fully open
+        this.setSheetPosition(this.FULL);
         this.contentOverflowY = 'hidden';
-        if (this.sheetContentEl) {
-          this.sheetContentEl.nativeElement.scrollTop = 0;
-        }
       }
     } else if (this.isDraggingNote) {
       this.isDraggingNote = false;
@@ -1722,6 +1747,8 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
+        this.lastUserLngLat = [lng, lat];
+        this.cdr.detectChanges();
 
         if (!this.map) return;
 
@@ -1769,6 +1796,20 @@ export class MapVisualPage implements OnInit, OnDestroy {
       });
     } catch (e) {
       console.warn('Failed to start Geolocation watch:', e);
+    }
+  }
+
+  recenterMapOnUser() {
+    if (this.map && this.lastUserLngLat) {
+      this.isMapPanned = false;
+      this.cdr.detectChanges();
+      
+      this.map.easeTo({
+        center: this.lastUserLngLat as any,
+        zoom: 15,
+        padding: { bottom: 220 }, // Offset center upwards by 220px to avoid bottom sheet obstruction
+        duration: 1000
+      });
     }
   }
 

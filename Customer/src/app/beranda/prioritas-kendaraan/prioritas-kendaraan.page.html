@@ -19,32 +19,14 @@
 
   <div class="content-body">
     <!-- Recent Locations -->
-    <div class="recent-locations">
-      <div class="location-item">
+    <div class="recent-locations" *ngIf="recentLocations && recentLocations.length > 0">
+      <div class="location-item" *ngFor="let loc of recentLocations" (click)="selectLocation(loc)">
         <div class="icon-wrap">
           <ion-icon name="time-outline"></ion-icon>
         </div>
         <div class="loc-text">
-          <h4>Universitas Buana Perjuangan Karawang</h4>
-          <p>Jl. Ronggo Waluyo, Puseurjaya, Telukjambe Timur, Kara...</p>
-        </div>
-      </div>
-      <div class="location-item">
-        <div class="icon-wrap">
-          <ion-icon name="time-outline"></ion-icon>
-        </div>
-        <div class="loc-text">
-          <h4>110 Jalan Wirasaba</h4>
-          <p>Jl. Wirasaba 110, Adiarsa Timur, Karawang Timur, Kara...</p>
-        </div>
-      </div>
-      <div class="location-item">
-        <div class="icon-wrap">
-          <ion-icon name="location" class="dark-pin"></ion-icon>
-        </div>
-        <div class="loc-text">
-          <h4>No.110 Jalan Wirasaba RT.1/RW.21</h4>
-          <p>Jl. Wirasaba No.110 RT.1/RW.21, Adiarsa Timur, Karawa...</p>
+          <h4>{{ loc.name }}</h4>
+          <p>{{ loc.address }}</p>
         </div>
       </div>
     </div>

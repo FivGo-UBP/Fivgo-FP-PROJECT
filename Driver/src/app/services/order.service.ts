@@ -118,4 +118,23 @@ export class OrderService {
   getDriverPerformance(): Observable<DriverPerformance> {
     return this.http.get<DriverPerformance>(`${environment.apiUrl}/drivers/performance`);
   }
+
+  // ─── Wallet Endpoints ──────────────────────────────────────────────────────
+
+  getWalletBalance(): Observable<{ balance: number; transactions: any[] }> {
+    return this.http.get<{ balance: number; transactions: any[] }>(`${environment.apiUrl}/wallet/balance`);
+  }
+
+  initiateTopUp(amount: number, method: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/wallet/topup`, { amount, method });
+  }
+
+  withdraw(amount: number, bankName: string, accountNumber: string, accountName: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/wallet/withdraw`, {
+      amount,
+      bank_name: bankName,
+      account_number: accountNumber,
+      account_name: accountName
+    });
+  }
 }

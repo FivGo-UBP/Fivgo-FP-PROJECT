@@ -20,6 +20,7 @@ export class HomePage implements OnInit, OnDestroy {
   mapUrl: SafeResourceUrl | null = null;
   private map: any = null;
   private driverMarker: any = null;
+  private isInitializingOffline: boolean = false;
 
   // State orderan masuk
   incomingOrder: ActiveOrder | null = null;
@@ -168,6 +169,39 @@ export class HomePage implements OnInit, OnDestroy {
 
   syncDriverStatus() {
     console.log('[DriverDebug] syncDriverStatus called');
+    
+    // Periksa jika ini adalah inisialisasi awal sesi aplikasi
+    const isSessionInitialized = sessionStorage.getItem('driver_session_initialized');
+    if (!isSessionInitialized) {
+      console.log('[DriverDebug] First session initialization. Forcing status to offline.');
+      sessionStorage.setItem('driver_session_initialized', 'true');
+      this.isInitializingOffline = true;
+      this.isOnline = false;
+      this.updateLocalUserStatus('offline');
+      this.stopPolling();
+      this.stopLocationUpdates();
+      this.isOrderModalOpen = false;
+      this.incomingOrder = null;
+      
+      // Update status ke offline di server
+      this.orderService.updateDriverStatus('offline').subscribe({
+        next: () => {
+          console.log('[DriverDebug] Driver status forced to offline on server');
+          this.isInitializingOffline = false;
+        },
+        error: (err) => {
+          console.error('[DriverDebug] Error forcing offline status on server', err);
+          this.isInitializingOffline = false;
+        }
+      });
+      return;
+    }
+    
+    if (this.isInitializingOffline) {
+      console.log('[DriverDebug] Skipping sync because offline initialization is in progress');
+      return;
+    }
+
     // 1. Coba baca status awal dari localStorage agar instan
     const userStr = localStorage.getItem('user');
     console.log('[DriverDebug] LocalStorage user string:', userStr);

@@ -40,9 +40,12 @@ class OrderController extends Controller
             $validated['estimated_price'] = rand(10000, 50000);
         }
 
-        // Temukan driver aktif terdekat yang benar-benar aktif/online dalam 60 detik terakhir (Heartbeat Check)
+        // Temukan driver aktif terdekat yang benar-benar aktif/online dalam 60 detik terakhir (Heartbeat Check) dan memiliki saldo >= -50000
         $closestDriver = \App\Models\DriverProfile::where('status', 'online')
             ->where('updated_at', '>=', now()->subSeconds(60))
+            ->whereHas('user', function($q) {
+                $q->where('wallet_balance', '>=', -50000);
+            })
             ->whereNotNull('current_lat')
             ->whereNotNull('current_lng')
             ->selectRaw("*, ( 6371 * acos( cos( radians(?) ) *
@@ -119,9 +122,12 @@ class OrderController extends Controller
                     $excludedDriverIds = explode(',', $idsStr);
                 }
 
-                // Find next closest active driver that is truly online/active in the last 60 seconds (Heartbeat Check)
+                // Find next closest active driver that is truly online/active in the last 60 seconds (Heartbeat Check) dan memiliki saldo >= -50000
                 $closestDriver = \App\Models\DriverProfile::where('status', 'online')
                     ->where('updated_at', '>=', now()->subSeconds(60))
+                    ->whereHas('user', function($q) {
+                        $q->where('wallet_balance', '>=', -50000);
+                    })
                     ->whereNotIn('user_id', $excludedDriverIds)
                     ->whereNotNull('current_lat')
                     ->whereNotNull('current_lng')
@@ -260,15 +266,63 @@ class OrderController extends Controller
             ->where('status', 'started')
             ->findOrFail($id);
             
-        $order->update([
-            'status' => 'completed',
-            'final_price' => $order->final_price ?? $order->estimated_price
-        ]);
-        
-        // Reset driver status to online if busy
-        if ($request->user()->driverProfile && $request->user()->driverProfile->status === 'busy') {
-            $request->user()->driverProfile->update(['status' => 'online']);
-        }
+        $vehicleType = strtolower($order->vehicle_type ?? 'motor');
+        $commissionRate = ($vehicleType === 'mobil') ? 0.15 : 0.10;
+        $driverShareRate = 1 - $commissionRate;
+
+        $finalPrice = $order->final_price ?? $order->estimated_price;
+        $commissionAmount = (int) round($finalPrice * $commissionRate);
+        $driverShareAmount = (int) round($finalPrice * $driverShareRate);
+
+        $paymentMethod = strtolower($order->payment_method ?? 'cash');
+        $isCash = in_array($paymentMethod, ['tunai', 'cash'], true);
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($order, $request, $vehicleType, $commissionAmount, $driverShareAmount, $isCash) {
+            $order->update([
+                'status' => 'completed',
+                'final_price' => $order->final_price ?? $order->estimated_price
+            ]);
+
+            $driver = $order->driver;
+            if ($driver) {
+                if ($isCash) {
+                    // 1. Potong komisi dari saldo dompet driver
+                    $driver->decrement('wallet_balance', $commissionAmount);
+
+                    // 2. Catat transaksi komisi (debit/minus)
+                    \App\Models\WalletTransaction::create([
+                        'id' => (string) \Illuminate\Support\Str::uuid(),
+                        'user_id' => $driver->id,
+                        'amount' => -$commissionAmount,
+                        'type' => 'commission',
+                        'status' => 'success',
+                        'reference' => 'FIVGO-COMMISSION-' . $order->id . '-' . \Illuminate\Support\Str::upper(\Illuminate\Support\Str::random(8)),
+                        'payment_method' => 'cash',
+                        'description' => 'Potongan Komisi Perjalanan ' . ucfirst($vehicleType) . ' (Order #' . substr($order->id, 0, 8) . ')',
+                    ]);
+                } else {
+                    // 1. Tambahkan bagi hasil bersih ke saldo dompet driver
+                    $driver->increment('wallet_balance', $driverShareAmount);
+
+                    // 2. Catat transaksi pendapatan (kredit/plus)
+                    \App\Models\WalletTransaction::create([
+                        'id' => (string) \Illuminate\Support\Str::uuid(),
+                        'user_id' => $driver->id,
+                        'amount' => $driverShareAmount,
+                        'type' => 'income',
+                        'status' => 'success',
+                        'reference' => 'FIVGO-INCOME-' . $order->id . '-' . \Illuminate\Support\Str::upper(\Illuminate\Support\Str::random(8)),
+                        'payment_method' => 'wallet',
+                        'description' => 'Pendapatan Perjalanan ' . ucfirst($vehicleType) . ' (Order #' . substr($order->id, 0, 8) . ')',
+                    ]);
+                }
+            }
+
+            // Reset driver status to online if busy
+            if ($request->user()->driverProfile && $request->user()->driverProfile->status === 'busy') {
+                $request->user()->driverProfile->update(['status' => 'online']);
+            }
+        });
         
         return response()->json($order);
     }

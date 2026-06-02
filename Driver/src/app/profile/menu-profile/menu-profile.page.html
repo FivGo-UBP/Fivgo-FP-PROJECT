@@ -61,7 +61,7 @@
   </div>
 
   <div class="bottom-actions">
-    <ion-button expand="block" fill="outline" class="logout-btn" shape="round">
+    <ion-button expand="block" fill="outline" class="logout-btn" shape="round" (click)="confirmLogout()">
       <ion-icon name="log-out-outline" slot="start"></ion-icon>
       Keluar
     </ion-button>
@@ -70,6 +70,24 @@
       <ion-button fill="clear" color="danger" class="delete-account-btn">
         Hapus Akun
       </ion-button>
+    </div>
+  </div>
+
+  <!-- Custom Logout Modal Overlay -->
+  <div class="logout-modal-overlay" *ngIf="showLogoutConfirm">
+    <div class="logout-modal-backdrop" (click)="showLogoutConfirm = false"></div>
+    <div class="logout-modal-card">
+      <div class="logout-modal-icon-container">
+        <ion-icon name="log-out-outline"></ion-icon>
+      </div>
+      <h2 class="logout-modal-title">Keluar dari Akun</h2>
+      <p class="logout-modal-message">
+        Yakin ingin keluar? Kamu harus masuk kembali untuk bisa menerima orderan dan melihat riwayat pendapatanmu
+      </p>
+      <div class="logout-modal-actions">
+        <button class="btn-cancel" (click)="showLogoutConfirm = false">Batal</button>
+        <button class="btn-confirm" (click)="logout()">Ya, Keluar</button>
+      </div>
     </div>
   </div>
 </ion-content>

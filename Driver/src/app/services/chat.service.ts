@@ -54,6 +54,7 @@ export class ChatService implements OnDestroy {
     this.echo.private(`chat.${orderId}`)
       .listen('.MessageSent', (data: ChatMessage) => {
         const current = this.messagesSubject.getValue();
+        if (current.some(m => m.id === data.id)) return;
         this.messagesSubject.next([...current, data]);
       });
   }
@@ -77,6 +78,7 @@ export class ChatService implements OnDestroy {
 
   pushMessage(msg: ChatMessage) {
     const current = this.messagesSubject.getValue();
+    if (current.some(m => m.id === msg.id)) return;
     this.messagesSubject.next([...current, msg]);
   }
 

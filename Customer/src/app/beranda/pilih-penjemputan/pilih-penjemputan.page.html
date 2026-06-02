@@ -71,6 +71,22 @@
   <!-- Saved Locations (Tersimpan) -->
   <div class="location-list" *ngIf="activeTab === 'tersimpan' && !isSearching && searchKeyword === ''">
     
+    <!-- Saved Location Items -->
+    <div class="loc-item" *ngFor="let loc of savedLocations" (click)="selectResult(loc)">
+      <div class="icon-wrap">
+        <div class="circle-icon" style="background-color: #168356;">
+          <ion-icon [name]="getSavedIcon(loc.label)"></ion-icon>
+        </div>
+      </div>
+      <div class="text-wrap">
+        <h4>{{ loc.label }}</h4>
+        <p>{{ loc.address }}</p>
+      </div>
+      <div class="action-wrap" (click)="deleteSavedLocation(loc, $event)">
+        <ion-icon name="trash-outline" style="color: #ef4444; font-size: 20px;"></ion-icon>
+      </div>
+    </div>
+
     <!-- Tambah baru -->
     <div class="loc-item" routerLink="/simpan-lokasi">
       <div class="icon-wrap">

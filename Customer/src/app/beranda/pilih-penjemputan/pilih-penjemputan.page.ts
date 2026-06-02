@@ -22,6 +22,7 @@ export class PilihPenjemputanPage implements OnInit {
   currentLat: number = 0;
   currentLng: number = 0;
   currentLocationName: string = 'Mencari lokasi...';
+  savedLocations: any[] = [];
 
   constructor(
     private tomtomService: TomtomService,
@@ -32,6 +33,11 @@ export class PilihPenjemputanPage implements OnInit {
   ngOnInit() {
     this.getCurrentLocation();
     this.loadHistory();
+    this.loadSavedLocations();
+  }
+
+  ionViewWillEnter() {
+    this.loadSavedLocations();
   }
 
   setTab(tab: string) {
@@ -178,4 +184,43 @@ export class PilihPenjemputanPage implements OnInit {
     this.router.navigate(['/cari-lokasi']);
   }
 
+  loadSavedLocations() {
+    const stored = localStorage.getItem('savedLocations');
+    if (stored) {
+      try {
+        this.savedLocations = JSON.parse(stored);
+      } catch (e) {
+        this.savedLocations = [];
+      }
+    } else {
+      this.savedLocations = [];
+    }
+  }
+
+  deleteSavedLocation(loc: any, event: Event) {
+    event.stopPropagation();
+    const stored = localStorage.getItem('savedLocations');
+    if (stored) {
+      try {
+        let saved = JSON.parse(stored);
+        saved = saved.filter((i: any) => i.name !== loc.name || i.address !== loc.address);
+        localStorage.setItem('savedLocations', JSON.stringify(saved));
+        this.savedLocations = saved;
+      } catch (e) {
+        console.error('Error deleting saved location', e);
+      }
+    }
+  }
+
+  getSavedIcon(label: string): string {
+    const cleanLabel = (label || '').toLowerCase().trim();
+    if (cleanLabel === 'rumah') {
+      return 'home';
+    } else if (cleanLabel === 'kantor') {
+      return 'briefcase';
+    } else if (cleanLabel === 'lainnya') {
+      return 'location';
+    }
+    return 'bookmark';
+  }
 }

@@ -1,13 +1,247 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>wallet</ion-title>
+<ion-header class="ion-no-border">
+  <ion-toolbar color="warning">
+    <ion-title class="header-title">Dompet FivGo Pay</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">wallet</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="wallet-content">
+  <div class="wallet-container">
+    
+    <!-- Balance Card -->
+    <div class="balance-card">
+      <div class="card-glow"></div>
+      <span class="card-eyebrow">Saldo Driver Aktif</span>
+      <h1 class="card-balance" [class.is-minus]="balance < 0">
+        {{ balance < 0 ? '-' : '' }}Rp{{ (balance < 0 ? -balance : balance) | number:'1.0-0':'id-ID' }}
+      </h1>
+      
+      <div class="card-actions">
+        <div class="action-btn" (click)="openTopUpModal()">
+          <div class="action-icon-wrap topup">
+            <ion-icon name="arrow-down-outline"></ion-icon>
+          </div>
+          <span>Isi Saldo</span>
+        </div>
+        
+        <div class="action-btn" (click)="openWithdrawModal()">
+          <div class="action-icon-wrap withdraw">
+            <ion-icon name="arrow-up-outline"></ion-icon>
+          </div>
+          <span>Tarik Saldo</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert / Warning Banners -->
+    <div class="warning-banner critical" *ngIf="balance < -50000">
+      <ion-icon name="alert-circle"></ion-icon>
+      <div class="warning-text">
+        <h4>Akun Ditangguhkan</h4>
+        <p>Saldo Anda berada di bawah batas minimum (-Rp50.000). Harap lakukan Top Up agar bisa menerima pesanan kembali.</p>
+      </div>
+    </div>
+
+    <div class="warning-banner warning" *ngIf="balance < 0 && balance >= -50000">
+      <ion-icon name="warning-outline"></ion-icon>
+      <div class="warning-text">
+        <h4>Saldo Anda Minus</h4>
+        <p>Batas maksimal saldo minus adalah -Rp50.000. Segera lakukan Top Up atau ambil order non-tunai sebelum akun Anda ditangguhkan.</p>
+      </div>
+    </div>
+
+    <!-- Transaction History Section -->
+    <div class="history-section">
+      <div class="section-header">
+        <h3>Riwayat Transaksi</h3>
+        <ion-button fill="clear" size="small" color="warning" (click)="loadData()" [disabled]="isLoading">
+          <ion-icon slot="icon-only" name="refresh-outline" [class.spinning]="isLoading"></ion-icon>
+        </ion-button>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="isLoading && transactions.length === 0">
+        <ion-spinner name="crescent" color="warning"></ion-spinner>
+        <span>Memuat riwayat transaksi...</span>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="!isLoading && transactions.length === 0">
+        <img src="assets/driver-not-found.png" alt="No transaction" class="empty-img">
+        <h4>Belum ada transaksi</h4>
+        <p>Semua mutasi saldo (pendapatan, komisi, top up, dan withdraw) akan tercantum di sini.</p>
+      </div>
+
+      <!-- Transaction List -->
+      <ion-list lines="full" class="tx-list" *ngIf="transactions.length > 0">
+        <ion-item class="tx-item" *ngFor="let tx of transactions">
+          <div class="tx-icon-container" slot="start" [class.in]="tx.amount > 0" [class.out]="tx.amount <= 0">
+            <ion-icon [name]="getTransactionIcon(tx.type)"></ion-icon>
+          </div>
+          <ion-label class="tx-label">
+            <h3>{{ getTransactionLabel(tx) }}</h3>
+            <p>{{ tx.created_at | date:'dd MMM yyyy, HH:mm':'':'id-ID' }}</p>
+          </ion-label>
+          <div slot="end" class="tx-amount-status">
+            <span class="tx-amount" [class.is-positive]="tx.amount > 0 && tx.status === 'success'" [class.is-negative]="tx.amount <= 0 && tx.status === 'success'">
+              {{ tx.amount > 0 ? '+' : '' }}Rp{{ tx.amount | number:'1.0-0':'id-ID' }}
+            </span>
+            <span class="status-badge" [class.success]="tx.status === 'success'" [class.pending]="tx.status === 'pending'" [class.failed]="tx.status === 'failed'">
+              {{ tx.status === 'success' ? 'Sukses' : (tx.status === 'pending' ? 'Diproses' : 'Gagal') }}
+            </span>
+          </div>
+        </ion-item>
+      </ion-list>
+    </div>
+
+  </div>
 </ion-content>
+
+<!-- ========================================== -->
+<!-- MODAL 1: TOP UP FORM                       -->
+<!-- ========================================== -->
+<div class="custom-backdrop-solid" *ngIf="isTopUpModalOpen" (click)="closeTopUpModal()"></div>
+<div class="custom-bottom-sheet-wrap" *ngIf="isTopUpModalOpen">
+  <div class="sheet-header">
+    <div class="modal-handle"></div>
+  </div>
+  <div class="sheet-container">
+    <h3 class="modal-title">Isi Saldo Dompet</h3>
+    <p class="modal-subtitle">Masukkan nominal pengisian saldo FivGo Pay Driver.</p>
+
+    <!-- Nominal Inputs -->
+    <div class="amount-input-group">
+      <span class="currency-symbol">Rp</span>
+      <input type="number" [(ngModel)]="topUpAmount" placeholder="Min 10.000" min="10000" class="input-field amount-input" />
+    </div>
+
+    <!-- Quick select amount chips -->
+    <div class="chips-container">
+      <div class="chip" [class.active]="topUpAmount === 20000" (click)="topUpAmount = 20000">Rp20.000</div>
+      <div class="chip" [class.active]="topUpAmount === 50000" (click)="topUpAmount = 50000">Rp50.000</div>
+      <div class="chip" [class.active]="topUpAmount === 100000" (click)="topUpAmount = 100000">Rp100.000</div>
+      <div class="chip" [class.active]="topUpAmount === 200000" (click)="topUpAmount = 200000">Rp200.000</div>
+    </div>
+
+    <!-- Payment Methods -->
+    <h4 class="sub-section-title">Pilih Metode Pembayaran</h4>
+    <div class="payment-method-options">
+      <div class="payment-option-card" *ngFor="let opt of paymentOptions" 
+           [class.selected]="selectedPaymentMethod === opt.code" 
+           (click)="selectedPaymentMethod = opt.code">
+        <ion-icon [name]="opt.code === 'qris' ? 'qr-code-outline' : 'card-outline'"></ion-icon>
+        <span>{{ opt.label }}</span>
+        <ion-icon name="checkmark-circle" class="check-icon" *ngIf="selectedPaymentMethod === opt.code"></ion-icon>
+      </div>
+    </div>
+
+    <ion-button expand="block" color="warning" class="modal-submit-btn" (click)="submitTopUp()">
+      Buat Pembayaran
+    </ion-button>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL 2: WITHDRAWAL FORM                   -->
+<!-- ========================================== -->
+<div class="custom-backdrop-solid" *ngIf="isWithdrawModalOpen" (click)="closeWithdrawModal()"></div>
+<div class="custom-bottom-sheet-wrap" *ngIf="isWithdrawModalOpen">
+  <div class="sheet-header">
+    <div class="modal-handle"></div>
+  </div>
+  <div class="sheet-container">
+    <h3 class="modal-title">Tarik Saldo</h3>
+    <p class="modal-subtitle">Ajukan pencairan saldo dompet ke rekening bank Anda.</p>
+
+    <!-- Nominal input -->
+    <div class="amount-input-group">
+      <span class="currency-symbol">Rp</span>
+      <input type="number" [(ngModel)]="withdrawAmount" placeholder="Min 20.000" min="20000" class="input-field amount-input" />
+    </div>
+    <span class="info-label">Saldo Aktif: Rp{{ balance | number:'1.0-0':'id-ID' }} (Min penarikan Rp20k)</span>
+
+    <!-- Bank Details Form -->
+    <div class="form-group">
+      <label class="input-label">Pilih Bank Tujuan</label>
+      <select class="select-field" [(ngModel)]="bankName">
+        <option value="BCA">Bank Central Asia (BCA)</option>
+        <option value="Mandiri">Bank Mandiri</option>
+        <option value="BNI">Bank Negara Indonesia (BNI)</option>
+        <option value="BRI">Bank Rakyat Indonesia (BRI)</option>
+        <option value="DANA">DANA (E-Wallet)</option>
+        <option value="GoPay">GoPay (E-Wallet)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="input-label">Nomor Rekening / No. HP</label>
+      <input type="text" [(ngModel)]="accountNumber" placeholder="Masukkan nomor rekening/No. HP" class="input-field" />
+    </div>
+
+    <div class="form-group">
+      <label class="input-label">Nama Pemilik Rekening</label>
+      <input type="text" [(ngModel)]="accountName" placeholder="Masukkan nama pemilik rekening" class="input-field" />
+    </div>
+
+    <ion-button expand="block" color="warning" class="modal-submit-btn" (click)="submitWithdraw()">
+      Ajukan Penarikan
+    </ion-button>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL 3: PAYMENT GATEWAY (DOMPETX)         -->
+<!-- ========================================== -->
+<div class="custom-backdrop-solid" *ngIf="isPaymentGatewayOpen"></div>
+<div class="custom-bottom-sheet-wrap payment-gateway-wrap" *ngIf="isPaymentGatewayOpen">
+  <div class="payment-gateway-container">
+    <div class="gateway-header">
+      <div>
+        <span class="gateway-eyebrow">DompetX</span>
+        <h2>Top Up Gateway</h2>
+      </div>
+      <span class="gateway-status" [class.is-error]="paymentError">
+        {{ paymentError ? 'Gagal' : (isCreatingPayment ? 'Membuat' : getPaymentStatusLabel()) }}
+      </span>
+    </div>
+
+    <p class="gateway-subtitle">Selesaikan pengisian saldo dompet menggunakan channel di bawah ini.</p>
+
+    <!-- Loading state inside gateway -->
+    <div class="dompetx-loading" *ngIf="isCreatingPayment">
+      <ion-spinner name="crescent" color="warning"></ion-spinner>
+      <span>Menyiapkan detail pembayaran...</span>
+    </div>
+
+    <!-- Error state inside gateway -->
+    <div class="dompetx-error" *ngIf="paymentError && !isCreatingPayment">
+      <span>{{ paymentError }}</span>
+    </div>
+
+    <!-- Payment info details -->
+    <ng-container *ngIf="paymentInfo && !isCreatingPayment">
+      <!-- QRIS QR Code -->
+      <img *ngIf="getPaymentQrImage()" [src]="getPaymentQrImage()" alt="QRIS DompetX" class="dompetx-qr" />
+
+      <!-- VA Information -->
+      <div class="dompetx-code" *ngIf="getPaymentVaBankName() && getPaymentVaNumber()">
+        <span>Bank</span>
+        <strong>{{ getPaymentVaBankName() }}</strong>
+      </div>
+
+      <div class="dompetx-code" *ngIf="getPaymentVaNumber()">
+        <span>Nomor Virtual Account</span>
+        <strong class="va-number">{{ getPaymentVaNumber() }}</strong>
+      </div>
+
+      <div class="dompetx-ref" *ngIf="getPaymentReference()">
+        <span>Ref Transaksi</span>
+        <strong>{{ getPaymentReference() }}</strong>
+      </div>
+    </ng-container>
+
+    <!-- Actions -->
+    <ion-button expand="block" color="warning" class="btn-confirm-payment" [disabled]="isCreatingPayment || !paymentInfo" (click)="closePaymentGateway()">
+      Selesai / Saya Sudah Bayar
+    </ion-button>
+  </div>
+</div>

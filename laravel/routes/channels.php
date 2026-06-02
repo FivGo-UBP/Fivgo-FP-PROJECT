@@ -11,5 +11,5 @@ Broadcast::channel('chat.{orderId}', function ($user, $orderId) {
     if (!$order) {
         return false;
     }
-    return $user->id === $order->user_id || $user->id === $order->driver_id;
+    return $user->id === $order->customer_id || $user->id === $order->driver_id;
 });

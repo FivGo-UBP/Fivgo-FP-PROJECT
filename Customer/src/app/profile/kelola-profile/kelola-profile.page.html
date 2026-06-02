@@ -9,8 +9,11 @@
 <ion-content [fullscreen]="true" class="bg-light-grey">
   <div class="profile-header bg-orange">
     <div class="avatar-container">
-      <!-- Menggunakan foto dari desain jika ada, atau foto placeholder -->
-      <img [src]="user?.photo || 'https://i.pinimg.com/736x/6e/80/c1/6e80c11f8b13904ee1319ed0f85637c4.jpg'" alt="Profile" referrerpolicy="no-referrer" />
+      <!-- Menggunakan foto dari desain jika ada, atau fallback inisial nama -->
+      <img *ngIf="user?.photo" [src]="user?.photo" alt="Profile" referrerpolicy="no-referrer" />
+      <div *ngIf="!user?.photo" class="avatar-fallback">
+        {{ user?.name?.charAt(0)?.toUpperCase() || 'U' }}
+      </div>
     </div>
     <h2 class="profile-name">{{ user?.name || '...' }}</h2>
     <p class="profile-phone">
@@ -98,5 +101,23 @@
       <ion-icon slot="start" name="log-out-outline"></ion-icon>
       {{ t('menu.logout') }}
     </ion-button>
+  </div>
+
+  <!-- Custom Logout Modal Overlay -->
+  <div class="logout-modal-overlay" *ngIf="showLogoutConfirm">
+    <div class="logout-modal-backdrop" (click)="showLogoutConfirm = false"></div>
+    <div class="logout-modal-card">
+      <div class="logout-modal-icon-container">
+        <ion-icon name="log-out-outline"></ion-icon>
+      </div>
+      <h2 class="logout-modal-title">{{ t('alert.logout.title') }}</h2>
+      <p class="logout-modal-message">
+        {{ t('alert.logout.msg') }}
+      </p>
+      <div class="logout-modal-actions">
+        <button class="btn-cancel" (click)="showLogoutConfirm = false">{{ t('alert.cancel') }}</button>
+        <button class="btn-confirm" (click)="logout()">{{ t('alert.yes') }}</button>
+      </div>
+    </div>
   </div>
 </ion-content>
