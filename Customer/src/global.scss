@@ -9,6 +9,26 @@
  * https://ionicframework.com/docs/layout/global-stylesheets
  */
 
+/* ─── Global Font: Plus Jakarta Sans ───────────────────────────── */
+* {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+:root {
+  --ion-font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ─── Global Background Color ───────────────────────────────────── */
+ion-content {
+  --background: #E5E7EB;
+}
+
+/* ─── Global Header Gradient (sama seperti halaman Payment) ─────── */
+ion-toolbar {
+  --background: linear-gradient(135deg, #f09410 0%, #bc430d 100%) !important;
+  --color: #ffffff !important;
+}
+
 /* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
 
@@ -81,3 +101,36 @@ ion-tabs ion-router-outlet > .ion-page {
 }
 
 @import 'mapbox-gl/dist/mapbox-gl.css';  
+
+/* ─── Global Rounded Headers (Custom Design) ───────────────────── */
+ion-header {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+
+  &::after {
+    display: none !important; /* Removes default iOS bottom border line shadow */
+  }
+
+  ion-toolbar {
+    border-radius: 0 0 45px 45px; /* Larger curved bottom corners */
+    overflow: hidden;
+    --border-style: none; /* Removes default border style in Ionic toolbar */
+    --min-height: 90px; /* Much taller toolbar for clear visibility */
+    --padding-top: 14px; /* More top padding for breathing room */
+    --padding-bottom: 14px; /* More bottom padding */
+  }
+}
+
+/* Override: Restore straight header for Kelola Profile page */
+app-kelola-profile ion-header {
+  background: transparent !important;
+
+  ion-toolbar {
+    border-radius: 0;
+    overflow: visible;
+    --min-height: 56px; /* Restore standard height for kelola-profile */
+    --padding-top: 0px;
+    --padding-bottom: 0px;
+  }
+}

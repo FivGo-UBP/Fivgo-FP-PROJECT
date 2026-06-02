@@ -5,17 +5,10 @@ ion-content.bg-light {
 /* ===== HEADER ===== */
 .header-section {
   background-color: #F79F1A;
-  padding: 10px 16px 0;
+  padding: 30px 24px 20px;
   display: flex;
   flex-direction: column;
-
-  .header-title {
-    color: #ffffff;
-    font-size: 18px;
-    font-weight: 700;
-    margin: 0;
-    padding: 6px 0 10px;
-  }
+  border-radius: 0 0 45px 45px;
 }
 
 .chat-active-header {
