@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { ChatService, ChatMessage } from '../../services/chat.service';
@@ -24,6 +24,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
   currentUserId: string | null = null;
   isLoading = true;
   activeOrder: ActiveOrder | null = null;
+  conversations: any[] = [];
 
   // Image attachment state
   selectedImage: File | null = null;
@@ -31,6 +32,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
   isSending = false;
 
   private msgSub: Subscription | null = null;
+  private queryParamsSub: Subscription | null = null;
   private shouldScrollBottom = false;
 
   constructor(
@@ -38,41 +40,53 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
     private chatService: ChatService,
     private authService: AuthService,
     private route: ActivatedRoute,
+    private router: Router,
     private orderService: OrderService,
     private location: Location
   ) {}
 
   ngOnInit() {
-    this.orderId = this.route.snapshot.queryParamMap.get('order_id');
     const user = this.authService.currentUserValue;
     this.currentUserId = user?.id ?? null;
     const token = this.authService.getToken();
 
-    if (this.orderId && token) {
-      this.orderService.getActiveOrder().subscribe({
-        next: (order) => {
-          this.activeOrder = order;
-        }
-      });
+    this.queryParamsSub = this.route.queryParams.subscribe(params => {
+      this.orderId = params['order_id'] ?? null;
+      this.isLoading = true;
 
-      this.chatService.connect(this.orderId, token);
+      // Disconnect previous Echo channel
+      this.chatService.disconnect();
+      if (this.msgSub) {
+        this.msgSub.unsubscribe();
+        this.msgSub = null;
+      }
 
-      this.chatService.loadMessages(this.orderId).subscribe({
-        next: (res) => {
-          this.chatService.setMessages(res.data);
-          this.isLoading = false;
+      if (this.orderId && token) {
+        this.orderService.getActiveOrder().subscribe({
+          next: (order) => {
+            this.activeOrder = order;
+          }
+        });
+
+        this.chatService.connect(this.orderId, token);
+
+        this.chatService.loadMessages(this.orderId).subscribe({
+          next: (res) => {
+            this.chatService.setMessages(res.data);
+            this.isLoading = false;
+            this.shouldScrollBottom = true;
+          },
+          error: () => { this.isLoading = false; }
+        });
+
+        this.msgSub = this.chatService.messages$.subscribe(msgs => {
+          this.messages = msgs;
           this.shouldScrollBottom = true;
-        },
-        error: () => { this.isLoading = false; }
-      });
-
-      this.msgSub = this.chatService.messages$.subscribe(msgs => {
-        this.messages = msgs;
-        this.shouldScrollBottom = true;
-      });
-    } else {
-      this.isLoading = false;
-    }
+        });
+      } else {
+        this.loadConversationsList();
+      }
+    });
   }
 
   ngAfterViewChecked() {
@@ -148,8 +162,26 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
     return this.langService.translate(key);
   }
 
+  loadConversationsList() {
+    this.isLoading = true;
+    this.chatService.loadConversations().subscribe({
+      next: (res) => {
+        this.conversations = res.data;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.isLoading = false;
+      }
+    });
+  }
+
+  openChatRoom(orderId: string) {
+    this.router.navigate(['/tabs/pesan'], { queryParams: { order_id: orderId } });
+  }
+
   ngOnDestroy() {
     this.msgSub?.unsubscribe();
+    this.queryParamsSub?.unsubscribe();
     this.chatService.disconnect();
   }
 

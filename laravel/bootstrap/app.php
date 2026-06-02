@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule): void {
         $schedule->command('drivers:cleanup-stale')->everyMinute();
+        $schedule->command('chats:purge-old')->daily();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

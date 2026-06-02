@@ -226,6 +226,11 @@ class OrderController extends Controller
             'status' => 'accepted'
         ]);
 
+        // Set driver status to busy
+        if ($request->user()->driverProfile) {
+            $request->user()->driverProfile->update(['status' => 'busy']);
+        }
+
         return response()->json($order);
     }
 
@@ -259,6 +264,11 @@ class OrderController extends Controller
             'status' => 'completed',
             'final_price' => $order->final_price ?? $order->estimated_price
         ]);
+        
+        // Reset driver status to online if busy
+        if ($request->user()->driverProfile && $request->user()->driverProfile->status === 'busy') {
+            $request->user()->driverProfile->update(['status' => 'online']);
+        }
         
         return response()->json($order);
     }
@@ -334,6 +344,11 @@ class OrderController extends Controller
                 'status' => 'cancelled',
                 'cancel_reason' => $request->input('reason', 'User cancelled')
             ]);
+            
+            // Reset driver status to online if busy
+            if ($order->driver && $order->driver->driverProfile && $order->driver->driverProfile->status === 'busy') {
+                $order->driver->driverProfile->update(['status' => 'online']);
+            }
         });
 
         return response()->json($order);
@@ -361,6 +376,11 @@ class OrderController extends Controller
             'status' => 'pending',
             'cancel_reason' => $rejectedList
         ]);
+
+        // Reset driver status to online if busy
+        if ($request->user()->driverProfile && $request->user()->driverProfile->status === 'busy') {
+            $request->user()->driverProfile->update(['status' => 'online']);
+        }
 
         return response()->json($order);
     }
@@ -424,6 +444,11 @@ class OrderController extends Controller
             'status' => 'cancelled',
             'cancel_reason' => "Auto cancelled stale {$order->status} order",
         ]);
+
+        // Reset driver status to online if busy
+        if ($order->driver && $order->driver->driverProfile && $order->driver->driverProfile->status === 'busy') {
+            $order->driver->driverProfile->update(['status' => 'online']);
+        }
 
         return true;
     }

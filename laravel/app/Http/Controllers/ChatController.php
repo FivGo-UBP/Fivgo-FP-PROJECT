@@ -75,4 +75,56 @@ class ChatController extends Controller
 
         return response()->json($chat, 201);
     }
+
+    public function getConversations(Request $request)
+    {
+        $userId = $request->user()->id;
+
+        // Fetch chats where the user is sender or receiver, ordered by latest first
+        $chats = Chat::where('sender_id', $userId)
+            ->orWhere('receiver_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $grouped = $chats->groupBy('order_id');
+
+        $conversations = [];
+
+        foreach ($grouped as $orderId => $orderChats) {
+            $latestChat = $orderChats->first();
+            $order = Order::with(['customer', 'driver'])->find($orderId);
+
+            if (!$order) {
+                continue;
+            }
+
+            // Determine other participant
+            $otherUser = null;
+            if ($order->customer_id === $userId) {
+                $otherUser = $order->driver;
+            } else if ($order->driver_id === $userId) {
+                $otherUser = $order->customer;
+            }
+
+            // Calculate unread count for current user
+            $unreadCount = $orderChats->where('receiver_id', $userId)->where('is_read', false)->count();
+
+            // Structure conversation item
+            $conversations[] = [
+                'order_id' => $orderId,
+                'last_message' => $latestChat->message ?: '[Gambar]',
+                'last_message_time' => $latestChat->created_at->toIso8601String(),
+                'unread_count' => $unreadCount,
+                'other_user' => $otherUser ? [
+                    'id' => $otherUser->id,
+                    'name' => $otherUser->name,
+                    'photo' => $otherUser->photo,
+                    'role' => $otherUser->role,
+                ] : null,
+                'order_status' => $order->status,
+            ];
+        }
+
+        return response()->json(['data' => $conversations]);
+    }
 }

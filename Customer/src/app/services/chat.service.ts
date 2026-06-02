@@ -58,6 +58,10 @@ export class ChatService implements OnDestroy {
       });
   }
 
+  loadConversations() {
+    return this.http.get<{ data: any[] }>(`${environment.apiUrl}/chats`);
+  }
+
   loadMessages(orderId: string) {
     return this.http.get<{ data: ChatMessage[] }>(`${environment.apiUrl}/chats/${orderId}`);
   }

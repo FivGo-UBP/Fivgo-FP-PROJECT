@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 import { TomtomService } from '../../services/tomtom.service';
 import { OrderService, ActiveOrder, PaymentRecord } from '../../services/order.service';
 import { ToastController, NavController } from '@ionic/angular';
+import { Geolocation } from '@capacitor/geolocation';
 @Component({
   selector: 'app-map-visual',
   templateUrl: './map-visual.page.html',
@@ -169,6 +170,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.stopPaymentPolling();
     this.stopOrderPolling();
     this.stopSearch();
+    this.stopWatchingUserLocation();
   }
 
   sortVehicles() {
@@ -447,6 +449,31 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
     if (this.map) {
       setTimeout(() => this.map.resize(), 100);
+      
+      const updateElements = () => {
+        if (this.pickupMarker) {
+          this.pickupMarker.setLngLat(this.startCoord as any);
+        } else {
+          this.pickupMarker = this.addMarker(this.startCoord, 'start');
+        }
+        
+        if (this.dropoffMarker) {
+          this.dropoffMarker.setLngLat(this.destCoord as any);
+        } else {
+          this.dropoffMarker = this.addMarker(this.destCoord, 'dest');
+        }
+        
+        this.map.setCenter(this.startCoord as any);
+        this.fetchPrices(this.startCoord, this.destCoord);
+        this.drawRoute(this.startCoord, this.destCoord);
+      };
+
+      if (this.map.isStyleLoaded()) {
+        updateElements();
+      } else {
+        this.map.once('idle', () => updateElements());
+      }
+      this.startWatchingUserLocation();
       return;
     }
 
@@ -472,6 +499,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
       this.fetchPrices(this.startCoord, this.destCoord);
       this.drawRoute(this.startCoord, this.destCoord);
       setTimeout(() => { this.map.resize(); }, 100);
+      this.startWatchingUserLocation();
     });
   }
 
@@ -1672,6 +1700,86 @@ export class MapVisualPage implements OnInit, OnDestroy {
         // Snap back
         this.noteY = 0;
       }
+    }
+  }
+
+  private userLocationMarker: any = null;
+  private watchId: string | null = null;
+
+  async startWatchingUserLocation() {
+    if (this.watchId) return;
+
+    try {
+      this.watchId = await Geolocation.watchPosition({
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }, (position, err) => {
+        if (err || !position || !position.coords) {
+          console.warn('Geolocation watch error:', err);
+          return;
+        }
+
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        if (!this.map) return;
+
+        // If userLocationMarker does not exist, create it as a pulsing blue dot
+        if (!this.userLocationMarker) {
+          const el = document.createElement('div');
+          el.className = 'user-location-pulse';
+          el.style.width = '22px';
+          el.style.height = '22px';
+          el.style.borderRadius = '50%';
+          el.style.backgroundColor = '#007AFF';
+          el.style.border = '3px solid #ffffff';
+          el.style.boxShadow = '0 0 10px rgba(0, 122, 255, 0.6)';
+          el.style.position = 'relative';
+          
+          // Pulsing effect
+          const pulse = document.createElement('div');
+          pulse.style.position = 'absolute';
+          pulse.style.top = '-9px';
+          pulse.style.left = '-9px';
+          pulse.style.width = '34px';
+          pulse.style.height = '34px';
+          pulse.style.borderRadius = '50%';
+          pulse.style.border = '2px solid #007AFF';
+          pulse.style.opacity = '0';
+          pulse.style.animation = 'pulseGps 2.2s infinite';
+          el.appendChild(pulse);
+
+          // Add CSS animation dynamically to header or use active SCSS style
+          const style = document.createElement('style');
+          style.innerHTML = `
+            @keyframes pulseGps {
+              0% { transform: scale(0.6); opacity: 0.8; }
+              100% { transform: scale(1.6); opacity: 0; }
+            }
+          `;
+          document.head.appendChild(style);
+
+          this.userLocationMarker = new mapboxgl.Marker({ element: el })
+            .setLngLat([lng, lat])
+            .addTo(this.map);
+        } else {
+          this.userLocationMarker.setLngLat([lng, lat]);
+        }
+      });
+    } catch (e) {
+      console.warn('Failed to start Geolocation watch:', e);
+    }
+  }
+
+  stopWatchingUserLocation() {
+    if (this.watchId) {
+      Geolocation.clearWatch({ id: this.watchId });
+      this.watchId = null;
+    }
+    if (this.userLocationMarker) {
+      this.userLocationMarker.remove();
+      this.userLocationMarker = null;
     }
   }
 }

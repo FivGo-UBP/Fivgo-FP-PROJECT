@@ -71,7 +71,32 @@
       <div class="search-container">
         <ion-searchbar class="custom-searchbar" animated="true" placeholder="Cari pesan..." mode="ios"></ion-searchbar>
       </div>
-      <div class="empty-state-container">
+
+      <div class="loading-container" *ngIf="isLoading">
+        <ion-spinner name="crescent" color="warning"></ion-spinner>
+        <p>Memuat percakapan...</p>
+      </div>
+
+      <div class="chat-list" *ngIf="!isLoading && conversations.length > 0">
+        <div class="chat-item" *ngFor="let chat of conversations" (click)="openChatRoom(chat.order_id)">
+          <div class="avatar-container">
+            <img [src]="chat.other_user?.photo || 'https://ionicframework.com/docs/img/demos/avatar.svg'" class="avatar">
+            <span class="status-dot online"></span>
+          </div>
+          <div class="content-container">
+            <div class="title-row">
+              <h3 class="name">{{ chat.other_user?.name || 'User' }}</h3>
+              <span class="time">{{ chat.last_message_time | date:'HH:mm' }}</span>
+            </div>
+            <div class="message-row">
+              <p class="last-message">{{ chat.last_message }}</p>
+              <span class="unread-badge" *ngIf="chat.unread_count > 0">{{ chat.unread_count }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state-container" *ngIf="!isLoading && conversations.length === 0">
         <div class="empty-icon-wrapper">
           <ion-icon name="chatbubbles-outline" class="empty-icon"></ion-icon>
         </div>
