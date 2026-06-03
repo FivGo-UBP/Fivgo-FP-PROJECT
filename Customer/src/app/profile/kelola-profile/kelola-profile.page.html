@@ -1,40 +1,44 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar class="bg-orange">
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home" [text]="t('profile.title')" icon="chevron-back-outline" class="text-white"></ion-back-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true" class="bg-light-grey">
   <div class="profile-header bg-orange">
-    <div class="avatar-container">
-      <!-- Menggunakan foto dari desain jika ada, atau fallback inisial nama -->
-      <img *ngIf="user?.photo" [src]="user?.photo" alt="Profile" referrerpolicy="no-referrer" />
-      <div *ngIf="!user?.photo" class="avatar-fallback">
-        {{ user?.name?.charAt(0)?.toUpperCase() || 'U' }}
+
+    <div class="header-content">
+      <!-- Tombol Back custom (menggantikan ion-header agar seamless) -->
+      <div class="custom-back-row">
+        <button class="custom-back-btn" (click)="goBack()">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+          <span>{{ t('profile.title') }}</span>
+        </button>
       </div>
+
+      <div class="avatar-container">
+        <!-- Menggunakan foto dari desain jika ada, atau fallback inisial nama -->
+        <img *ngIf="user?.photo" [src]="user?.photo" alt="Profile" referrerpolicy="no-referrer" />
+        <div *ngIf="!user?.photo" class="avatar-fallback">
+          {{ user?.name?.charAt(0)?.toUpperCase() || 'U' }}
+        </div>
+      </div>
+      <h2 class="profile-name">{{ user?.name || '...' }}</h2>
+      <p class="profile-phone">
+        {{ user?.phone || t('profile.phone.empty') }}
+        <ion-icon *ngIf="!user?.phone" name="alert-circle-outline" style="vertical-align: text-bottom; margin-left: 4px; color: #ff0000; font-size: 16px;"></ion-icon>
+      </p>
+      <p class="profile-email">
+        {{ user?.email || t('profile.email.empty') }}
+        <ion-icon *ngIf="!user?.email" name="alert-circle-outline" style="vertical-align: text-bottom; margin-left: 4px; color: #ff0000; font-size: 16px;"></ion-icon>
+      </p>
+      
+      <ion-button class="edit-btn" routerLink="/edit-profile" expand="block">{{ t('profile.edit') }}</ion-button>
     </div>
-    <h2 class="profile-name">{{ user?.name || '...' }}</h2>
-    <p class="profile-phone">
-      {{ user?.phone || t('profile.phone.empty') }}
-      <ion-icon *ngIf="!user?.phone" name="alert-circle-outline" style="vertical-align: text-bottom; margin-left: 4px; color: #ff0000; font-size: 16px;"></ion-icon>
-    </p>
-    <p class="profile-email">
-      {{ user?.email || t('profile.email.empty') }}
-      <ion-icon *ngIf="!user?.email" name="alert-circle-outline" style="vertical-align: text-bottom; margin-left: 4px; color: #ff0000; font-size: 16px;"></ion-icon>
-    </p>
-    
-    <ion-button class="edit-btn" routerLink="/edit-profile" expand="block">{{ t('profile.edit') }}</ion-button>
+
+    <!-- Wave di dalam profile-header agar warna menyatu -->
+    <div class="wave-container">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 160" preserveAspectRatio="none">
+        <path fill="#e8ebf0" d="M0,160 L0,120 C400,200 800,20 1100,20 C1250,20 1350,80 1440,100 L1440,160 Z"></path>
+      </svg>
+    </div>
 
   </div>
 
-  <!-- Wave Header Effect -->
-  <div class="wave-container">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 160" preserveAspectRatio="none">
-      <path fill="#f19b16" d="M0,0 L0,120 C400,200 800,20 1100,20 C1250,20 1350,80 1440,100 L1440,0 Z"></path>
-    </svg>
-  </div>
 
   <div class="menu-container">
     <ion-list class="menu-list" lines="none">

@@ -25,7 +25,7 @@ ion-content {
 
 /* ─── Global Header Gradient (sama seperti halaman Payment) ─────── */
 ion-toolbar {
-  --background: linear-gradient(135deg, #f09410 0%, #bc430d 100%) !important;
+  --background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%) !important;
   --color: #ffffff !important;
 }
 
@@ -132,5 +132,7 @@ app-kelola-profile ion-header {
     --min-height: 56px; /* Restore standard height for kelola-profile */
     --padding-top: 0px;
     --padding-bottom: 0px;
+    /* Buat toolbar transparan agar .profile-header yang menampilkan warna */
+    --background: transparent !important;
   }
 }

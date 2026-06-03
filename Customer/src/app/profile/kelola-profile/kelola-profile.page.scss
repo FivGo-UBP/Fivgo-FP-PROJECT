@@ -1,29 +1,59 @@
-ion-toolbar.bg-orange {
-  --background: #f19b16;
-  --color: #ffffff;
-}
-
-.text-white {
-  --color: #ffffff;
-  font-weight: 600;
-}
-
 ion-content.bg-light-grey {
   --background: #e8ebf0;
 }
 
 .bg-orange {
-  background: #f19b16;
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
 }
 
 .profile-header {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 15px 20px 25px;
+  align-items: stretch;
+  /* padding-top = safe area status bar saja (toolbar sudah dihapus) */
+  padding: var(--ion-safe-area-top, 20px) 0 0;
   color: white;
   text-align: center;
-  background: #f19b16;
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+}
+
+.header-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px;
+  width: 100%;
+}
+
+/* Custom back button menggantikan ion-header */
+.custom-back-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 8px 0 16px;
+}
+
+.custom-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: opacity 0.2s;
+
+  ion-icon {
+    font-size: 22px;
+  }
+
+  &:active {
+    opacity: 0.7;
+  }
 }
 
 .avatar-container {
@@ -171,9 +201,11 @@ ion-label {
 
 .wave-container {
   width: 100%;
-  height: 60px;
+  /* Tinggi wave lebih besar agar gelombang terlihat natural */
+  height: 70px;
   line-height: 0;
-  margin-top: -1px;
+  /* Geser sedikit ke bawah agar tidak ada celah */
+  margin-bottom: -2px;
   pointer-events: none;
 
   svg {

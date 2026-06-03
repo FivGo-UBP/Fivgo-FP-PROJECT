@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController } from '@ionic/angular';
+import { AlertController, NavController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService, User } from '../../services/auth.service';
 import { LanguageService, LanguageType } from '../../services/language.service';
@@ -17,7 +17,7 @@ export class KelolaProfilePage implements OnInit {
   constructor(
     private authService: AuthService,
     private alertController: AlertController,
-
+    private navCtrl: NavController,
     private router: Router,
     public langService: LanguageService
   ) { }
@@ -56,6 +56,10 @@ export class KelolaProfilePage implements OnInit {
 
   get currentLanguageLabel(): string {
     return this.langService.getLanguage() === 'id' ? 'Bahasa Indonesia' : 'English';
+  }
+
+  goBack() {
+    this.navCtrl.back();
   }
 
 }

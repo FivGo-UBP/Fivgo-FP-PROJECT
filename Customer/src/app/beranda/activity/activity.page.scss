@@ -1,6 +1,6 @@
 // ─── Toolbar ──────────────────────────────────────────────────────────────
 .activity-toolbar {
-  --background: linear-gradient(135deg, #f09410 0%, #bc430d 100%);
+  --background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
   --border-color: transparent;
   --padding-top: 8px;
   --padding-bottom: 8px;
@@ -8,10 +8,14 @@
 
 .activity-title {
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 700;
   color: #ffffff;
   text-align: center;
-  padding-left: 0;
+
+  &::part(native) {
+    text-align: center;
+    justify-content: center;
+  }
 }
 
 // ─── Content ──────────────────────────────────────────────────────────────

@@ -1,10 +1,12 @@
 .bg-orange {
-  --background: linear-gradient(135deg, #f09410 0%, #bc430d 100%);
+  --background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
   --color: #ffffff;
 }
 
 .text-white {
   color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 20px !important;
 }
 
 .bg-grey {
@@ -551,15 +553,12 @@
   }
 }
 
-// Payment Option action sheet custom helper classes (applied inside action sheet popup buttons)
+
 ::ng-deep .payment-option-disabled {
   color: #94a3b8 !important;
   opacity: 0.6 !important;
 }
 
-// ============================================================
-// GATEWAY INSTRUCTIONS DIALOG MODAL (DOMPETX)
-// ============================================================
 
 .payment-gateway-container {
   padding: 24px 20px 32px;
