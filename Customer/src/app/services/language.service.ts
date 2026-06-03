@@ -80,7 +80,12 @@ export class LanguageService {
       'editprofile.gender.other': 'Tidak ingin menyebutkan',
       'editprofile.modal.footer': 'Untuk alasan keamanan, kami dapat melakukan pengecekan secara berkala terkait informasi yang kamu berikan saat ini dengan informasi yang tersimpan pada sistem kami',
       'editprofile.toast.success': 'Profil berhasil diperbarui!',
-      'editprofile.toast.error': 'Gagal memperbarui profil.'
+      'editprofile.toast.error': 'Gagal memperbarui profil.',
+      'alert.ok': 'OK',
+      'bantuan.title': 'Pusat Bantuan',
+      'bantuan.faq.title': 'Telusuri FAQ',
+      'bantuan.reports.title': 'Lihat laporan',
+      'bantuan.email.title': 'Kirim email'
     },
     en: {
       'profile.title': 'Profile',
@@ -151,7 +156,12 @@ export class LanguageService {
       'editprofile.gender.other': 'Prefer not to say',
       'editprofile.modal.footer': 'For security reasons, we may periodically check the information you provide with the information stored in our system',
       'editprofile.toast.success': 'Profile updated successfully!',
-      'editprofile.toast.error': 'Failed to update profile.'
+      'editprofile.toast.error': 'Failed to update profile.',
+      'alert.ok': 'OK',
+      'bantuan.title': 'Help Center',
+      'bantuan.faq.title': 'Browse FAQ',
+      'bantuan.reports.title': 'View reports',
+      'bantuan.email.title': 'Send email'
     }
   };
 

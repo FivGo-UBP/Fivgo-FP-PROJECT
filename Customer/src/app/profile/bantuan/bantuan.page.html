@@ -1,13 +1,107 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>bantuan</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/profile" [text]="''" icon="chevron-back-outline"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ t('bantuan.title') }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">bantuan</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="bg-grey">
+  <!-- Orange Banner -->
+  <div class="help-banner">
+    <div class="banner-left">
+      <h2 class="greeting-text">Hai {{ user?.name || 'User' }}</h2>
+      <p class="sub-greeting-text">Chat kami atau telusuri FAQ</p>
+    </div>
+    <div class="banner-right">
+      <!-- Agent Illustration SVG -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="agent-svg">
+        <circle cx="50" cy="50" r="42" fill="rgba(255, 255, 255, 0.15)" />
+        <path d="M50,22 C38,22 32,29 32,42 L32,55 C32,57 33,59 35,59 L38,59 C40,59 41,57 41,55 L41,45 C41,43 40,42 38,42 L35,42 C35,32 40,27 50,27 C60,27 65,32 65,42 L62,42 C60,42 59,43 59,45 L59,55 C59,57 60,59 62,59 L65,59 C68,59 68,57 68,55 L68,42 C68,29 62,22 50,22 Z" fill="#ffffff" />
+        <circle cx="50" cy="46" r="10" fill="#ffffff" opacity="0.25" />
+        <path d="M62,58 C60,60 57,62 53,62 L47,62" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" fill="none" />
+      </svg>
+    </div>
+  </div>
+
+  <div class="content-wrapper">
+    <!-- Card 1: Aktivitas mana yang ingin dibantu? -->
+    <div class="help-card activity-card">
+      <h3 class="card-header-title">Aktivitas mana yang ingin dibantu?</h3>
+      
+      <!-- Loading State -->
+      <div class="card-loading" *ngIf="isLoading">
+        <ion-spinner name="crescent" color="warning"></ion-spinner>
+      </div>
+
+      <!-- Empty State -->
+      <div class="card-empty" *ngIf="!isLoading && recentTrips.length === 0">
+        <p>Belum ada aktivitas perjalanan baru-baru ini.</p>
+      </div>
+
+      <!-- Trips List -->
+      <div class="trips-list" *ngIf="!isLoading && recentTrips.length > 0">
+        <div class="trip-item" *ngFor="let trip of recentTrips" (click)="openTripDetail(trip)">
+          <div class="trip-icon-wrapper">
+            <img src="assets/motor.png" alt="Motor" *ngIf="trip.vehicle_type?.toLowerCase() === 'motor'" />
+            <img src="assets/mobil.png" alt="Mobil" *ngIf="trip.vehicle_type?.toLowerCase() === 'mobil'" />
+          </div>
+          <div class="trip-info">
+            <h4 class="trip-title">Ride to {{ trip.dropoff_address }}</h4>
+            <p class="trip-time">{{ formatDateTime(trip.created_at) }}</p>
+          </div>
+          <div class="trip-price">
+            {{ formatPrice(trip.final_price) }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Lihat Lainnya Button -->
+      <div class="action-row" *ngIf="recentTrips.length > 0">
+        <button class="btn-lihat-lainnya" (click)="goToActivities()">
+          Lihat lainnya
+        </button>
+      </div>
+    </div>
+
+    <!-- Menu Cards -->
+    <div class="menu-cards-container">
+      <!-- Telusuri FAQ -->
+      <div class="menu-card" (click)="openFaq()">
+        <div class="menu-icon-box faq-icon">
+          <ion-icon name="help-circle"></ion-icon>
+        </div>
+        <div class="menu-text-info">
+          <h4 class="menu-title">Telusuri FAQ</h4>
+          <p class="menu-subtitle">Temukan solusi di artikel dan panduan kami</p>
+        </div>
+        <ion-icon name="chevron-forward" class="menu-arrow"></ion-icon>
+      </div>
+
+      <!-- Lihat laporan -->
+      <div class="menu-card" (click)="openReports()">
+        <div class="menu-icon-box report-icon">
+          <ion-icon name="folder"></ion-icon>
+        </div>
+        <div class="menu-text-info">
+          <h4 class="menu-title">Lihat laporan</h4>
+          <p class="menu-subtitle">Cek laporan aktif dan sebelumnya di 90 hari terakhir</p>
+        </div>
+        <ion-icon name="chevron-forward" class="menu-arrow"></ion-icon>
+      </div>
+
+      <!-- Kirim Email (New Card!) -->
+      <div class="menu-card" (click)="sendEmail()">
+        <div class="menu-icon-box email-icon">
+          <ion-icon name="mail"></ion-icon>
+        </div>
+        <div class="menu-text-info">
+          <h4 class="menu-title">Kirim email</h4>
+          <p class="menu-subtitle">Kirim email bantuan langsung ke tim customer service kami</p>
+        </div>
+        <ion-icon name="chevron-forward" class="menu-arrow"></ion-icon>
+      </div>
+    </div>
+  </div>
 </ion-content>

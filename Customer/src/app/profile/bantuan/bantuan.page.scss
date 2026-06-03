@@ -1,0 +1,252 @@
+ion-content.bg-grey {
+  --background: #f8fafc;
+}
+
+.help-banner {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+  padding: 30px 24px 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.greeting-text {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.5px;
+}
+
+.sub-greeting-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.agent-svg {
+  width: 72px;
+  height: 72px;
+  opacity: 0.95;
+  flex-shrink: 0;
+}
+
+.content-wrapper {
+  padding: 0 16px 30px;
+}
+
+/* Card 1: Recent Activities */
+.help-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05), 0 4px 10px rgba(0, 0, 0, 0.02);
+}
+
+.activity-card {
+  margin-top: -30px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 10;
+}
+
+.card-header-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 16px 0;
+}
+
+/* Card Loading & Empty States */
+.card-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px 0;
+}
+
+.card-empty {
+  text-align: center;
+  padding: 24px 0;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Trips List Inside Card */
+.trips-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.trip-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.trip-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background-color: #fff7ed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 14px;
+  flex-shrink: 0;
+
+  img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+  }
+}
+
+.trip-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.trip-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trip-time {
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748b;
+  margin: 0;
+}
+
+.trip-price {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  text-align: right;
+  margin-left: 12px;
+}
+
+/* Lihat Lainnya Button */
+.action-row {
+  margin-top: 16px;
+}
+
+.btn-lihat-lainnya {
+  width: 100%;
+  height: 44px;
+  border-radius: 22px;
+  border: none;
+  background-color: #ea580c;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  outline: none;
+
+  &:active {
+    background-color: #c2410c;
+    transform: scale(0.98);
+  }
+}
+
+/* Menu Cards (FAQ, Laporan, Kirim Email) */
+.menu-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.menu-card {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 15px rgba(15, 23, 42, 0.02), 0 2px 4px rgba(0, 0, 0, 0.01);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.01);
+  }
+}
+
+.menu-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-right: 16px;
+  flex-shrink: 0;
+
+  &.faq-icon {
+    background-color: #fff7ed;
+    color: #f97316;
+  }
+
+  &.report-icon {
+    background-color: #eff6ff;
+    color: #3b82f6;
+  }
+
+  &.email-icon {
+    background-color: #f0fdf4;
+    color: #22c55e;
+  }
+}
+
+.menu-text-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.menu-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.menu-subtitle {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #64748b;
+  margin: 0;
+}
+
+.menu-arrow {
+  font-size: 18px;
+  color: #cbd5e1;
+  margin-left: 12px;
+  flex-shrink: 0;
+}
