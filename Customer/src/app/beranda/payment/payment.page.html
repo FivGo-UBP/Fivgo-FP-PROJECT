@@ -4,7 +4,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="bg-grey" [scrollY]="true">
+<ion-content [fullscreen]="true" class="bg-grey" [scrollY]="true">
 
   <!-- Spinner saat loading awal -->
   <div class="initial-spinner-container" *ngIf="isLoading && transactions.length === 0">

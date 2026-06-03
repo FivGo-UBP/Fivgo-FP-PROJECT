@@ -34,8 +34,10 @@
 
     <!-- Edukasi & keamanan -->
     <h3 class="section-title">{{ t('home.education') }}</h3>
-    <div class="grey-card box-large" (click)="openEducation(educations[0])" style="cursor: pointer; margin-bottom: 30px;">
-      <img [src]="educations[0].image" alt="Foto Edukasi" />
+    <div class="scroll-container" style="margin-bottom: 30px;">
+      <div class="grey-card box-medium" *ngFor="let edu of educations" (click)="openEducation(edu)" style="cursor: pointer;">
+        <img [src]="edu.image" [alt]="edu.title" />
+      </div>
     </div>
 
     <!-- promosi -->
