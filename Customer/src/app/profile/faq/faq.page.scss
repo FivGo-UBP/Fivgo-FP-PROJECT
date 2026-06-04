@@ -1,0 +1,124 @@
+ion-content.bg-grey {
+  --background: #f8fafc;
+}
+
+.faq-banner {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+  padding: 30px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.banner-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.5px;
+}
+
+.banner-sub {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.book-svg {
+  width: 72px;
+  height: 72px;
+  opacity: 0.95;
+  flex-shrink: 0;
+}
+
+.content-wrapper {
+  padding: 24px 16px 40px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 16px 0;
+  letter-spacing: -0.3px;
+}
+
+/* Accordion FAQ */
+.faq-accordion-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.faq-item {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 15px rgba(15, 23, 42, 0.02);
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+
+  &.open {
+    border-color: #ea580c;
+    box-shadow: 0 8px 24px rgba(234, 88, 12, 0.08);
+  }
+}
+
+.faq-question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  cursor: pointer;
+  background-color: #ffffff;
+  transition: background-color 0.2s;
+
+  &:active {
+    background-color: #fafafa;
+  }
+}
+
+.faq-question-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.5;
+  flex: 1;
+  margin-right: 16px;
+}
+
+.faq-arrow {
+  font-size: 18px;
+  color: #64748b;
+  transition: transform 0.25s ease, color 0.25s ease;
+
+  .open & {
+    color: #ea580c;
+  }
+}
+
+/* Collapsible Panel */
+.faq-answer-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0, 1, 0, 1);
+
+  .open & {
+    max-height: 1000px;
+    transition: max-height 0.3s cubic-bezier(0.85, 0, 0.15, 1);
+  }
+}
+
+.faq-answer-content {
+  padding: 0 20px 18px;
+  border-top: 1px solid #f1f5f9;
+
+  p {
+    margin: 14px 0 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #4b5563;
+    font-weight: 500;
+  }
+}

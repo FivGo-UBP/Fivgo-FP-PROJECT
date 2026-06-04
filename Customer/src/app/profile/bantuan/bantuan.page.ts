@@ -88,30 +88,12 @@ export class BantuanPage implements OnInit {
     this.router.navigate(['/order-detail', trip.id]);
   }
 
-  async openFaq() {
-    const alert = await this.alertController.create({
-      header: this.t('bantuan.faq.title'),
-      message: `
-        <div style="text-align: left; font-size: 14px; line-height: 1.5; color: #1e293b;">
-          <p style="margin-bottom: 8px;"><strong>1. Bagaimana cara memesan perjalanan?</strong><br>Buka halaman utama, pilih jenis kendaraan (Motor/Mobil), tentukan lokasi jemput dan tujuan, lalu ketuk "Pesan".</p>
-          <p style="margin-bottom: 8px;"><strong>2. Bagaimana metode pembayarannya?</strong><br>Kami mendukung pembayaran tunai dan non-tunai via FivGo Pay.</p>
-          <p style="margin-bottom: 0;"><strong>3. Mengapa pesanan saya dibatalkan?</strong><br>Driver mungkin membatalkan pesanan karena kendala di jalan. Saldo Anda akan otomatis kembali jika transaksi menggunakan FivGo Pay.</p>
-        </div>
-      `,
-      buttons: [this.t('alert.ok')]
-    });
-    await alert.present();
+  openFaq() {
+    this.router.navigate(['/faq']);
   }
 
-  async openReports() {
-    const alert = await this.alertController.create({
-      header: this.t('bantuan.reports.title'),
-      message: this.langService.getLanguage() === 'id' 
-        ? 'Belum ada laporan aktif dalam 90 hari terakhir.' 
-        : 'No active reports in the last 90 days.',
-      buttons: [this.t('alert.ok')]
-    });
-    await alert.present();
+  openReports() {
+    this.router.navigate(['/laporan-masalah']);
   }
 
   sendEmail() {

@@ -1,0 +1,51 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/bantuan" [text]="''" icon="chevron-back-outline"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Pusat Bantuan</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="bg-grey">
+  <!-- Orange Banner -->
+  <div class="faq-banner">
+    <div class="banner-left">
+      <h2 class="banner-title">FAQ & Pusat Informasi</h2>
+      <p class="banner-sub">Jelajahi & pelajari layanan kami</p>
+    </div>
+    <div class="banner-right">
+      <!-- Book Illustration SVG -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="book-svg">
+        <circle cx="50" cy="50" r="42" fill="rgba(255, 255, 255, 0.15)" />
+        <rect x="35" y="40" width="30" height="24" rx="3" fill="#ffffff" />
+        <rect x="32" y="44" width="36" height="4" rx="1" fill="#ffffff" opacity="0.6" />
+        <path d="M45,46 L55,52 L45,58 Z" fill="#ea580c" />
+        <rect x="38" y="36" width="24" height="2" rx="0.5" fill="#ffffff" opacity="0.8" />
+        <rect x="42" y="32" width="16" height="2" rx="0.5" fill="#ffffff" opacity="0.5" />
+      </svg>
+    </div>
+  </div>
+
+  <div class="content-wrapper">
+    <!-- FAQ Section -->
+    <h3 class="section-title">Sesuai aktivitas Anda</h3>
+
+    <div class="faq-accordion-container">
+      <div class="faq-item" *ngFor="let item of faqItems; let i = index" [class.open]="item.isOpen">
+        <!-- Question Header -->
+        <div class="faq-question-header" (click)="toggleFaq(i)">
+          <span class="faq-question-text">{{ item.question }}</span>
+          <ion-icon [name]="item.isOpen ? 'chevron-up-outline' : 'chevron-down-outline'" class="faq-arrow"></ion-icon>
+        </div>
+
+        <!-- Answer Panel -->
+        <div class="faq-answer-panel">
+          <div class="faq-answer-content">
+            <p>{{ item.answer }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

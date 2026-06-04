@@ -119,6 +119,14 @@ const routes: Routes = [
     path: 'rating-driver',
     loadChildren: () => import('./beranda/rating-driver/rating-driver.module').then( m => m.RatingDriverPageModule)
   },
+  {
+    path: 'faq',
+    loadChildren: () => import('./profile/faq/faq.module').then( m => m.FAQPageModule)
+  },
+  {
+    path: 'laporan-masalah',
+    loadChildren: () => import('./profile/laporan-masalah/laporan-masalah.module').then( m => m.LaporanMasalahPageModule)
+  },
 ];
 
 @NgModule({
