@@ -1550,3 +1550,406 @@ ion-content.transparent-content {
   }
 }
 
+/* ───────────────────────────────────────────────────────────────── */
+/* PROMO SYSTEM STYLING                                              */
+/* ───────────────────────────────────────────────────────────────── */
+
+.has-promo {
+  background: #fff7ed !important;
+  border: 1px solid #ea580c !important;
+  span {
+    color: #ea580c !important;
+  }
+}
+
+/* Promo Voucher Modal Sheet */
+.promo-modal-wrap {
+  max-height: 85vh;
+  min-height: 50vh;
+  
+  .promo-modal-header {
+    padding: 0 20px 10px;
+    .promo-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+  }
+
+  .promo-input-container {
+    display: flex;
+    gap: 12px;
+    padding: 10px 20px;
+    background: #ffffff;
+    align-items: center;
+
+    .manual-promo-input {
+      --background: #f8fafc;
+      --padding-start: 16px;
+      --padding-end: 16px;
+      --border-radius: 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+      height: 44px;
+      
+      &:focus-within {
+        border-color: #f97316;
+      }
+    }
+
+    .btn-apply-promo {
+      --border-radius: 12px;
+      margin: 0;
+      font-weight: 700;
+      font-size: 14px;
+      height: 44px;
+      text-transform: none;
+      min-width: 90px;
+    }
+  }
+
+  .promo-modal-body {
+    overflow-y: auto;
+    padding: 10px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+    flex: 1;
+  }
+}
+
+.promo-voucher-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.promo-voucher-card {
+  display: flex;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  .voucher-left {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+
+    /* Ticket notch effect */
+    &::after {
+      content: '';
+      position: absolute;
+      right: -6px;
+      top: calc(50% - 6px);
+      width: 12px;
+      height: 12px;
+      background: #ffffff;
+      border-radius: 50%;
+      z-index: 10;
+    }
+
+    .voucher-icon-wrap {
+      color: #ffffff;
+      ion-icon {
+        font-size: 26px;
+      }
+    }
+  }
+
+  .voucher-middle {
+    flex: 1;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    h4 {
+      margin: 0 0 4px 0;
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .voucher-desc {
+      margin: 0;
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.4;
+    }
+
+    .voucher-expiry {
+      margin: 6px 0 0;
+      font-size: 10px;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    .warning-badge-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #fee2e2;
+      color: #b91c1c;
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 700;
+      margin-top: 8px;
+      width: fit-content;
+
+      ion-icon {
+        font-size: 12px;
+      }
+    }
+  }
+
+  .voucher-right {
+    display: flex;
+    align-items: center;
+    padding-right: 16px;
+    flex-shrink: 0;
+
+    .btn-voucher-use {
+      background: #f97316;
+      color: #ffffff;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+      transition: background-color 0.2s;
+
+      &:disabled {
+        background: #cbd5e1;
+        color: #94a3b8;
+        box-shadow: none;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+.promo-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Promo Detail Sheet (Matching Image) */
+.promo-detail-wrap {
+  max-height: 90vh;
+  background: #ffffff;
+
+  .sheet-header-static {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+    flex-shrink: 0;
+
+    .modal-handle-static {
+      width: 40px;
+      height: 5px;
+      background: #e2e8f0;
+      border-radius: 4px;
+    }
+  }
+
+  .detail-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    flex-shrink: 0;
+
+    h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .btn-close-detail {
+      font-size: 26px;
+      color: #94a3b8;
+      cursor: pointer;
+
+      &:active {
+        color: #64748b;
+      }
+    }
+  }
+
+  .promo-detail-body {
+    overflow-y: auto;
+    padding: 20px;
+    flex: 1;
+  }
+
+  .promo-detail-footer {
+    padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid #f1f5f9;
+    background: #ffffff;
+    flex-shrink: 0;
+
+    .btn-use-promo-main {
+      --border-radius: 25px;
+      margin: 0;
+      font-weight: 750;
+      font-size: 16px;
+      height: 50px;
+      text-transform: none;
+      --box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+    }
+  }
+}
+
+/* Image Banner inside Promo Detail */
+.sheet-banner-img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  background-color: #f4f4f5;
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.detail-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 8px;
+}
+
+.detail-subtitle {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+  margin: 0 0 20px;
+}
+
+/* Code block box with copy button */
+.detail-code-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fffbeb;
+  border: 1.5px dashed #f59e0b;
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+
+  .code-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .code-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #b45309;
+      letter-spacing: 0.5px;
+    }
+
+    .code-value {
+      font-size: 18px;
+      font-weight: 900;
+      color: #d97706;
+    }
+  }
+
+  .btn-copy-code {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f59e0b;
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+    transition: transform 0.1s;
+
+    &:active {
+      transform: scale(0.96);
+    }
+  }
+}
+
+.terms-header {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 10px;
+}
+
+.terms-list {
+  padding-left: 18px;
+  margin: 0 0 20px;
+  
+  li {
+    font-size: 12px;
+    color: #475569;
+    line-height: 1.7;
+    margin-bottom: 6px;
+    list-style-type: disc;
+  }
+}
+
+.detail-error-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 16px;
+
+  ion-icon {
+    font-size: 18px;
+    color: #dc2626;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 12px;
+    color: #991b1b;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+}
+
+

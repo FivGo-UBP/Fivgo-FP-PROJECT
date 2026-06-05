@@ -1,7 +1,9 @@
 <ion-content [fullscreen]="true" class="save-location-page">
   <div class="top-bar">
     <div class="top-bar-left">
-      <ion-back-button defaultHref="/pilih-penjemputan" icon="arrow-back" text="" class="back-btn"></ion-back-button>
+      <ion-button fill="clear" (click)="goBack()" class="back-btn">
+        <ion-icon name="arrow-back" style="font-size: 24px; color: #171717;"></ion-icon>
+      </ion-button>
       <ion-icon name="location" class="pin-icon"></ion-icon>
     </div>
 

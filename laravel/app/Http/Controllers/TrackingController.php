@@ -26,19 +26,30 @@ class TrackingController extends Controller
         $validated = $request->validate([
             'lat' => 'required|numeric',
             'lng' => 'required|numeric',
-            'radius' => 'numeric' // Default could be 5km
+            'radius' => 'numeric', // Default could be 5km
+            'vehicle_type' => 'nullable|string'
         ]);
         
         $radius = $request->input('radius', 5);
         $lat = $validated['lat'];
         $lng = $validated['lng'];
 
-        // Very basic mock query for nearby drivers (Haversine formula approximation)
-        // Note: For production, use DB raw queries for geospatial distances.
-        $drivers = DriverProfile::where('status', 'online')
+        $query = DriverProfile::where('status', 'online')
             ->whereNotNull('current_lat')
-            ->whereNotNull('current_lng')
-            ->selectRaw("*, ( 6371 * acos( cos( radians(?) ) *
+            ->whereNotNull('current_lng');
+
+        if (!empty($validated['vehicle_type'])) {
+            $requestedVehicleType = strtolower($validated['vehicle_type']);
+            $query->where(function($q) use ($requestedVehicleType) {
+                if (in_array($requestedVehicleType, ['motor', 'motorcycle', 'bike'], true)) {
+                    $q->whereIn('vehicle_type', ['motor', 'motorcycle', 'bike']);
+                } else if (in_array($requestedVehicleType, ['mobil', 'car', 'automobile'], true)) {
+                    $q->whereIn('vehicle_type', ['mobil', 'car', 'automobile']);
+                }
+            });
+        }
+
+        $drivers = $query->selectRaw("*, ( 6371 * acos( cos( radians(?) ) *
                 cos( radians( current_lat ) )
                 * cos( radians( current_lng ) - radians(?)
                 ) + sin( radians(?) ) *

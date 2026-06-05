@@ -1,13 +1,78 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>keamanan</ion-title>
+<ion-header class="ion-no-border">
+  <ion-toolbar class="bg-orange">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/kelola-profile" [text]="t('security.title')" icon="chevron-back-outline" class="text-white"></ion-back-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">keamanan</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="bg-light-grey">
+  <div class="security-container">
+    
+    <!-- SECTION 1: ACCOUNT SECURITY -->
+    <div class="section-title">{{ t('security.section.account') }}</div>
+    
+    <div class="card-menu">
+      <ion-list lines="none">
+        
+        <!-- Phone Number Option -->
+        <ion-item button detail="true" class="menu-item" (click)="goToGantiNomor()">
+          <div class="icon-box" [class.unlinked]="!phone" slot="start">
+            <ion-icon [name]="phone ? 'call-outline' : 'alert-circle-outline'"></ion-icon>
+          </div>
+          <ion-label>
+            <h3>{{ t('editprofile.phone') }}</h3>
+            <p *ngIf="phone" class="phone-value">{{ phone }}</p>
+            <span class="status-badge" [class.linked]="phone" [class.unlinked]="!phone">
+              <ion-icon [name]="phone ? 'checkmark-circle-outline' : 'warning-outline'"></ion-icon>
+              {{ phone ? t('security.phone.linked') : t('security.phone.unlinked') }}
+            </span>
+          </ion-label>
+          <span class="action-link" slot="end">
+            {{ phone ? t('security.phone.change') : t('security.phone.add') }}
+          </span>
+        </ion-item>
+        
+      </ion-list>
+    </div>
+
+    <!-- SECTION 2: DANGER ZONE -->
+    <div class="section-title danger-section">{{ t('security.section.danger') }}</div>
+    
+    <div class="card-menu danger-card">
+      <ion-list lines="none">
+        
+        <!-- Delete Account Option -->
+        <ion-item button detail="true" class="menu-item danger-item" (click)="confirmDelete()">
+          <div class="icon-box danger" slot="start">
+            <ion-icon name="trash-outline"></ion-icon>
+          </div>
+          <ion-label>
+            <h3 class="text-danger">{{ t('security.delete_account') }}</h3>
+            <p>{{ t('security.delete_confirm.title') }}</p>
+          </ion-label>
+        </ion-item>
+        
+      </ion-list>
+    </div>
+
+  </div>
+
+  <!-- Custom Delete Account Modal Overlay -->
+  <div class="delete-modal-overlay" *ngIf="showDeleteConfirm">
+    <div class="delete-modal-backdrop" (click)="cancelDelete()"></div>
+    <div class="delete-modal-card">
+      <div class="delete-modal-icon-container">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+      </div>
+      <h2 class="delete-modal-title">{{ t('security.delete_confirm.title') }}</h2>
+      <p class="delete-modal-message">
+        {{ t('security.delete_confirm.desc') }}
+      </p>
+      <div class="delete-modal-actions">
+        <button class="btn-cancel" (click)="cancelDelete()">{{ t('security.delete_confirm.cancel') }}</button>
+        <button class="btn-confirm-delete" (click)="deleteAccount()">{{ t('security.delete_confirm.btn') }}</button>
+      </div>
+    </div>
+  </div>
 </ion-content>

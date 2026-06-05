@@ -44,6 +44,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('report-driver', [CustomerController::class, 'reportDriver']);
         Route::post('request-phone-change-otp', [CustomerController::class, 'requestPhoneChangeOtp']);
         Route::post('change-phone', [CustomerController::class, 'changePhone']);
+        Route::delete('me', [CustomerController::class, 'deleteAccount']);
     });
 
     // Driver Endpoints

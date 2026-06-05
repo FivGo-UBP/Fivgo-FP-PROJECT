@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { AlertController, LoadingController } from '@ionic/angular';
+import { AlertController, LoadingController, NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-ganti-nomor',
@@ -36,7 +36,8 @@ export class GantiNomorPage implements OnInit, OnDestroy {
     private authService: AuthService,
     private router: Router,
     private loadingCtrl: LoadingController,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private navCtrl: NavController
   ) {}
 
   ngOnInit() {
@@ -198,7 +199,7 @@ export class GantiNomorPage implements OnInit, OnDestroy {
         this.clearTimers();
         this.clearOtpSession();
         await this.showAlert('Berhasil', 'Nomor telepon berhasil diperbarui.');
-        this.router.navigate(['/edit-profile']);
+        this.navCtrl.navigateBack('/edit-profile');
       },
       error: async (err: any) => {
         await loading.dismiss();

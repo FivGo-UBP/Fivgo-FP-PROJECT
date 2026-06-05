@@ -229,4 +229,28 @@ class CustomerController extends Controller
             'user'    => $user->fresh(),
         ]);
     }
+
+    public function deleteAccount(Request $request)
+    {
+        $user = $request->user();
+        
+        try {
+            // Clean up related records to prevent foreign key constraint violations
+            $user->customerAddresses()->delete();
+            $user->walletTransactions()->delete();
+            
+            // Delete related orders (or anonymize if needed, but deleting is fine for FP project)
+            \App\Models\Order::where('customer_id', $user->id)->delete();
+            
+            $user->delete();
+            
+            return response()->json([
+                'message' => 'Akun berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal menghapus akun: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

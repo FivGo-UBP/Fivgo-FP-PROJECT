@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ToastController } from '@ionic/angular';
+import { ToastController, NavController } from '@ionic/angular';
 import { AuthService, User } from '../../services/auth.service';
 import { LanguageService } from '../../services/language.service';
 
@@ -27,7 +27,8 @@ export class EditProfilePage implements OnInit {
     private authService: AuthService,
     private toastCtrl: ToastController,
     private router: Router,
-    public langService: LanguageService
+    public langService: LanguageService,
+    private navCtrl: NavController
   ) { }
 
   ngOnInit() {
@@ -94,7 +95,7 @@ export class EditProfilePage implements OnInit {
           color: 'success'
         });
         toast.present();
-        this.router.navigate(['/kelola-profile']);
+        this.navCtrl.navigateBack('/kelola-profile');
       },
       error: async (err) => {
         console.error(err);

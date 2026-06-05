@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, ChangeDetectorRef, HostListener, NgZone } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 declare var mapboxgl: any;
 import { environment } from '../../../environments/environment';
@@ -6,6 +6,9 @@ import { TomtomService } from '../../services/tomtom.service';
 import { OrderService, ActiveOrder, PaymentRecord } from '../../services/order.service';
 import { ToastController, NavController } from '@ionic/angular';
 import { Geolocation } from '@capacitor/geolocation';
+import { AuthService } from '../../services/auth.service';
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
 @Component({
   selector: 'app-map-visual',
   templateUrl: './map-visual.page.html',
@@ -26,6 +29,17 @@ export class MapVisualPage implements OnInit, OnDestroy {
   isVehicleModalOpen: boolean = false;
   isNoteModalOpen: boolean = false;
   driverNote: string = '';
+
+  // ─── State Promo ──────────────────────────────────────────────────────────
+  isPromoModalOpen: boolean = false;
+  isPromoDetailOpen: boolean = false;
+  availablePromos: any[] = [];
+  selectedPromo: any | null = null;
+  detailPromo: any | null = null;
+  manualPromoCode: string = '';
+  isApplyingPromo: boolean = false;
+  isDraggingPromo: boolean = false;
+  promoY: number = 0;
 
   // ─── State Modal Batal ────────────────────────────────────────────────────
   isCancelReasonModalOpen: boolean = false;
@@ -78,6 +92,9 @@ export class MapVisualPage implements OnInit, OnDestroy {
   currentOrderId: string | null = null;
   activeOrder: ActiveOrder | null = null;
   isDriverFound: boolean = false;
+
+  private echo: Echo<any> | null = null;
+  private currentSubscribedOrderId: string | null = null;
   isDriverArrived: boolean = false;
   isInJourney: boolean = false;
   isOrderComplete: boolean = false;
@@ -114,6 +131,10 @@ export class MapVisualPage implements OnInit, OnDestroy {
   noteStartY: number = 0;
   noteStartTranslateY: number = 0;
 
+  // ─── Dragging State for Promo Modal ───────────────────────────────────────
+  promoStartY: number = 0;
+  promoStartTranslateY: number = 0;
+
   readonly COLLAPSED = 0;
   readonly HALF = 0;
   readonly FULL = 0;
@@ -126,7 +147,9 @@ export class MapVisualPage implements OnInit, OnDestroy {
     private orderService: OrderService,
     private toastCtrl: ToastController,
     private navCtrl: NavController,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService,
+    private zone: NgZone
   ) { }
 
   ngOnInit() {
@@ -173,6 +196,58 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.stopOrderPolling();
     this.stopSearch();
     this.stopWatchingUserLocation();
+    this.disconnectTrackingWebsocket();
+  }
+
+  connectTrackingWebsocket(orderId: string) {
+    if (this.echo && this.currentSubscribedOrderId === orderId) return;
+
+    this.disconnectTrackingWebsocket();
+    this.currentSubscribedOrderId = orderId;
+
+    const token = this.authService.getToken();
+    if (!token) return;
+
+    (window as any).Pusher = Pusher;
+
+    this.echo = new Echo({
+      broadcaster: (environment.reverb as any).broadcaster || 'reverb',
+      key: environment.reverb.key,
+      cluster: (environment.reverb as any).cluster || undefined,
+      wsHost: (environment.reverb as any).broadcaster === 'pusher' ? undefined : environment.reverb.host,
+      wsPort: (environment.reverb as any).broadcaster === 'pusher' ? undefined : environment.reverb.port,
+      wssPort: (environment.reverb as any).broadcaster === 'pusher' ? undefined : environment.reverb.port,
+      forceTLS: environment.reverb.scheme === 'https',
+      enabledTransports: ['ws', 'wss'],
+      authEndpoint: `${environment.apiUrl}/broadcasting/auth`,
+      auth: {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    });
+
+    this.echo.private(`order.${orderId}`)
+      .listen('.DriverLocationUpdated', (data: { lat: number, lng: number, heading: number }) => {
+        if (!this.activeOrder || !this.activeOrder.driver) return;
+
+        this.zone.run(() => {
+          this.activeOrder!.driver!.current_lat = data.lat;
+          this.activeOrder!.driver!.current_lng = data.lng;
+          this.activeOrder!.driver!.heading = data.heading;
+          
+          this.updateDriverMapAndETA(this.activeOrder!);
+        });
+      });
+  }
+
+  disconnectTrackingWebsocket() {
+    if (this.echo && this.currentSubscribedOrderId) {
+      this.echo.leave(`order.${this.currentSubscribedOrderId}`);
+      this.echo.disconnect();
+    }
+    this.echo = null;
+    this.currentSubscribedOrderId = null;
   }
 
   sortVehicles() {
@@ -233,7 +308,9 @@ export class MapVisualPage implements OnInit, OnDestroy {
             this.loadSavedPaymentPreference();
             this.activeOrder = order;
             this.currentOrderId = order.id;
-            this.dompetxGatewayAmount = order.estimated_price || this.getSelectedVehiclePriceRaw();
+            this.dompetxGatewayAmount = (typeof order.estimated_price === 'number') 
+              ? Math.max(0, order.estimated_price - (order.discount_amount || 0)) 
+              : this.getSelectedVehiclePriceRaw();
             this.isVehicleModalOpen = false;
             this.isPaymentGatewayOpen = true;
             this.cdr.detectChanges();
@@ -255,7 +332,10 @@ export class MapVisualPage implements OnInit, OnDestroy {
                 this.cdr.detectChanges();
               },
               error: () => {
-                this.openDompetxGateway(order.id, order.estimated_price || this.getSelectedVehiclePriceRaw());
+                const payable = (typeof order.estimated_price === 'number') 
+                  ? Math.max(0, order.estimated_price - (order.discount_amount || 0)) 
+                  : this.getSelectedVehiclePriceRaw();
+                this.openDompetxGateway(order.id, payable);
               }
             });
           } else if (order.status === 'pending') {
@@ -300,6 +380,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
               this.isDriverArrived = true;
               this.isInJourney = true;
             }
+            this.connectTrackingWebsocket(order.id);
             if (!this.orderPollingInterval) {
               this.startOrderPolling();
             }
@@ -314,6 +395,23 @@ export class MapVisualPage implements OnInit, OnDestroy {
     });
 
     this.loadSavedPaymentPreference();
+
+    // Auto apply promo if claimed from home page
+    const tempPromoCode = localStorage.getItem('tempPromoCode');
+    if (tempPromoCode) {
+      this.orderService.getPromos().subscribe({
+        next: (res) => {
+          if (res && res.data) {
+            const promo = res.data.find(p => p.code.toUpperCase() === tempPromoCode.toUpperCase());
+            if (promo) {
+              this.selectedPromo = promo;
+              localStorage.removeItem('tempPromoCode');
+              this.cdr.detectChanges();
+            }
+          }
+        }
+      });
+    }
   }
 
   ionViewDidEnter() {
@@ -660,7 +758,9 @@ export class MapVisualPage implements OnInit, OnDestroy {
         if (shouldFitBounds) {
           const bounds = new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]);
           for (const coord of coordinates) bounds.extend(coord as any);
-          this.map.fitBounds(bounds, { padding: 50 });
+          this.map.fitBounds(bounds, {
+            padding: { top: 120, bottom: 500, left: 60, right: 60 }
+          });
         }
       }
     }, err => console.error('Error fetching route from TomTom:', err));
@@ -690,15 +790,223 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.closeNoteModal();
   }
 
+  // ─── Promo Methods ─────────────────────────────────────────────────────────
+
+  openPromoModal() {
+    if (this.selectedPayment === 'tunai') {
+      this.showToast('Ubah metode pembayaran ke Non-Tunai / FivGo Pay untuk menggunakan promo.', 'warning');
+      return;
+    }
+    this.isPromoModalOpen = true;
+    this.promoY = 0;
+    this.manualPromoCode = '';
+    this.fetchPromos();
+  }
+
+  closePromoModal() {
+    this.isPromoModalOpen = false;
+  }
+
+  fetchPromos() {
+    this.orderService.getPromos().subscribe({
+      next: (res) => {
+        this.availablePromos = res.data || [];
+      },
+      error: (err) => {
+        console.error('Gagal mengambil daftar promo:', err);
+        this.showToast('Gagal memuat daftar promo', 'danger');
+      }
+    });
+  }
+
+  applyManualPromo() {
+    if (!this.manualPromoCode || this.isApplyingPromo) return;
+
+    if (this.selectedPayment === 'tunai') {
+      this.showToast('Promo hanya dapat digunakan dengan metode pembayaran non-tunai.', 'warning');
+      return;
+    }
+
+    this.isApplyingPromo = true;
+    const amount = this.getSelectedVehiclePriceRaw();
+    const vehicleType = this.selectedVehicle;
+    const paymentMethod = this.selectedPayment === 'nontunai' 
+      ? this.normalizePaymentCode(this.selectedNonTunai) 
+      : (this.selectedPayment === 'wallet' ? 'wallet' : 'tunai');
+
+    this.orderService.applyPromo(this.manualPromoCode.trim(), amount, vehicleType, paymentMethod).subscribe({
+      next: (res) => {
+        this.isApplyingPromo = false;
+        
+        // Cari promo di daftar promo lokal
+        const found = this.availablePromos.find(p => p.code.toLowerCase() === this.manualPromoCode.trim().toLowerCase() || p.id === res.promo_id);
+        if (found) {
+          this.selectedPromo = found;
+        } else {
+          this.selectedPromo = {
+            id: res.promo_id,
+            code: res.promo_code,
+            title: res.promo_code,
+            description: 'Promo berhasil diterapkan',
+            discount_percent: Math.round((res.discount_amount / amount) * 100),
+            max_discount: res.discount_amount,
+            min_order_amount: 0,
+            applicable_vehicles: [vehicleType]
+          };
+        }
+        
+        this.showToast('Promo berhasil diterapkan!', 'success');
+        this.closePromoModal();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isApplyingPromo = false;
+        const msg = err?.error?.message || 'Kode promo tidak valid';
+        this.showToast(msg, 'danger');
+      }
+    });
+  }
+
+  viewPromoDetail(p: any) {
+    this.detailPromo = p;
+    this.isPromoDetailOpen = true;
+  }
+
+  closePromoDetail() {
+    this.isPromoDetailOpen = false;
+    this.detailPromo = null;
+  }
+
+  getPromoImage(code: string): string {
+    const c = (code || '').toUpperCase();
+    if (c === 'FIVGOMOTOR10X') {
+      return 'assets/promo_10x_motor.png';
+    }
+    if (c === 'FIVGOMOBILBARU') {
+      return 'assets/promo_mobil.png';
+    }
+    if (c === 'FIVGOMOTORBARU') {
+      return 'assets/promo_motor.png';
+    }
+    return 'assets/beranda poster.png'; // default fallback image
+  }
+
+  selectPromo(p: any) {
+    if (this.selectedPayment === 'tunai') {
+      this.showToast('Promo hanya dapat digunakan dengan metode pembayaran non-tunai.', 'warning');
+      return;
+    }
+    this.selectedPromo = p;
+    this.closePromoDetail();
+    this.closePromoModal();
+    this.showToast(`Promo ${p.code} berhasil digunakan!`, 'success');
+    this.cdr.detectChanges();
+  }
+
+  copyPromoCode(code: string) {
+    if (!code) return;
+    navigator.clipboard.writeText(code).then(() => {
+      this.showToast('Kode promo berhasil disalin', 'success');
+    }).catch(err => {
+      console.error('Failed to copy text: ', err);
+      // Fallback copy
+      const el = document.createElement('textarea');
+      el.value = code;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      this.showToast('Kode promo berhasil disalin', 'success');
+    });
+  }
+
+  getPromoEligibilityError(p: any): string | null {
+    const amount = this.getSelectedVehiclePriceRaw();
+    if (amount < (p.min_order_amount || 0)) {
+      return `Minimum transaksi Rp ${(p.min_order_amount || 0).toLocaleString('id-ID')}`;
+    }
+    
+    if (p.applicable_vehicles) {
+      let vehicles = [];
+      try {
+        vehicles = typeof p.applicable_vehicles === 'string' ? JSON.parse(p.applicable_vehicles) : p.applicable_vehicles;
+      } catch (e) {
+        vehicles = [];
+      }
+      if (Array.isArray(vehicles) && !vehicles.includes(this.selectedVehicle)) {
+        return `Hanya berlaku untuk FivGO ${this.getApplicableVehiclesLabel(p.applicable_vehicles)}`;
+      }
+    }
+    
+    return null;
+  }
+
+  getApplicableVehiclesLabel(vehicles: any): string {
+    let list = [];
+    try {
+      list = typeof vehicles === 'string' ? JSON.parse(vehicles) : vehicles;
+    } catch (e) {
+      list = [];
+    }
+    if (!Array.isArray(list)) return '';
+    return list.map(v => v === 'motor' ? 'Motor' : 'Mobil').join(' & ');
+  }
+
+  getDiscountedPriceRaw(vehicleType: string, originalPriceRaw: number): number {
+    if (!this.selectedPromo) return originalPriceRaw;
+    const promo = this.selectedPromo;
+    
+    if (promo.applicable_vehicles) {
+      let vehicles = [];
+      try {
+        vehicles = typeof promo.applicable_vehicles === 'string' ? JSON.parse(promo.applicable_vehicles) : promo.applicable_vehicles;
+      } catch (e) {
+        vehicles = [];
+      }
+      if (Array.isArray(vehicles) && !vehicles.includes(vehicleType)) {
+        return originalPriceRaw;
+      }
+    }
+    
+    if (originalPriceRaw < (promo.min_order_amount || 0)) {
+      return originalPriceRaw;
+    }
+    
+    let discount = (originalPriceRaw * (promo.discount_percent || 0)) / 100;
+    if (discount > (promo.max_discount || 0)) {
+      discount = promo.max_discount;
+    }
+    return Math.max(0, originalPriceRaw - Math.round(discount));
+  }
+
+  getPriceRaw(priceStr: string): number {
+    if (!priceStr || priceStr === 'Error' || priceStr === 'Menghitung...') return 0;
+    return parseInt(priceStr.replace(/[^0-9]/g, ''), 10);
+  }
+
   getSelectedVehiclePrice(): string {
     const v = this.vehicles.find(v => v.type === this.selectedVehicle);
-    return v?.price || 'Menghitung...';
+    if (!v || !v.price || v.price === 'Error' || v.price === 'Menghitung...') return 'Menghitung...';
+    
+    const originalPrice = this.getPriceRaw(v.price);
+    const discountedPrice = this.getDiscountedPriceRaw(v.type, originalPrice);
+    
+    if (discountedPrice !== originalPrice) {
+      return 'Rp' + discountedPrice.toLocaleString('id-ID');
+    }
+    return v.price;
   }
 
   getSelectedVehiclePriceRaw(): number {
     const v = this.vehicles.find(v => v.type === this.selectedVehicle);
     if (!v || !v.price || v.price === 'Error' || v.price === 'Menghitung...') return 0;
     return parseInt(v.price.replace(/[^0-9]/g, ''), 10);
+  }
+
+  handlePromoStart(e: any) {
+    this.isDraggingPromo = true;
+    this.promoStartY = e.type === 'mousedown' ? e.pageY : e.touches[0].pageY;
+    this.promoStartTranslateY = this.promoY;
   }
 
   isShortDistanceForMobil(): boolean {
@@ -806,6 +1114,11 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
     if (savedNonTunai) {
       this.selectedNonTunai = this.normalizePaymentCode(savedNonTunai);
+    }
+
+    if (this.selectedPromo && this.selectedPayment === 'tunai') {
+      this.selectedPromo = null;
+      this.showToast('Promo dinonaktifkan karena Anda memilih metode pembayaran Tunai.', 'warning');
     }
   }
 
@@ -918,22 +1231,28 @@ export class MapVisualPage implements OnInit, OnDestroy {
         : (this.selectedPayment === 'wallet' ? 'wallet' : 'tunai'),
       vehicle_type: this.selectedVehicle,
       notes: this.driverNote || undefined,
-      estimated_price: this.getSelectedVehiclePriceRaw() || undefined
+      estimated_price: this.getSelectedVehiclePriceRaw() || undefined,
+      promo_code: this.selectedPromo ? this.selectedPromo.code : undefined
     };
 
     this.orderService.createOrder(orderData).subscribe({
       next: (order) => {
         this.currentOrderId = order.id;
         if (this.selectedPayment === 'nontunai' || this.selectedPayment === 'wallet') {
-          this.openDompetxGateway(order.id, order.estimated_price || this.getSelectedVehiclePriceRaw());
+          const payable = (typeof order.estimated_price === 'number') 
+            ? Math.max(0, order.estimated_price - (order.discount_amount || 0)) 
+            : this.getSelectedVehiclePriceRaw();
+          this.openDompetxGateway(order.id, payable);
           return;
         }
         this.beginDriverSearch();
       },
       error: (err) => {
         console.error('Gagal membuat order:', err);
-        // Fallback: lanjutkan animasi pencarian meski backend gagal
-        this.beginDriverSearch();
+        const msg = err?.error?.message || 'Gagal membuat pesanan. Silakan coba lagi.';
+        this.showToast(msg, 'danger');
+        this.isSearchingDriver = false;
+        this.isVehicleModalOpen = true;
       }
     });
   }
@@ -1158,6 +1477,10 @@ export class MapVisualPage implements OnInit, OnDestroy {
           this.isCheckingHistory = false;
           this.activeOrder = order;
 
+          if (order && ['accepted', 'arrived', 'started'].includes(order.status)) {
+            this.connectTrackingWebsocket(order.id);
+          }
+
           if (order.status === 'accepted' && !this.isDriverFound) {
             // Driver ditemukan!
             this.stopSearch();
@@ -1268,6 +1591,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
       clearInterval(this.orderPollingInterval);
       this.orderPollingInterval = null;
     }
+    this.disconnectTrackingWebsocket();
   }
 
   stopSearch() {
@@ -1699,6 +2023,22 @@ export class MapVisualPage implements OnInit, OnDestroy {
       if (e.cancelable && e.type !== 'mousemove') {
         e.preventDefault();
       }
+    } else if (this.isDraggingPromo) {
+      const y = e.type === 'mousemove' ? e.pageY : e.touches[0].pageY;
+      const delta = y - this.promoStartY;
+      
+      const sheetHeight = 500; // Approximate height of promo modal
+      const deltaPercent = (delta / sheetHeight) * 100;
+      
+      let nextY = this.promoStartTranslateY + deltaPercent;
+      if (nextY < 0) {
+        nextY = nextY * 0.2; // Resistance when pulling up
+      }
+      this.promoY = nextY;
+      
+      if (e.cancelable && e.type !== 'mousemove') {
+        e.preventDefault();
+      }
     }
   }
 
@@ -1725,6 +2065,13 @@ export class MapVisualPage implements OnInit, OnDestroy {
         // Snap back
         this.noteY = 0;
       }
+    } else if (this.isDraggingPromo) {
+      this.isDraggingPromo = false;
+      if (this.promoY > 25) {
+        this.closePromoModal();
+      } else {
+        this.promoY = 0;
+      }
     }
   }
 
@@ -1748,6 +2095,19 @@ export class MapVisualPage implements OnInit, OnDestroy {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
         this.lastUserLngLat = [lng, lat];
+
+        // JIKA sedang dalam mode booking (belum buat order) DAN lokasi penjemputan adalah "Lokasi Saat Ini"
+        if (!this.currentOrderId && this.jemput && this.jemput.toLowerCase() === 'lokasi saat ini') {
+          this.startCoord = [lng, lat];
+          if (this.pickupMarker) {
+            this.pickupMarker.setLngLat([lng, lat]);
+          }
+          
+          // Re-draw rute & update harga jika rute/lokasi berubah
+          this.fetchPrices(this.startCoord, this.destCoord);
+          this.drawRoute(this.startCoord, this.destCoord, false); // Jangan auto-fitBounds terus-menerus agar tidak mengganggu zoom user
+        }
+
         this.cdr.detectChanges();
 
         if (!this.map) return;

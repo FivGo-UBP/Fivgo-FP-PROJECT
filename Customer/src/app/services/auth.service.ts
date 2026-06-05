@@ -120,6 +120,16 @@ export class AuthService {
         );
     }
 
+    deleteAccount() {
+        return this.http.delete<any>(`${environment.apiUrl}/customers/me`).pipe(
+            tap(() => this.clearAuth()),
+            catchError(err => {
+                this.clearAuth();
+                throw err;
+            })
+        );
+    }
+
     logout() {
         return this.http.post<any>(`${environment.apiUrl}/auth/logout`, {}).pipe(
             tap(() => this.clearAuth()),

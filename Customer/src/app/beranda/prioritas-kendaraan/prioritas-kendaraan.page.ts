@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Geolocation } from '@capacitor/geolocation';
+import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-prioritas-kendaraan',
@@ -12,7 +13,15 @@ export class PrioritasKendaraanPage implements OnInit {
   vehicle: string = '';
   recentLocations: any[] = [];
 
-  constructor(private route: ActivatedRoute, private router: Router) { }
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private navCtrl: NavController
+  ) { }
+
+  goBack() {
+    this.navCtrl.back();
+  }
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
@@ -43,7 +52,11 @@ export class PrioritasKendaraanPage implements OnInit {
 
   async selectLocation(loc: any) {
     try {
-      const position = await Geolocation.getCurrentPosition();
+      const position = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      });
       const currentLat = position.coords.latitude;
       const currentLng = position.coords.longitude;
 

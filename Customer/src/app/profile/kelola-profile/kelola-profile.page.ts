@@ -59,7 +59,7 @@ export class KelolaProfilePage implements OnInit {
   }
 
   goBack() {
-    this.navCtrl.back();
+    this.navCtrl.navigateBack('/tabs/beranda');
   }
 
 }

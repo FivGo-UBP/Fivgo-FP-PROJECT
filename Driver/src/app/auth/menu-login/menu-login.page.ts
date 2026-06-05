@@ -32,6 +32,12 @@ export class MenuLoginPage implements OnInit {
   ngOnInit() {
   }
 
+  ionViewWillEnter() {
+    if (this.authService.getToken()) {
+      this.router.navigate(['/tabs/beranda'], { replaceUrl: true });
+    }
+  }
+
   async loginWithGoogle() {
     if (!environment.googleClientId) {
       await this.showAlert('Google Login Belum Siap', 'Google Client ID belum dikonfigurasi.');

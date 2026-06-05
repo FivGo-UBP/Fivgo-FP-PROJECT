@@ -392,3 +392,203 @@ ion-content {
   font-weight: 600;
   font-size: 14px;
 }
+
+// ─── Custom Bottom Sheet Modal for Driver Cancellation ───────────────────────
+
+.custom-backdrop-solid {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 30000;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUpModal {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.custom-bottom-sheet-wrap {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 30001;
+  background: white;
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.1);
+  animation: slideUpModal 0.3s ease-out forwards;
+  display: flex;
+  flex-direction: column;
+}
+
+.sheet-header {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+  margin-bottom: 0;
+  flex-shrink: 0;
+  
+  .modal-handle {
+    width: 40px;
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    margin: 0;
+  }
+}
+
+.cancel-reason-wrap {
+  justify-content: flex-end;
+  border-radius: 24px 24px 0 0;
+  padding: 24px;
+  max-height: 90vh;
+  overflow-y: auto;
+
+  .cancel-header-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+
+    .confirm-cancel-img {
+      width: 50px;
+      height: 50px;
+      margin-right: 16px;
+      object-fit: contain;
+    }
+
+    .cancel-header-text {
+      flex: 1;
+      h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: #1f2937;
+        line-height: 1.35;
+        
+        &.text-danger-custom {
+          color: #dc2626;
+        }
+      }
+      p {
+        margin: 4px 0 0 0;
+        font-size: 12px;
+        color: #6b7280;
+        line-height: 1.4;
+      }
+    }
+  }
+
+  .cancel-warning-box {
+    background: #f3f4f6;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: flex-start;
+    border: 1px solid #e5e7eb;
+
+    &.danger-box {
+      background: #fef2f2;
+      border-color: #fee2e2;
+    }
+
+    ion-icon {
+      font-size: 24px;
+      color: #374151;
+      margin-right: 12px;
+      flex-shrink: 0;
+      
+      &.text-red {
+        color: #dc2626;
+      }
+    }
+
+    .warning-text-container {
+      flex: 1;
+      p {
+        margin: 0;
+        font-size: 12px;
+        color: #374151;
+        line-height: 1.5;
+        
+        &.limit-text {
+          margin: 6px 0 0 0;
+          font-weight: 700;
+          color: #d97706;
+          
+          &.text-red {
+            color: #dc2626;
+          }
+        }
+      }
+    }
+  }
+
+  .cancel-reason-title {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .cancel-reason-list {
+    margin-bottom: 24px;
+    background: transparent;
+
+    ion-item {
+      --padding-start: 0;
+      --inner-padding-end: 0;
+      --background: transparent;
+
+      ion-label {
+        font-size: 14px;
+        color: #374151;
+      }
+
+      ion-icon {
+        font-size: 24px;
+      }
+
+      .circle-placeholder {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2px solid #e5e7eb;
+        background: transparent;
+      }
+    }
+  }
+
+  .cancel-actions-row {
+    display: flex;
+    gap: 12px;
+
+    .cancel-btn-light {
+      flex: 1;
+      --background: #e5e7eb;
+      --color: #374151;
+      --border-radius: 14px;
+      font-weight: 600;
+      height: 48px;
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .cancel-btn-confirm {
+      flex: 1;
+      --background: #1a2b6d;
+      --color: white;
+      --border-radius: 14px;
+      font-weight: 600;
+      height: 48px;
+      margin: 0;
+      font-size: 14px;
+    }
+  }
+}

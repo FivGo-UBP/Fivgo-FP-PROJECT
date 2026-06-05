@@ -113,9 +113,16 @@
             <span class="note-badge">4 Kursi</span>
           </div>
         </div>
-        <div class="v-price-container">
+        <div class="v-price-container" style="display: flex; flex-direction: column; align-items: flex-end;">
           <ion-spinner name="circles" *ngIf="v.isLoading" class="v-spinner"></ion-spinner>
-          <h4 *ngIf="!v.isLoading">{{ v.price }}</h4>
+          <ng-container *ngIf="!v.isLoading">
+            <span class="original-price-crossed" *ngIf="selectedPromo && getDiscountedPriceRaw(v.type, getPriceRaw(v.price)) !== getPriceRaw(v.price)" style="text-decoration: line-through; color: #94a3b8; font-size: 12px; margin-bottom: 2px;">
+              {{ v.price }}
+            </span>
+            <h4 style="margin: 0; color: #1e293b; font-weight: 700;">
+              Rp{{ getDiscountedPriceRaw(v.type, getPriceRaw(v.price)) | number:'1.0-0':'id-ID' }}
+            </h4>
+          </ng-container>
         </div>
       </div>
     </div>
@@ -139,8 +146,9 @@
       <span>{{ getSelectedPaymentLabel() }}</span>
     </div>
     <div class="pill-divider"></div>
-    <div class="pill-btn promo-btn">
-      <span>Promo</span>
+    <div class="pill-btn promo-btn" (click)="openPromoModal()" [class.has-promo]="selectedPromo">
+      <ion-icon name="pricetag-outline" [color]="selectedPromo ? 'warning' : 'medium'"></ion-icon>
+      <span style="margin-left: 4px;">{{ selectedPromo ? selectedPromo.code : 'Promo' }}</span>
     </div>
     <div class="pill-divider"></div>
     <div class="pill-btn more-btn" (click)="openNoteModal()">
@@ -446,6 +454,106 @@
 
     <ion-button expand="block" color="warning" class="btn-back-home" (click)="finishCancelFlow()">
       Kembali ke Beranda
+    </ion-button>
+  </div>
+</div>
+
+<!-- Modal 6: Promo & Voucher Sheet -->
+<div class="custom-backdrop-solid" *ngIf="isPromoModalOpen" (click)="closePromoModal()"></div>
+<div class="custom-bottom-sheet-wrap promo-modal-wrap" 
+     *ngIf="isPromoModalOpen"
+     [class.dragging]="isDraggingPromo"
+     [style.transform]="'translateY(' + promoY + '%)'">
+  <div class="sheet-header" (touchstart)="handlePromoStart($event)" (mousedown)="handlePromoStart($event)">
+    <div class="modal-handle"></div>
+  </div>
+  
+  <div class="promo-modal-header">
+    <h3 class="promo-title">Pakai Promo</h3>
+  </div>
+  
+
+
+  <!-- Active Voucher list -->
+  <div class="promo-modal-body custom-scrollbar">
+    <div class="promo-voucher-list" *ngIf="availablePromos && availablePromos.length > 0">
+      <div class="promo-voucher-card" *ngFor="let p of availablePromos" (click)="viewPromoDetail(p)">
+        <div class="voucher-left">
+          <div class="voucher-icon-wrap">
+            <ion-icon name="pricetag-outline"></ion-icon>
+          </div>
+        </div>
+        <div class="voucher-middle">
+          <h4>{{ p.title }}</h4>
+          <p class="voucher-desc">{{ p.description }}</p>
+          <p class="voucher-expiry" *ngIf="p.end_date">Hingga {{ p.end_date | date:'dd MMM yyyy' }}</p>
+          
+          <!-- Warning if not eligible -->
+          <div class="warning-badge-inline" *ngIf="getPromoEligibilityError(p)">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            <span>{{ getPromoEligibilityError(p) }}</span>
+          </div>
+        </div>
+        <div class="voucher-right">
+          <button class="btn-voucher-use" [disabled]="getPromoEligibilityError(p)" (click)="selectPromo(p); $event.stopPropagation();">
+            Gunakan
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="promo-empty" *ngIf="!availablePromos || availablePromos.length === 0">
+      <ion-icon name="gift-outline" style="font-size: 42px; color: #cbd5e1; margin-bottom: 8px;"></ion-icon>
+      <p>Belum ada promo yang tersedia.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 7: Detail Promosi (Matching Reference Image) -->
+<div class="custom-backdrop-solid" *ngIf="isPromoDetailOpen" (click)="closePromoDetail()"></div>
+<div class="custom-bottom-sheet-wrap promo-detail-wrap" *ngIf="isPromoDetailOpen">
+  <div class="sheet-header-static">
+    <div class="modal-handle-static"></div>
+  </div>
+  
+  <div class="detail-header-row">
+    <h3>Detail Promosi</h3>
+    <ion-icon name="close-circle" class="btn-close-detail" (click)="closePromoDetail()"></ion-icon>
+  </div>
+
+  <div class="promo-detail-body custom-scrollbar" *ngIf="detailPromo">
+    <!-- Illustrative image on top -->
+    <div class="sheet-banner-img">
+      <img [src]="getPromoImage(detailPromo.code)" alt="Promo illustration">
+    </div>
+
+    <h2 class="detail-title">{{ detailPromo.title }}</h2>
+    <p class="detail-subtitle">{{ detailPromo.description }}</p>
+
+
+
+    <!-- Syarat & Ketentuan -->
+    <h4 class="terms-header">Syarat &amp; Ketentuan</h4>
+    <ul class="terms-list">
+      <li *ngIf="detailPromo.min_order_amount > 0">Berlaku setelah transaksi minimal Rp {{ detailPromo.min_order_amount | number:'1.0-0':'id-ID' }}.</li>
+      <li *ngIf="detailPromo.limit_per_user > 0">Batas pemakaian per akun sebanyak {{ detailPromo.limit_per_user }}x.</li>
+      <li *ngIf="detailPromo.applicable_vehicles">
+        Hanya berlaku untuk layanan FivGO {{ getApplicableVehiclesLabel(detailPromo.applicable_vehicles) }}.
+      </li>
+      <li>Potongan langsung sebesar {{ detailPromo.discount_percent }}% (Maks. Rp {{ detailPromo.max_discount | number:'1.0-0':'id-ID' }}).</li>
+      <li *ngIf="detailPromo.end_date">Berlaku hingga {{ detailPromo.end_date | date:'dd MMMM yyyy' }}.</li>
+    </ul>
+    
+    <!-- Eligibility alert inside details -->
+    <div class="detail-error-box" *ngIf="getPromoEligibilityError(detailPromo)">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <p>{{ getPromoEligibilityError(detailPromo) }}</p>
+    </div>
+  </div>
+  
+  <div class="promo-detail-footer" *ngIf="detailPromo">
+    <ion-button expand="block" color="warning" class="btn-use-promo-main" [disabled]="getPromoEligibilityError(detailPromo)" (click)="selectPromo(detailPromo)">
+      Gunakan Promo
     </ion-button>
   </div>
 </div>

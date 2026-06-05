@@ -155,12 +155,23 @@ class DriverController extends Controller
     }
     public function updateStatus(Request $request)
     {
+        \Illuminate\Support\Facades\Log::info('[DriverDebug] updateStatus API called', [
+            'user_id' => $request->user()?->id,
+            'role' => $request->user()?->role,
+            'wallet_balance' => $request->user()?->wallet_balance,
+            'request_status' => $request->input('status')
+        ]);
+
         $validated = $request->validate([
             'status' => 'required|string|in:online,offline,busy'
         ]);
 
         $user = $request->user();
         if ($validated['status'] !== 'offline' && $user->wallet_balance < -50000) {
+            \Illuminate\Support\Facades\Log::warning('[DriverDebug] updateStatus blocked by wallet balance', [
+                'user_id' => $user->id,
+                'wallet_balance' => $user->wallet_balance
+            ]);
             return response()->json([
                 'message' => 'Status tidak dapat diubah ke online. Saldo Anda saat ini minus Rp ' . number_format(abs($user->wallet_balance), 0, ',', '.') . '. Harap lakukan Top Up minimal agar saldo berada di atas -Rp 50.000 untuk menerima pesanan kembali.'
             ], 403);
@@ -168,6 +179,10 @@ class DriverController extends Controller
 
         $profile = DriverProfile::where('user_id', $user->id)->firstOrFail();
         $profile->update(['status' => $validated['status']]);
+        \Illuminate\Support\Facades\Log::info('[DriverDebug] updateStatus DB updated successfully', [
+            'user_id' => $user->id,
+            'new_status' => $profile->status
+        ]);
 
         return response()->json($profile);
     }
@@ -175,7 +190,9 @@ class DriverController extends Controller
     {
         $validated = $request->validate([
             'lat' => 'required|numeric',
-            'lng' => 'required|numeric'
+            'lng' => 'required|numeric',
+            'heading' => 'nullable|numeric',
+            'order_id' => 'nullable|string'
         ]);
 
         $profile = DriverProfile::where('user_id', $request->user()->id)->first();
@@ -184,6 +201,15 @@ class DriverController extends Controller
                 'current_lat' => $validated['lat'],
                 'current_lng' => $validated['lng']
             ]);
+
+            if (!empty($validated['order_id'])) {
+                broadcast(new \App\Events\DriverLocationUpdated(
+                    $validated['order_id'],
+                    $validated['lat'],
+                    $validated['lng'],
+                    $validated['heading'] ?? 0
+                ))->toOthers();
+            }
         }
 
         return response()->json(['message' => 'Location updated']);

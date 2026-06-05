@@ -2,7 +2,9 @@
   <!-- Header Area (Green Background) -->
   <div class="green-header">
     <div class="header-top">
-      <ion-back-button defaultHref="/home" icon="arrow-back" text="" color="dark" class="btn-back"></ion-back-button>
+      <ion-button fill="clear" (click)="goBack()" class="btn-back">
+        <ion-icon name="arrow-back" style="font-size: 24px; color: #ffffff;"></ion-icon>
+      </ion-button>
     </div>
 
     <div class="header-content">

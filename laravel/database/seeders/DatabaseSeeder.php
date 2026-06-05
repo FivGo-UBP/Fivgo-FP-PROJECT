@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             CreateDriverSeeder::class,
             DummyOrderSeeder::class,
+            PromoSeeder::class,
         ]);
     }
 }

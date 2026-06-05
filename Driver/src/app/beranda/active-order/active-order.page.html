@@ -164,4 +164,54 @@
 
   </div>
 
+  <!-- Modal Alasan Batal Driver -->
+  <div class="custom-backdrop-solid" *ngIf="isCancelModalOpen" (click)="closeCancelModal()"></div>
+  <div class="custom-bottom-sheet-wrap cancel-reason-wrap" *ngIf="isCancelModalOpen">
+    <div class="sheet-header">
+      <div class="modal-handle"></div>
+    </div>
+
+    <div class="cancel-header-row">
+      <img src="assets/driver_cancel_mascot.png" alt="Confirm Cancel" class="confirm-cancel-img">
+      <div class="cancel-header-text">
+        <h3 *ngIf="getCancelState() === 1">Wah, sayang banget kalau orderan ini dilewatkan</h3>
+        <h3 *ngIf="getCancelState() === 2">Wah, tingkat prioritas akunmu bisa turun kalau dibatalkan</h3>
+        <h3 *ngIf="getCancelState() === 3" class="text-danger-custom">Gawat, prioritas akunmu akan langsung diturunkan!</h3>
+        
+        <p *ngIf="getCancelState() === 1">Yakin mau dibatalkan? Pertahankan performamu agar akun tetap gacor!</p>
+        <p *ngIf="getCancelState() === 2">Yakin mau dilewatkan? Pertahankan performa terbaikmu biar orderan lancar terus!</p>
+        <p *ngIf="getCancelState() === 3">Ini adalah batas pembatalan terakhirmu hari ini. Pikirkan baik-baik sebelum membatalkan, yuk!</p>
+      </div>
+    </div>
+
+    <div class="cancel-warning-box" [class.danger-box]="getCancelState() === 3">
+      <ion-icon [name]="getCancelState() === 3 ? 'alert-circle' : 'alert-circle-outline'" [class.text-red]="getCancelState() === 3"></ion-icon>
+      <div class="warning-text-container">
+        <p *ngIf="getCancelState() === 1">Kamu belum menuju ke lokasi pelanggan. Pembatalan saat ini tidak dikenakan penalti dan tidak memengaruhi prioritas akunmu.</p>
+        <p *ngIf="getCancelState() === 2">Pelanggan sudah menunggu di titik jemput, nih. Membatalkan pesanan yang sedang berjalan sekarang akan dikenakan penalti.</p>
+        <p *ngIf="getCancelState() === 3">Membatalkan pesanan yang sedang berjalan di batas maksimal harian akan mengurangi orderan masuk ke akunmu secara drastis untuk 24 jam ke depan.</p>
+        <p class="limit-text" [class.text-red]="getCancelState() === 3">(BATAS HARIAN: {{ getCancelCount() }}/5)</p>
+      </div>
+    </div>
+
+    <h4 class="cancel-reason-title">Kenapa Pesanan nya di batalin?</h4>
+    <ion-list lines="full" class="cancel-reason-list">
+      <ion-item *ngFor="let reason of cancelReasons" button (click)="selectCancelReason(reason)">
+        <ion-label>{{ reason }}</ion-label>
+        <ion-icon *ngIf="selectedCancelReason === reason" name="checkmark-circle" color="success" slot="end"></ion-icon>
+        <div *ngIf="selectedCancelReason !== reason" slot="end" class="circle-placeholder"></div>
+      </ion-item>
+    </ion-list>
+
+    <div class="cancel-actions-row">
+      <ion-button expand="block" class="cancel-btn-light" [disabled]="!selectedCancelReason || isCancelling" (click)="cancelOrder()">
+        <ion-spinner name="crescent" *ngIf="isCancelling" slot="start"></ion-spinner>
+        Batalkan Orderan
+      </ion-button>
+      <ion-button expand="block" class="cancel-btn-confirm" (click)="closeCancelModal()">
+        Lanjutkan Orderan
+      </ion-button>
+    </div>
+  </div>
+
 </ion-content>

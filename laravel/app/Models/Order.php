@@ -10,10 +10,11 @@ class Order extends Model
     protected $fillable = [
         'customer_id', 'driver_id', 'status', 'vehicle_type', 'pickup_address', 'pickup_lat', 'pickup_lng', 
         'dropoff_address', 'dropoff_lat', 'dropoff_lng', 'estimated_price', 'final_price',
-        'payment_method', 'cancel_reason', 'rating', 'review'
+        'payment_method', 'cancel_reason', 'rating', 'review', 'promo_id', 'discount_amount'
     ];
 
     public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
+    public function promo() { return $this->belongsTo(Promo::class, 'promo_id'); }
     public function driver() { return $this->belongsTo(User::class, 'driver_id')->with('driverProfile'); }
     public function trackings() { return $this->hasMany(OrderTracking::class); }
 

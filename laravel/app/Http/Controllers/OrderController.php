@@ -17,18 +17,31 @@ class OrderController extends Controller
 
     public function create(Request $request)
     {
-        $validated = $request->validate([
-            'pickup_address' => 'required|string',
-            'pickup_lat' => 'required|numeric',
-            'pickup_lng' => 'required|numeric',
-            'dropoff_address' => 'required|string',
-            'dropoff_lat' => 'required|numeric',
-            'dropoff_lng' => 'required|numeric',
-            'payment_method' => 'nullable|string',
-            'vehicle_type' => 'nullable|string',
-            'notes' => 'nullable|string',
-            'estimated_price' => 'nullable|numeric',
+        \Illuminate\Support\Facades\Log::info('[DriverDebug] OrderController@create called with request data', [
+            'customer_id' => $request->user()?->id,
+            'all_data' => $request->all()
         ]);
+
+        try {
+            $validated = $request->validate([
+                'pickup_address' => 'required|string',
+                'pickup_lat' => 'required|numeric',
+                'pickup_lng' => 'required|numeric',
+                'dropoff_address' => 'required|string',
+                'dropoff_lat' => 'required|numeric',
+                'dropoff_lng' => 'required|numeric',
+                'payment_method' => 'nullable|string',
+                'vehicle_type' => 'nullable|string',
+                'notes' => 'nullable|string',
+                'estimated_price' => 'nullable|numeric',
+                'promo_code' => 'nullable|string',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Illuminate\Support\Facades\Log::error('[DriverDebug] Order validation failed', [
+                'errors' => $e->errors()
+            ]);
+            throw $e;
+        }
 
         $validated['customer_id'] = $request->user()->id;
         $validated['status'] = $this->requiresPrepaidPayment($validated['payment_method'] ?? null)
@@ -40,11 +53,113 @@ class OrderController extends Controller
             $validated['estimated_price'] = rand(10000, 50000);
         }
 
-        // Temukan driver aktif terdekat yang benar-benar aktif/online dalam 60 detik terakhir (Heartbeat Check) dan memiliki saldo >= -50000
+        // Promo validation
+        $promoId = null;
+        $discountAmount = 0;
+        if (!empty($validated['promo_code'])) {
+            // Cek Syarat: Metode Pembayaran (Harus Non-Tunai)
+            $paymentMethod = strtolower($validated['payment_method'] ?? 'cash');
+            if (in_array($paymentMethod, ['tunai', 'cash'], true)) {
+                return response()->json(['message' => 'Promo hanya dapat digunakan dengan metode pembayaran non-tunai.'], 400);
+            }
+
+            $promo = \App\Models\Promo::where('code', $validated['promo_code'])
+                ->where('is_active', true)
+                ->where('start_date', '<=', now())
+                ->where('end_date', '>=', now())
+                ->first();
+
+            if (!$promo) {
+                return response()->json(['message' => 'Promo tidak valid atau sudah kadaluarsa'], 400);
+            }
+
+            if ($promo->quota > 0 && $promo->used_count >= $promo->quota) {
+                return response()->json(['message' => 'Kuota promo sudah habis'], 400);
+            }
+
+            if ($validated['estimated_price'] < $promo->min_order_amount) {
+                return response()->json(['message' => 'Harga perjalanan belum memenuhi syarat minimum promo ini'], 400);
+            }
+
+            if ($promo->applicable_vehicles) {
+                $vehicles = is_array($promo->applicable_vehicles) ? $promo->applicable_vehicles : json_decode($promo->applicable_vehicles, true);
+                if (is_array($vehicles) && !in_array($validated['vehicle_type'], $vehicles)) {
+                    return response()->json(['message' => 'Promo tidak berlaku untuk jenis kendaraan ini'], 400);
+                }
+            }
+
+            $usageCount = Order::where('customer_id', $request->user()->id)
+                ->where('promo_id', $promo->id)
+                ->whereIn('status', ['completed', 'pending', 'accepted', 'started'])
+                ->count();
+
+            if ($usageCount >= $promo->limit_per_user) {
+                return response()->json(['message' => 'Anda telah melebihi batas penggunaan promo ini'], 400);
+            }
+
+            // Cek Syarat Khusus Misi / New User
+            $codeUpper = strtoupper($promo->code);
+            $userId = $request->user()->id;
+            if ($codeUpper === 'FIVGOMOTOR10X') {
+                $completedMotorOrders = Order::where('customer_id', $userId)
+                    ->where('vehicle_type', 'motor')
+                    ->where('status', 'completed')
+                    ->count();
+                if ($completedMotorOrders < 10) {
+                    return response()->json(['message' => "Promo ini hanya berlaku setelah Anda menyelesaikan 10x perjalanan FivGO Motor. Perjalanan Anda saat ini: {$completedMotorOrders}/10."], 400);
+                }
+            } elseif ($codeUpper === 'FIVGOMOBILBARU') {
+                $hasMobilOrder = Order::where('customer_id', $userId)
+                    ->where('vehicle_type', 'mobil')
+                    ->where('status', 'completed')
+                    ->exists();
+                if ($hasMobilOrder) {
+                    return response()->json(['message' => 'Promo ini hanya berlaku untuk perjalanan pertama kali menggunakan FivGO Mobil.'], 400);
+                }
+            } elseif ($codeUpper === 'FIVGOMOTORBARU') {
+                $hasMotorOrder = Order::where('customer_id', $userId)
+                    ->where('vehicle_type', 'motor')
+                    ->where('status', 'completed')
+                    ->exists();
+                if ($hasMotorOrder) {
+                    return response()->json(['message' => 'Promo ini hanya berlaku untuk perjalanan pertama kali menggunakan FivGO Motor.'], 400);
+                }
+            }
+
+            // Calculate discount
+            $discountAmount = ($validated['estimated_price'] * $promo->discount_percent) / 100;
+            if ($discountAmount > $promo->max_discount) {
+                $discountAmount = $promo->max_discount;
+            }
+            $discountAmount = (int) $discountAmount;
+            $promoId = $promo->id;
+
+            // Increment used count
+            $promo->increment('used_count');
+        }
+
+        $validated['promo_id'] = $promoId;
+        $validated['discount_amount'] = $discountAmount;
+
+        // Temukan driver aktif terdekat yang benar-benar aktif/online dalam 5 menit terakhir (Heartbeat Check), memiliki saldo >= -50000, dan tipe kendaraan yang cocok
+        $requestedVehicleType = strtolower($validated['vehicle_type'] ?? 'motor');
+        \Illuminate\Support\Facades\Log::info('[DriverDebug] Searching closest driver', [
+            'requested_vehicle_type' => $requestedVehicleType,
+            'pickup_lat' => $validated['pickup_lat'],
+            'pickup_lng' => $validated['pickup_lng'],
+        ]);
+
         $closestDriver = \App\Models\DriverProfile::where('status', 'online')
-            ->where('updated_at', '>=', now()->subSeconds(60))
+            ->where('updated_at', '>=', now()->subMinutes(5))
             ->whereHas('user', function($q) {
                 $q->where('wallet_balance', '>=', -50000);
+            })
+            ->where(function($query) use ($requestedVehicleType) {
+                if (in_array($requestedVehicleType, ['motor', 'motorcycle', 'bike'], true)) {
+                    $query->whereIn('vehicle_type', ['motor', 'motorcycle', 'bike']);
+                } else if (in_array($requestedVehicleType, ['mobil', 'car', 'automobile'], true)) {
+                    $query->whereIn('vehicle_type', ['mobil', 'car', 'automobile']);
+                }
             })
             ->whereNotNull('current_lat')
             ->whereNotNull('current_lng')
@@ -58,8 +173,18 @@ class OrderController extends Controller
             ->first();
 
         if (!$closestDriver) {
+            \Illuminate\Support\Facades\Log::warning('[DriverDebug] No driver found in database matching criteria');
+            // Rollback promo increment if order fails because of no driver
+            if ($promoId) {
+                \App\Models\Promo::where('id', $promoId)->decrement('used_count');
+            }
             return response()->json(['message' => 'Saat ini tidak ada driver yang tersedia.'], 404);
         }
+
+        \Illuminate\Support\Facades\Log::info('[DriverDebug] Driver matched successfully', [
+            'driver_user_id' => $closestDriver->user_id,
+            'distance' => $closestDriver->distance,
+        ]);
 
         $validated['driver_id'] = $closestDriver->user_id;
 
@@ -122,11 +247,19 @@ class OrderController extends Controller
                     $excludedDriverIds = explode(',', $idsStr);
                 }
 
-                // Find next closest active driver that is truly online/active in the last 60 seconds (Heartbeat Check) dan memiliki saldo >= -50000
+                // Find next closest active driver that is truly online/active in the last 5 minutes (Heartbeat Check), memiliki saldo >= -50000, dan tipe kendaraan yang cocok
+                $requestedVehicleType = strtolower($order->vehicle_type ?? 'motor');
                 $closestDriver = \App\Models\DriverProfile::where('status', 'online')
-                    ->where('updated_at', '>=', now()->subSeconds(60))
+                    ->where('updated_at', '>=', now()->subMinutes(5))
                     ->whereHas('user', function($q) {
                         $q->where('wallet_balance', '>=', -50000);
+                    })
+                    ->where(function($query) use ($requestedVehicleType) {
+                        if (in_array($requestedVehicleType, ['motor', 'motorcycle', 'bike'], true)) {
+                            $query->whereIn('vehicle_type', ['motor', 'motorcycle', 'bike']);
+                        } else if (in_array($requestedVehicleType, ['mobil', 'car', 'automobile'], true)) {
+                            $query->whereIn('vehicle_type', ['mobil', 'car', 'automobile']);
+                        }
                     })
                     ->whereNotIn('user_id', $excludedDriverIds)
                     ->whereNotNull('current_lat')
@@ -199,6 +332,8 @@ class OrderController extends Controller
             'dropoff_lng'     => $order->dropoff_lng,
             'estimated_price' => $order->estimated_price,
             'final_price'     => $order->final_price,
+            'discount_amount' => $order->discount_amount,
+            'promo_code'      => $order->promo?->code,
             'payment_method'  => $order->payment_method,
             'notes'           => $order->notes,
             'created_at'      => $order->created_at,
@@ -270,23 +405,24 @@ class OrderController extends Controller
         $commissionRate = ($vehicleType === 'mobil') ? 0.15 : 0.10;
         $driverShareRate = 1 - $commissionRate;
 
-        $finalPrice = $order->final_price ?? $order->estimated_price;
-        $commissionAmount = (int) round($finalPrice * $commissionRate);
-        $driverShareAmount = (int) round($finalPrice * $driverShareRate);
+        $originalPrice = $order->estimated_price;
+        $discountAmount = $order->discount_amount ?? 0;
+        $commissionAmount = (int) round($originalPrice * $commissionRate);
+        $driverShareAmount = (int) round($originalPrice * $driverShareRate);
 
         $paymentMethod = strtolower($order->payment_method ?? 'cash');
         $isCash = in_array($paymentMethod, ['tunai', 'cash'], true);
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($order, $request, $vehicleType, $commissionAmount, $driverShareAmount, $isCash) {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($order, $request, $vehicleType, $commissionAmount, $driverShareAmount, $discountAmount, $isCash) {
             $order->update([
                 'status' => 'completed',
-                'final_price' => $order->final_price ?? $order->estimated_price
+                'final_price' => $order->estimated_price
             ]);
 
             $driver = $order->driver;
             if ($driver) {
                 if ($isCash) {
-                    // 1. Potong komisi dari saldo dompet driver
+                    // 1. Potong komisi dari saldo dompet driver (dihitung dari harga asli sebelum diskon)
                     $driver->decrement('wallet_balance', $commissionAmount);
 
                     // 2. Catat transaksi komisi (debit/minus)
@@ -300,8 +436,24 @@ class OrderController extends Controller
                         'payment_method' => 'cash',
                         'description' => 'Potongan Komisi Perjalanan ' . ucfirst($vehicleType) . ' (Order #' . substr($order->id, 0, 8) . ')',
                     ]);
+
+                    // 3. Tambahkan subsidi promo (jika ada potongan promo, selisihnya diganti oleh pihak FivGo ke dompet driver)
+                    if ($discountAmount > 0) {
+                        $driver->increment('wallet_balance', $discountAmount);
+
+                        \App\Models\WalletTransaction::create([
+                            'id' => (string) \Illuminate\Support\Str::uuid(),
+                            'user_id' => $driver->id,
+                            'amount' => $discountAmount,
+                            'type' => 'subsidy',
+                            'status' => 'success',
+                            'reference' => 'FIVGO-SUBSIDY-' . $order->id . '-' . \Illuminate\Support\Str::upper(\Illuminate\Support\Str::random(8)),
+                            'payment_method' => 'wallet',
+                            'description' => 'Subsidi Promo Perjalanan ' . ucfirst($vehicleType) . ' (Order #' . substr($order->id, 0, 8) . ')',
+                        ]);
+                    }
                 } else {
-                    // 1. Tambahkan bagi hasil bersih ke saldo dompet driver
+                    // 1. Tambahkan bagi hasil bersih ke saldo dompet driver (dihitung dari harga asli sebelum diskon)
                     $driver->increment('wallet_balance', $driverShareAmount);
 
                     // 2. Catat transaksi pendapatan (kredit/plus)

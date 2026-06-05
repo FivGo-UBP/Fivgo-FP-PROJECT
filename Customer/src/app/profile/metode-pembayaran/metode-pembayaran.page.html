@@ -26,7 +26,7 @@
 
       <!-- FivGo Pay -->
       <ion-item-sliding>
-        <ion-item class="payment-item" [class.selected]="selectedPayment === 'wallet'" (click)="selectPayment('wallet')">
+        <ion-item class="payment-item" [class.selected]="selectedPayment === 'wallet'" (click)="selectPayment('wallet', true)">
           <div class="payment-icon-box payment-icon-box--orange" slot="start">
             <ion-icon name="wallet" class="payment-icon payment-icon--white"></ion-icon>
           </div>
@@ -63,12 +63,12 @@
 
       <!-- Tunai -->
       <ion-item-sliding>
-        <ion-item class="payment-item" [class.selected]="selectedPayment === 'tunai'">
+        <ion-item class="payment-item" [class.selected]="selectedPayment === 'tunai'" (click)="selectPayment('tunai', true)">
           <div class="payment-icon-box" slot="start">
             <ion-icon name="cash-outline" class="payment-icon"></ion-icon>
           </div>
           <ion-label class="payment-label">Tunai</ion-label>
-          <div slot="end" class="radio-circle" [class.radio-active]="selectedPayment === 'tunai'" (click)="selectPayment('tunai')">
+          <div slot="end" class="radio-circle" [class.radio-active]="selectedPayment === 'tunai'">
             <div class="radio-inner" *ngIf="selectedPayment === 'tunai'"></div>
           </div>
         </ion-item>
@@ -91,7 +91,7 @@
             <span *ngIf="selectedPayment !== 'nontunai'">Non Tunai : QRIS/VA</span>
             <span *ngIf="selectedPayment === 'nontunai'">Non Tunai : {{ getSelectedNonTunaiLabel() }}</span>
           </ion-label>
-          <div slot="end" class="radio-circle" [class.radio-active]="selectedPayment === 'nontunai'" (click)="selectPayment('nontunai'); $event.stopPropagation()">
+          <div slot="end" class="radio-circle" [class.radio-active]="selectedPayment === 'nontunai'">
             <div class="radio-inner" *ngIf="selectedPayment === 'nontunai'"></div>
           </div>
         </ion-item>

@@ -81,7 +81,6 @@
         <div class="chat-item" *ngFor="let chat of conversations" (click)="openChatRoom(chat.order_id)">
           <div class="avatar-container">
             <img [src]="chat.other_user?.photo || 'https://ionicframework.com/docs/img/demos/avatar.svg'" class="avatar">
-            <span class="status-dot online"></span>
           </div>
           <div class="content-container">
             <div class="title-row">

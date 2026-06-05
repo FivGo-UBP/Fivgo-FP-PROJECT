@@ -45,20 +45,20 @@
     <div class="input-group">
       <div class="phone-label-row">
         <ion-label class="input-label">{{ t('editprofile.phone') }}</ion-label>
-        <span class="locked-badge">
+        <span class="locked-badge" *ngIf="phone">
           <ion-icon name="lock-closed-outline"></ion-icon>
           {{ t('editprofile.locked') }}
         </span>
       </div>
-      <div class="input-wrapper phone-locked">
-        <ion-icon name="call-outline" class="phone-prefix-icon"></ion-icon>
+      <div class="input-wrapper" [class.phone-locked]="phone">
+        <ion-icon name="call-outline" class="field-icon"></ion-icon>
         <ion-input type="tel" [value]="phone" readonly [placeholder]="t('editprofile.empty.phone')"></ion-input>
-        <button class="btn-ganti-nomor" (click)="goToGantiNomor()">
-          {{ t('editprofile.change') }}
+        <button class="btn-ganti-nomor" *ngIf="!phone" (click)="goToGantiNomor()">
+          {{ t('editprofile.add_phone') }}
           <ion-icon name="chevron-forward-outline"></ion-icon>
         </button>
       </div>
-      <p class="phone-hint">{{ t('editprofile.otp_hint') }}</p>
+      <p class="phone-hint" *ngIf="!phone">{{ t('editprofile.otp_hint') }}</p>
     </div>
     <div class="input-group">
       <ion-label class="input-label">{{ t('editprofile.gender') }}</ion-label>

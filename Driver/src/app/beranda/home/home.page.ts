@@ -52,6 +52,7 @@ export class HomePage implements OnInit, OnDestroy {
     console.log('[DriverDebug] ngOnInit called');
     this.loadMap();
     this.syncDriverStatus();
+    this.checkForActiveOrderOnStartup();
 
     this.authService.currentUser.subscribe(user => {
       if (user?.photo) {
@@ -74,6 +75,7 @@ export class HomePage implements OnInit, OnDestroy {
     this.isRejecting = false;
 
     this.syncDriverStatus();
+    this.checkForActiveOrderOnStartup();
   }
 
   ionViewDidEnter() {
@@ -84,6 +86,13 @@ export class HomePage implements OnInit, OnDestroy {
     }
   }
 
+  ionViewWillLeave() {
+    console.log('[DriverDebug] ionViewWillLeave called. Stopping all background intervals and updates.');
+    this.stopPolling();
+    this.stopLocationUpdates();
+    this.stopCountdown();
+  }
+
   ngOnDestroy() {
     this.stopPolling();
     this.stopLocationUpdates();
@@ -92,10 +101,6 @@ export class HomePage implements OnInit, OnDestroy {
       this.map.remove();
       this.map = null;
     }
-  }
-
-  ionViewWillLeave() {
-    // Keep polling running while app is open, stop only on destroy
   }
 
   async loadMap() {
@@ -165,6 +170,18 @@ export class HomePage implements OnInit, OnDestroy {
     setTimeout(() => {
       if (this.map) this.map.resize();
     }, 500);
+  }
+
+  checkForActiveOrderOnStartup() {
+    this.orderService.getActiveOrder().subscribe({
+      next: (order) => {
+        if (order && ['accepted', 'arrived', 'started'].includes(order.status)) {
+          console.log(`[DriverDebug] Active order on startup found: ${order.status}. Redirecting...`);
+          this.router.navigate(['/active-order', order.id]);
+        }
+      },
+      error: (err) => console.error('[DriverDebug] Error checking active order on startup', err)
+    });
   }
 
   syncDriverStatus() {
@@ -264,11 +281,17 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   toggleStatus() {
+    console.log('[DriverDebug] toggleStatus clicked. Current isOnline status:', this.isOnline);
     const newStatus = this.isOnline ? 'offline' : 'online';
+    console.log('[DriverDebug] Sending updateDriverStatus request to backend. target status:', newStatus);
+    
     this.orderService.updateDriverStatus(newStatus).subscribe({
-      next: () => {
+      next: (res) => {
+        console.log('[DriverDebug] updateDriverStatus API success response:', res);
         this.isOnline = !this.isOnline;
+        console.log('[DriverDebug] Local isOnline status toggled to:', this.isOnline);
         this.updateLocalUserStatus(newStatus);
+        
         if (this.isOnline) {
           this.startLocationUpdates();
           this.startPollingOrders();
@@ -282,10 +305,12 @@ export class HomePage implements OnInit, OnDestroy {
         }
       },
       error: (err) => {
-        console.error('Error updating status', err);
+        console.error('[DriverDebug] updateDriverStatus API failed with error:', err);
         // Toggle anyway for demo purposes if backend is unreachable
         this.isOnline = !this.isOnline;
+        console.log('[DriverDebug] (Fallback) Local isOnline status toggled to:', this.isOnline);
         this.updateLocalUserStatus(this.isOnline ? 'online' : 'offline');
+        
         if (this.isOnline) {
           this.startLocationUpdates();
           this.startPollingOrders();

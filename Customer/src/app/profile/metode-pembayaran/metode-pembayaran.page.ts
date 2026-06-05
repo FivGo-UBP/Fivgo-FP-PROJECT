@@ -84,16 +84,27 @@ export class MetodePembayaranPage implements OnInit {
     this.router.navigate(['/beranda/pembayaran']);
   }
 
-  selectPayment(method: string) {
+  selectPayment(method: string, autoSubmit: boolean = false) {
     this.selectedPayment = method;
     localStorage.setItem('selectedPayment', method);
     if (method === 'nontunai') {
       this.persistNonTunai();
     }
+
+    if (autoSubmit) {
+      if (method === 'tunai') {
+        this.confirmSelection();
+      } else if (method === 'wallet') {
+        if (this.currentAmount <= 0 || this.walletBalance >= this.currentAmount) {
+          this.confirmSelection();
+        }
+      }
+    }
   }
 
   toggleNonTunai() {
     this.selectPayment('nontunai');
+    this.openNonTunaiSheet();
   }
 
   setUtama(method: string) {
@@ -150,6 +161,7 @@ export class MetodePembayaranPage implements OnInit {
     this.selectedPayment = 'nontunai';
     localStorage.setItem('selectedPayment', 'nontunai');
     localStorage.setItem('selectedNonTunai', this.selectedNonTunai);
+    this.confirmSelection();
   }
 
   getSelectedNonTunaiLabel(): string {
@@ -247,13 +259,13 @@ export class MetodePembayaranPage implements OnInit {
     }).then(toast => {
       toast.present();
       setTimeout(() => {
-        this.navCtrl.navigateBack(this.backHref);
-      }, 1000);
+        this.navCtrl.back();
+      }, 300);
     });
   }
 
   goBack() {
-    this.navCtrl.navigateBack(this.backHref);
+    this.navCtrl.back();
   }
 
   private persistNonTunai() {

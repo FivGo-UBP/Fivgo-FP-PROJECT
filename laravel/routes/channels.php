@@ -13,3 +13,11 @@ Broadcast::channel('chat.{orderId}', function ($user, $orderId) {
     }
     return $user->id === $order->customer_id || $user->id === $order->driver_id;
 });
+
+Broadcast::channel('order.{orderId}', function ($user, $orderId) {
+    $order = \App\Models\Order::find($orderId);
+    if (!$order) {
+        return false;
+    }
+    return $user->id === $order->customer_id || $user->id === $order->driver_id;
+});

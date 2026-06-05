@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { Geolocation } from '@capacitor/geolocation';
 import { TomtomService } from '../../services/tomtom.service';
+import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-simpan-lokasi',
@@ -23,8 +24,13 @@ export class SimpanLokasiPage implements OnInit {
   constructor(
     private tomtomService: TomtomService,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private navCtrl: NavController
   ) { }
+
+  goBack() {
+    this.navCtrl.back();
+  }
 
   ngOnInit() {
     this.getCurrentLocation();
@@ -32,7 +38,11 @@ export class SimpanLokasiPage implements OnInit {
 
   async getCurrentLocation() {
     try {
-      const position = await Geolocation.getCurrentPosition();
+      const position = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      });
       this.currentLat = position.coords.latitude;
       this.currentLng = position.coords.longitude;
     } catch (error) {

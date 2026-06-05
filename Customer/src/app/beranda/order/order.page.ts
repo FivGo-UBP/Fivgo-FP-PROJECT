@@ -65,7 +65,11 @@ export class OrderPage {
 
   async getCurrentLocation() {
     try {
-      const position = await Geolocation.getCurrentPosition();
+      const position = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      });
       const lat = position.coords.latitude;
       const lng = position.coords.longitude;
       this.currentLat = lat;
@@ -218,8 +222,29 @@ export class OrderPage {
       const tujuanLng = loc.originalResult?.position?.lon;
 
       // Gunakan koordinat GPS jika jemputLat/jemputLng belum ter-set (masih 0)
-      const finalJemputLat = this.jemputLat !== 0 ? this.jemputLat : this.currentLat;
-      const finalJemputLng = this.jemputLng !== 0 ? this.jemputLng : this.currentLng;
+      let finalJemputLat = this.jemputLat;
+      let finalJemputLng = this.jemputLng;
+
+      if (this.jemputKeyword.toLowerCase() === 'lokasi saat ini') {
+        try {
+          const position = await Geolocation.getCurrentPosition({
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+          });
+          finalJemputLat = position.coords.latitude;
+          finalJemputLng = position.coords.longitude;
+          this.currentLat = finalJemputLat;
+          this.currentLng = finalJemputLng;
+        } catch (error) {
+          console.warn('Gagal mendapatkan lokasi terbaru sebelum navigasi, menggunakan cache:', error);
+          finalJemputLat = this.jemputLat !== 0 ? this.jemputLat : this.currentLat;
+          finalJemputLng = this.jemputLng !== 0 ? this.jemputLng : this.currentLng;
+        }
+      } else {
+        finalJemputLat = this.jemputLat !== 0 ? this.jemputLat : this.currentLat;
+        finalJemputLng = this.jemputLng !== 0 ? this.jemputLng : this.currentLng;
+      }
 
       this.router.navigate(['/map-visual'], {
         queryParams: {
@@ -237,11 +262,52 @@ export class OrderPage {
     this.isSearching = false;
   }
 
-  selectCurrentLocation() {
-    console.log('Lokasi saat ini dipilih:', this.currentAddress);
-    this.jemputKeyword = 'Lokasi Saat Ini';
-    this.jemputLat = this.currentLat;
-    this.jemputLng = this.currentLng;
-    this.isSearching = false;
+  async selectCurrentLocation() {
+    const originalAddress = this.currentAddress;
+    this.currentAddress = 'Mencari lokasi terbaru...';
+    this.cdr.detectChanges();
+    try {
+      const position = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      });
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      this.currentLat = lat;
+      this.currentLng = lng;
+      
+      this.tomtomService.reverseGeocode(lat, lng).subscribe({
+        next: (res: any) => {
+          if (res && res.addresses && res.addresses.length > 0) {
+            this.currentAddress = res.addresses[0].address.freeformAddress;
+          } else {
+            this.currentAddress = `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`;
+          }
+          this.jemputKeyword = 'Lokasi Saat Ini';
+          this.jemputLat = lat;
+          this.jemputLng = lng;
+          this.isSearching = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error reverse geocoding inside selectCurrentLocation:', err);
+          this.currentAddress = `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`;
+          this.jemputKeyword = 'Lokasi Saat Ini';
+          this.jemputLat = lat;
+          this.jemputLng = lng;
+          this.isSearching = false;
+          this.cdr.detectChanges();
+        }
+      });
+    } catch (error) {
+      console.error('Error getting fresh location in selectCurrentLocation:', error);
+      this.currentAddress = originalAddress || 'Gagal mendapatkan lokasi terbaru';
+      this.jemputKeyword = 'Lokasi Saat Ini';
+      this.jemputLat = this.currentLat;
+      this.jemputLng = this.currentLng;
+      this.isSearching = false;
+      this.cdr.detectChanges();
+    }
   }
 }

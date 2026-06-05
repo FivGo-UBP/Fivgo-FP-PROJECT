@@ -101,8 +101,11 @@ export class OrderService {
     return this.http.patch<any>(`${environment.apiUrl}/drivers/status`, { status });
   }
 
-  updateDriverLocation(lat: number, lng: number): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}/drivers/location`, { lat, lng });
+  updateDriverLocation(lat: number, lng: number, heading?: number, orderId?: string): Observable<any> {
+    const payload: any = { lat, lng };
+    if (heading !== undefined) payload.heading = heading;
+    if (orderId !== undefined) payload.order_id = orderId;
+    return this.http.post<any>(`${environment.apiUrl}/drivers/location`, payload);
   }
 
   // ─── History ──────────────────────────────────────────────────────────────

@@ -14,6 +14,7 @@ export interface OrderDriver {
   phone?: string | null;
   current_lat?: number | null;
   current_lng?: number | null;
+  heading?: number | null;
 }
 
 export interface ActiveOrder {
@@ -28,6 +29,8 @@ export interface ActiveOrder {
   dropoff_lng: number;
   estimated_price: number;
   final_price: number | null;
+  discount_amount?: number | null;
+  promo_code?: string | null;
   payment_method: string | null;
   notes: string | null;
   created_at: string;
@@ -83,6 +86,7 @@ export class OrderService {
     vehicle_type: string;
     notes?: string;
     estimated_price?: number;
+    promo_code?: string;
   }): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/orders`, data);
   }
@@ -113,6 +117,21 @@ export class OrderService {
 
   rateOrder(id: string, rating: number, review: string): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/orders/${id}/rating`, { rating, review });
+  }
+
+  // ─── Promo ──────────────────────────────────────────────────────────────────
+
+  getPromos(): Observable<{ data: any[] }> {
+    return this.http.get<{ data: any[] }>(`${environment.apiUrl}/promos`);
+  }
+
+  applyPromo(code: string, amount: number, vehicleType: string, paymentMethod: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/promos/apply`, {
+      code,
+      order_amount: amount,
+      vehicle_type: vehicleType,
+      payment_method: paymentMethod
+    });
   }
 
   // ─── History ──────────────────────────────────────────────────────────────

@@ -36,11 +36,12 @@ export class ChatService implements OnDestroy {
     (window as any).Pusher = Pusher;
 
     this.echo = new Echo({
-      broadcaster: 'reverb',
+      broadcaster: (environment.reverb as any).broadcaster || 'reverb',
       key: environment.reverb.key,
-      wsHost: environment.reverb.host,
-      wsPort: environment.reverb.port,
-      wssPort: environment.reverb.port,
+      cluster: (environment.reverb as any).cluster || undefined,
+      wsHost: (environment.reverb as any).broadcaster === 'pusher' ? undefined : environment.reverb.host,
+      wsPort: (environment.reverb as any).broadcaster === 'pusher' ? undefined : environment.reverb.port,
+      wssPort: (environment.reverb as any).broadcaster === 'pusher' ? undefined : environment.reverb.port,
       forceTLS: environment.reverb.scheme === 'https',
       enabledTransports: ['ws', 'wss'],
       authEndpoint: `${environment.apiUrl}/broadcasting/auth`,

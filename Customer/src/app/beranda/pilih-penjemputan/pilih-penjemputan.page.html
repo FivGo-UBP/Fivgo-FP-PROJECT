@@ -3,7 +3,9 @@
   <!-- Header / Search Area -->
   <div class="search-header">
     <div class="header-row">
-      <ion-back-button defaultHref="/cari-lokasi" icon="arrow-back" text="" class="back-btn"></ion-back-button>
+      <ion-button fill="clear" (click)="goBack()" class="back-btn">
+        <ion-icon name="arrow-back" style="font-size: 24px; color: #1a1a1a;"></ion-icon>
+      </ion-button>
       <div class="blue-dot"><div class="inner-dot"></div></div>
       <div class="search-input-wrap">
         <input type="text" placeholder="Cari Lokasi penjemputan" (input)="onSearch($event)" [value]="searchKeyword" />

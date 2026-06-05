@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { Geolocation } from '@capacitor/geolocation';
 import { TomtomService } from '../../services/tomtom.service';
+import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-pilih-penjemputan',
@@ -27,8 +28,13 @@ export class PilihPenjemputanPage implements OnInit {
   constructor(
     private tomtomService: TomtomService,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private navCtrl: NavController
   ) { }
+
+  goBack() {
+    this.navCtrl.back();
+  }
 
   ngOnInit() {
     this.getCurrentLocation();
@@ -37,6 +43,7 @@ export class PilihPenjemputanPage implements OnInit {
   }
 
   ionViewWillEnter() {
+    this.getCurrentLocation();
     this.loadSavedLocations();
   }
 
@@ -46,7 +53,11 @@ export class PilihPenjemputanPage implements OnInit {
   
   async getCurrentLocation() {
     try {
-      const position = await Geolocation.getCurrentPosition();
+      const position = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      });
       const lat = position.coords.latitude;
       const lng = position.coords.longitude;
       
@@ -176,7 +187,20 @@ export class PilihPenjemputanPage implements OnInit {
     this.router.navigate(['/cari-lokasi']);
   }
 
-  selectCurrentLocation() {
+  async selectCurrentLocation() {
+    this.currentLocationName = 'Mencari lokasi terbaru...';
+    this.cdr.detectChanges();
+    try {
+      const position = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      });
+      this.currentLat = position.coords.latitude;
+      this.currentLng = position.coords.longitude;
+    } catch (error) {
+      console.error('Error getting fresh location in selectCurrentLocation:', error);
+    }
     localStorage.setItem('tempJemputName', 'Lokasi Saat Ini');
     localStorage.setItem('tempJemputLat', this.currentLat.toString());
     localStorage.setItem('tempJemputLng', this.currentLng.toString());

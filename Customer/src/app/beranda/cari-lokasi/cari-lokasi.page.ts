@@ -2,6 +2,7 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 import { Geolocation } from '@capacitor/geolocation';
 import { TomtomService } from '../../services/tomtom.service';
 import { Router } from '@angular/router';
+import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-cari-lokasi',
@@ -25,8 +26,13 @@ export class CariLokasiPage {
   constructor(
     private tomtomService: TomtomService,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private navCtrl: NavController
   ) { }
+
+  goBack() {
+    this.navCtrl.back();
+  }
 
   ionViewWillEnter() {
     this.loadHistory();
@@ -42,7 +48,11 @@ export class CariLokasiPage {
 
   async getCurrentLocation() {
     try {
-      const position = await Geolocation.getCurrentPosition();
+      const position = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      });
       const lat = position.coords.latitude;
       const lng = position.coords.longitude;
       
@@ -151,8 +161,32 @@ export class CariLokasiPage {
     }
   }
 
-  selectResult(loc: any) {
+  async selectResult(loc: any) {
     console.log('Lokasi dipilih:', loc);
+    
+    // Siapkan parameter untuk ke halaman map-visual
+    const tujuanLat = loc.originalResult?.position?.lat || 0;
+    const tujuanLng = loc.originalResult?.position?.lon || 0;
+    
+    let finalJemputLat = this.currentLat;
+    let finalJemputLng = this.currentLng;
+
+    if (this.currentLocation.toLowerCase() === 'lokasi saat ini') {
+      try {
+        const position = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0
+        });
+        finalJemputLat = position.coords.latitude;
+        finalJemputLng = position.coords.longitude;
+        this.currentLat = finalJemputLat;
+        this.currentLng = finalJemputLng;
+      } catch (error) {
+        console.warn('Gagal mendapatkan lokasi terbaru sebelum navigasi di cari-lokasi, menggunakan cache:', error);
+      }
+    }
+
     // Menyimpan riwayat pencarian
     const historyItem = {
       name: loc.name,
@@ -169,16 +203,12 @@ export class CariLokasiPage {
     historyTujuan = [historyItem, ...historyTujuan.filter((i: any) => i.name !== historyItem.name)].slice(0, 5);
     localStorage.setItem('historyTujuan', JSON.stringify(historyTujuan));
     
-    // Siapkan parameter untuk ke halaman map-visual
-    const tujuanLat = loc.originalResult?.position?.lat || 0;
-    const tujuanLng = loc.originalResult?.position?.lon || 0;
-    
     // Navigasi
     this.router.navigate(['/map-visual'], {
       queryParams: {
         jemput: this.currentLocation,
-        jLat: this.currentLat,
-        jLng: this.currentLng,
+        jLat: finalJemputLat,
+        jLng: finalJemputLng,
         tujuan: loc.name,
         tLat: tujuanLat,
         tLng: tujuanLng
