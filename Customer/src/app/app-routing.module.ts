@@ -5,7 +5,8 @@ import { locationGuard } from './guards/location.guard';
 const routes: Routes = [
   {
     path: 'tabs',
-    loadChildren: () => import('./beranda/tabs/tabs.module').then(m => m.TabsPageModule)
+    loadChildren: () => import('./beranda/tabs/tabs.module').then(m => m.TabsPageModule),
+    canActivate: [locationGuard]
   },
   {
     path: 'home',

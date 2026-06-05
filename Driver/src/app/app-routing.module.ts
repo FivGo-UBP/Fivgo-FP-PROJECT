@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { locationGuard } from './guards/location.guard';
 
 const routes: Routes = [
   {
@@ -9,7 +10,8 @@ const routes: Routes = [
   },
   {
     path: 'tabs',
-    loadChildren: () => import('./beranda/tabs/tabs.module').then(m => m.TabsPageModule)
+    loadChildren: () => import('./beranda/tabs/tabs.module').then(m => m.TabsPageModule),
+    canActivate: [locationGuard]
   },
   {
     path: 'aktivasi-lokasi',
@@ -17,7 +19,8 @@ const routes: Routes = [
   },
   {
     path: 'landing-page',
-    loadChildren: () => import('./landing-page/landing-page.module').then( m => m.LandingPagePageModule)
+    loadChildren: () => import('./landing-page/landing-page.module').then( m => m.LandingPagePageModule),
+    canActivate: [locationGuard]
   },
   {
     path: 'menu-login',

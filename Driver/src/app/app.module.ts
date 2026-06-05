@@ -10,6 +10,8 @@ import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AuthService } from './services/auth.service';
+import { LocationAccuracy } from '@awesome-cordova-plugins/location-accuracy/ngx';
+import { Diagnostic } from '@awesome-cordova-plugins/diagnostic/ngx';
 
 import { registerLocaleData } from '@angular/common';
 import localeId from '@angular/common/locales/id';
@@ -50,7 +52,9 @@ export class InlineAuthInterceptor implements HttpInterceptor {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: HTTP_INTERCEPTORS, useClass: InlineAuthInterceptor, multi: true },
-    { provide: LOCALE_ID, useValue: 'id-ID' }
+    { provide: LOCALE_ID, useValue: 'id-ID' },
+    LocationAccuracy,
+    Diagnostic
   ],
   bootstrap: [AppComponent],
 })
