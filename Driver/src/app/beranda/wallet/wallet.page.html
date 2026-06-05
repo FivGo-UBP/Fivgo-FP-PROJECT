@@ -1,5 +1,5 @@
 <ion-header class="ion-no-border">
-  <ion-toolbar color="warning">
+  <ion-toolbar>
     <ion-title class="header-title">Dompet FivGo Pay</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -53,14 +53,14 @@
     <div class="history-section">
       <div class="section-header">
         <h3>Riwayat Transaksi</h3>
-        <ion-button fill="clear" size="small" color="warning" (click)="loadData()" [disabled]="isLoading">
+        <ion-button fill="clear" size="small" (click)="loadData()" [disabled]="isLoading" style="--color: #3B81D1">
           <ion-icon slot="icon-only" name="refresh-outline" [class.spinning]="isLoading"></ion-icon>
         </ion-button>
       </div>
 
       <!-- Loading State -->
       <div class="loading-state" *ngIf="isLoading && transactions.length === 0">
-        <ion-spinner name="crescent" color="warning"></ion-spinner>
+        <ion-spinner name="crescent" color="primary"></ion-spinner>
         <span>Memuat riwayat transaksi...</span>
       </div>
 
@@ -134,7 +134,7 @@
       </div>
     </div>
 
-    <ion-button expand="block" color="warning" class="modal-submit-btn" (click)="submitTopUp()">
+    <ion-button expand="block" class="modal-submit-btn" (click)="submitTopUp()">
       Buat Pembayaran
     </ion-button>
   </div>
@@ -182,7 +182,7 @@
       <input type="text" [(ngModel)]="accountName" placeholder="Masukkan nama pemilik rekening" class="input-field" />
     </div>
 
-    <ion-button expand="block" color="warning" class="modal-submit-btn" (click)="submitWithdraw()">
+    <ion-button expand="block" class="modal-submit-btn" (click)="submitWithdraw()">
       Ajukan Penarikan
     </ion-button>
   </div>
@@ -208,7 +208,7 @@
 
     <!-- Loading state inside gateway -->
     <div class="dompetx-loading" *ngIf="isCreatingPayment">
-      <ion-spinner name="crescent" color="warning"></ion-spinner>
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
       <span>Menyiapkan detail pembayaran...</span>
     </div>
 
@@ -240,7 +240,7 @@
     </ng-container>
 
     <!-- Actions -->
-    <ion-button expand="block" color="warning" class="btn-confirm-payment" [disabled]="isCreatingPayment || !paymentInfo" (click)="closePaymentGateway()">
+    <ion-button expand="block" class="btn-confirm-payment" [disabled]="isCreatingPayment || !paymentInfo" (click)="closePaymentGateway()">
       Selesai / Saya Sudah Bayar
     </ion-button>
   </div>

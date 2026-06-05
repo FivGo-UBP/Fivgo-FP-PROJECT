@@ -51,10 +51,10 @@ ion-content.custom-bg {
 }
 
 .btn-primary {
-  --background: #f59e0b;
-  --background-hover: #d97706;
-  --background-activated: #d97706;
-  --background-focused: #d97706;
+  --background: linear-gradient(to bottom, #CFE8F4, #3B81D1);
+  --background-hover: #1a5fa8;
+  --background-activated: #1a5fa8;
+  --background-focused: #1a5fa8;
   --color: #ffffff;
   height: 50px;
   width: 100%;

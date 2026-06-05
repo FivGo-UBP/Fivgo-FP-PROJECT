@@ -1,18 +1,21 @@
 ion-content {
-  --background: #e6ebf2; // Light gray/blue background
+  --background: #E5E7EB;
 }
 
 .detail-toolbar {
-  --background: #233b81; // Dark blue header
-  --color: #ffffff;
+  --background: transparent;
+  --color: #1a365d;
   
   ion-title {
     font-weight: 600;
     font-size: 1.1rem;
+    --color: #1a365d !important;
+    color: #1a365d !important;
   }
   
   ion-back-button {
-    --color: #ffffff;
+    --color: #1a365d !important;
+    color: #1a365d !important;
   }
 }
 
@@ -143,7 +146,7 @@ ion-content {
       .hollow-circle {
         width: 12px;
         height: 12px;
-        border: 2px solid #f59e0b; // Orange outline
+        border: 2px solid #3B81D1;
         border-radius: 50%;
         background: #ffffff;
         z-index: 2;
@@ -206,7 +209,7 @@ ion-content {
   margin-bottom: 20px;
 
   .wallet-icon {
-    color: #f59e0b;
+    color: #3B81D1;
     font-size: 20px;
   }
   .card-title-text {
@@ -332,7 +335,7 @@ ion-content {
 // Action Button
 .btn-report {
   width: 100%;
-  background: #f59e0b; // Orange button
+  background: linear-gradient(to bottom, #CFE8F4, #3B81D1);
   color: #ffffff;
   border-radius: 30px;
   padding: 16px;

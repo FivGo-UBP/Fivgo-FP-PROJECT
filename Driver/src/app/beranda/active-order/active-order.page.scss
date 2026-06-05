@@ -273,9 +273,23 @@ ion-content {
 }
 
 .notes-text {
-  color: #666;
-  font-weight: 400;
-  font-style: italic;
+  color: #1a365d;
+  font-weight: 600;
+  font-style: normal;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #EBF5FB;
+  border: 1px solid #d0e1fd;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-top: 6px;
+}
+
+.notes-icon {
+  font-size: 16px;
+  color: #3B81D1;
+  flex-shrink: 0;
 }
 
 // ─── Payment Row ─────────────────────────────────────────────────────────
@@ -290,13 +304,13 @@ ion-content {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #FFF8E1;
+  background: #EBF5FB;
   border-radius: 10px;
   padding: 8px 12px;
 }
 
 .payment-icon {
-  color: #FFC107;
+  color: #3B81D1;
   font-size: 20px;
 }
 
@@ -520,7 +534,7 @@ ion-content {
         &.limit-text {
           margin: 6px 0 0 0;
           font-weight: 700;
-          color: #d97706;
+          color: #3B81D1;
           
           &.text-red {
             color: #dc2626;

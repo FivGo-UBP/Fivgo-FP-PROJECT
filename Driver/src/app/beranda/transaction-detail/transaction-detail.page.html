@@ -1,5 +1,5 @@
 <ion-header class="ion-no-border">
-  <ion-toolbar color="primary">
+  <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/beranda" icon="chevron-back"></ion-back-button>
     </ion-buttons>
@@ -7,7 +7,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content color="light" class="ion-padding">
+<ion-content  [fullscreen]="true" class="ion-padding">
   <div *ngIf="order && !isLoading">
     
     <!-- Card 1: Route details -->
@@ -68,7 +68,7 @@
     <div class="card income-card">
       <div class="income-header">
         <div class="icon-wrap">
-          <ion-icon name="wallet" color="warning"></ion-icon>
+          <ion-icon name="wallet" color="primary"></ion-icon>
         </div>
         <span>Rincian pendapatan</span>
       </div>
@@ -99,7 +99,7 @@
   </div>
 </ion-content>
 
-<ion-footer class="ion-no-border" style="background: #eaedf2;">
+<ion-footer class="ion-no-border" style="background: #E5E7EB;">
   <div class="ion-padding">
     <ion-button expand="block" class="bantuan-btn">Bantuan</ion-button>
   </div>

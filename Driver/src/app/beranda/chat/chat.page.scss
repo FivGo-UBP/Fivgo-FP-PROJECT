@@ -1,16 +1,17 @@
 ion-content.bg-light {
-  --background: #f0f2f5;
+  --background: #E5E7EB;
 }
 
 /* ===== HEADER ===== */
 .header-section {
-  background-color: #F79F1A;
-  padding: 10px 16px 0;
+  background: linear-gradient(to bottom, #CFE8F4, #3B81D1);
+  padding: 30px 24px 20px;
   display: flex;
   flex-direction: column;
+  border-radius: 0 0 45px 45px;
 
   .header-title {
-    color: #ffffff;
+    color: #1a365d;
     font-size: 18px;
     font-weight: 700;
     margin: 0;
@@ -81,9 +82,9 @@ ion-content.bg-light {
   margin-top: 5px;
 }
 .custom-segment ion-segment-button {
-  --color: rgba(255,255,255,0.7);
-  --color-checked: #ffffff;
-  --indicator-color: #ffffff;
+  --color: rgba(26, 54, 93, 0.7);
+  --color-checked: #1a365d;
+  --indicator-color: #1a365d;
   --indicator-height: 3px;
   font-size: 14px;
   font-weight: 600;

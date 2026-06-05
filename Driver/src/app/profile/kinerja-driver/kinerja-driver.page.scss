@@ -1,19 +1,22 @@
 ion-content {
-  --background: #e6ebf2; // Warna abu-abu kebiruan sesuai desain
+  --background: #E5E7EB;
 }
 
 .header-toolbar {
-  --background: #233b81; // Biru tua
-  --color: #ffffff;
+  --background: transparent;
+  --color: #1a365d;
   
   ion-title {
     font-weight: 700;
     font-size: 1.1rem;
     padding-left: 0;
+    --color: #1a365d !important;
+    color: #1a365d !important;
   }
 
   ion-back-button {
-    color: #ffffff;
+    --color: #1a365d !important;
+    color: #1a365d !important;
   }
 }
 
@@ -28,7 +31,7 @@ ion-content {
 .card-rating {
   background: #ffffff;
   border-radius: 16px;
-  border: 2px solid #0ea5e9; // Border biru muda
+  border: 2px solid #3B81D1;
   padding: 24px 20px;
   text-align: center;
   box-shadow: 0 4px 12px rgba(0,0,0,0.04);
@@ -47,13 +50,13 @@ ion-content {
     .score-big {
       font-size: 56px;
       font-weight: 800;
-      color: #1e3a8a; // Biru tua
+      color: #1a365d;
     }
 
     .score-max {
       font-size: 22px;
       font-weight: 500;
-      color: #1e3a8a;
+      color: #1a365d;
     }
   }
 
@@ -100,7 +103,7 @@ ion-content {
 
     .chart-icon {
       font-size: 22px;
-      color: #1e3a8a;
+      color: #3B81D1;
     }
   }
 
@@ -139,7 +142,7 @@ ion-content {
 
       .progress-fill {
         height: 100%;
-        background: #1e3a8a;
+        background: #3B81D1;
         border-radius: 12px;
       }
     }

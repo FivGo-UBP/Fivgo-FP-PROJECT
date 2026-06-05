@@ -10,7 +10,7 @@ class Order extends Model
     protected $fillable = [
         'customer_id', 'driver_id', 'status', 'vehicle_type', 'pickup_address', 'pickup_lat', 'pickup_lng', 
         'dropoff_address', 'dropoff_lat', 'dropoff_lng', 'estimated_price', 'final_price',
-        'payment_method', 'cancel_reason', 'rating', 'review', 'promo_id', 'discount_amount'
+        'payment_method', 'notes', 'cancel_reason', 'rating', 'review', 'promo_id', 'discount_amount'
     ];
 
     public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
@@ -27,6 +27,7 @@ class Order extends Model
 
         foreach ($staleOrders as $order) {
             \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
+                /** @var \App\Models\Order $order */
                 $payment = Payment::where('order_id', $order->id)
                     ->whereIn('status', ['paid', 'captured', 'success', 'settled'])
                     ->first();

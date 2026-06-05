@@ -1,12 +1,14 @@
 ion-content.profile-content {
-  --background: #EAECEF; /* light grey background for the bottom part */
+  --background: #E5E7EB; /* light grey background matching the rest of the app */
 }
 
 .header-background {
-  background-color: #27448A; /* Dark blue background */
-  padding-bottom: 40px;
+  background: linear-gradient(to bottom, #CFE8F4, #3B81D1);
+  padding-top: var(--ion-safe-area-top, 20px);
+  padding-bottom: 0px;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
+  position: relative;
 }
 
 .header-top {
@@ -18,13 +20,15 @@ ion-content.profile-content {
   font-weight: bold;
   text-transform: none;
   font-size: 16px;
+  --color: #1a365d !important;
+  color: #1a365d !important;
 }
 
 .profile-info {
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: white;
+  color: #1a365d;
   margin-top: 10px;
 }
 
@@ -110,12 +114,12 @@ ion-content.profile-content {
   align-items: center;
   margin-right: 15px;
 
-  &.bg-orange-light {
-    background-color: #FEEED1;
+  &.bg-blue-light {
+    background-color: #CFE8F4;
   }
 
-  .text-orange {
-    color: #F8B036;
+  .text-blue {
+    color: #3B81D1;
     font-size: 18px;
   }
 }
@@ -134,8 +138,8 @@ ion-content.profile-content {
 }
 
 .logout-btn {
-  --border-color: #27448A;
-  --color: #27448A;
+  --border-color: #3B81D1;
+  --color: #3B81D1;
   --border-width: 1px;
   --background: white;
   text-transform: none;
@@ -275,5 +279,19 @@ ion-content.profile-content {
   .btn-confirm {
     background-color: #ef4444; /* Red background */
     color: #ffffff; /* White text */
+  }
+}
+
+.wave-container {
+  width: 100%;
+  height: 70px;
+  line-height: 0;
+  margin-bottom: -2px;
+  pointer-events: none;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
   }
 }

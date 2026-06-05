@@ -120,6 +120,7 @@ class CustomerController extends Controller
                         'photo'        => $order->driver->photo,
                         'vehicle_type' => $order->driver->driverProfile?->vehicle_type,
                         'plate_number' => $order->driver->driverProfile?->plate_number,
+                        'vehicle_brand' => $order->driver->driverProfile?->vehicle_brand,
                         'rating'       => $order->driver->driverProfile?->rating,
                     ] : null,
                 ];
@@ -154,6 +155,7 @@ class CustomerController extends Controller
                     'photo'        => $order->driver->photo,
                     'vehicle_type' => $order->driver->driverProfile?->vehicle_type,
                     'plate_number' => $order->driver->driverProfile?->plate_number,
+                    'vehicle_brand' => $order->driver->driverProfile?->vehicle_brand,
                     'rating'       => $order->driver->driverProfile?->rating,
                 ] : null,
             ]

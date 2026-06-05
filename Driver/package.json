@@ -24,11 +24,8 @@
     "@awesome-cordova-plugins/core": "^9.2.0",
     "@awesome-cordova-plugins/diagnostic": "^9.2.0",
     "@awesome-cordova-plugins/location-accuracy": "^9.2.0",
-<<<<<<< HEAD
     "@capacitor/android": "^8.3.4",
-=======
     "@capacitor/android": "8.3.4",
->>>>>>> 7a0b89813b98ba9f552f82cbab94a9ef8884e2eb
     "@capacitor/app": "8.1.0",
     "@capacitor/core": "8.3.4",
     "@capacitor/geolocation": "^8.2.0",

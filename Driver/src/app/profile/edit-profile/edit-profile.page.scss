@@ -1,15 +1,15 @@
 ion-toolbar.bg-blue {
-  --background: #27448A;
-  --color: #ffffff;
+  --background: transparent;
+  --color: #1a365d;
 }
 
 .text-white {
-  --color: #ffffff;
+  --color: #1a365d !important;
   font-weight: 600;
 }
 
 ion-content.bg-light-grey {
-  --background: #e8ebf0;
+  --background: #E5E7EB;
 }
 
 .profile-edit-header {
@@ -55,7 +55,7 @@ ion-content.bg-light-grey {
 
   ion-icon {
     font-size: 14px;
-    color: #27448A;
+    color: #3B81D1;
   }
 }
 
@@ -131,7 +131,7 @@ ion-content.bg-light-grey {
 
 .btn-simpan {
   margin: 0;
-  --background: #27448A;
+  --background: #3B81D1;
   --color: white;
   --border-radius: 16px;
   --padding-top: 14px;
@@ -140,7 +140,7 @@ ion-content.bg-light-grey {
   font-size: 1rem;
   text-transform: none;
   --box-shadow: none;
-  --background-activated: #1e356e;
+  --background-activated: #2a5fa3;
   --ripple-color: #ffffff;
 }
 
@@ -204,7 +204,7 @@ ion-content.bg-light-grey {
     display: flex;
     align-items: center;
     gap: 2px;
-    background: linear-gradient(135deg, #27448A, #3859AB);
+    background: #3B81D1;
     color: white;
     border: none;
     border-radius: 10px;
@@ -215,7 +215,7 @@ ion-content.bg-light-grey {
     white-space: nowrap;
     transition: all 0.2s ease;
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(39, 68, 138, 0.35);
+    box-shadow: 0 2px 8px rgba(59, 129, 209, 0.35);
 
     ion-icon {
       font-size: 12px;

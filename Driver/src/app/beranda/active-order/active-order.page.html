@@ -66,7 +66,10 @@
           </div>
           <div class="info-row" *ngIf="order.notes">
             <span class="info-label">Catatan</span>
-            <p class="info-value notes-text">{{ order.notes }}</p>
+            <p class="info-value notes-text">
+              <ion-icon name="document-text-outline" class="notes-icon"></ion-icon>
+              {{ order.notes }}
+            </p>
           </div>
         </div>
 

@@ -303,7 +303,7 @@ class OrderController extends Controller
                                     'status' => 'success',
                                     'reference' => 'FIVGO-REFUND-REJECT-' . $order->id . '-' . \Illuminate\Support\Str::upper(\Illuminate\Support\Str::random(8)),
                                     'payment_method' => 'wallet',
-                                    'description' => 'Refund Penolakan Perjalanan oleh Driver (Order #' . substr($order->id, 0, 8) . ')',
+                                    'description' => 'Refund Penolakan Perjalanan oleh Driver ',
                                 ]);
                             }
 
@@ -351,6 +351,7 @@ class OrderController extends Controller
                 'phone'        => $order->driver->phone,
                 'vehicle_type' => $order->driver->driverProfile?->vehicle_type,
                 'plate_number' => $order->driver->driverProfile?->plate_number,
+                'vehicle_brand' => $order->driver->driverProfile?->vehicle_brand,
                 'rating'       => $order->driver->driverProfile?->rating,
                 'current_lat'  => $order->driver->driverProfile?->current_lat,
                 'current_lng'  => $order->driver->driverProfile?->current_lng,

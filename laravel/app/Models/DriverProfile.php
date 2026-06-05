@@ -8,7 +8,7 @@ class DriverProfile extends Model
 {
     use HasFactory, HasUuids;
     protected $fillable = [
-        'user_id', 'status', 'rating', 'vehicle_type', 'plate_number', 'wallet_balance', 'current_lat', 'current_lng'
+        'user_id', 'status', 'rating', 'vehicle_type', 'plate_number', 'vehicle_brand', 'wallet_balance', 'current_lat', 'current_lng'
     ];
     public function user() { return $this->belongsTo(User::class); }
 }

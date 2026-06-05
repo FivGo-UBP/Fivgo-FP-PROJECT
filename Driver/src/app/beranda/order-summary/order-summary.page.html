@@ -1,4 +1,4 @@
-<ion-content color="light" class="ion-padding-bottom">
+<ion-content class="ion-padding-bottom">
   <div class="top-header">
     <div class="date-time">{{ order?.created_at | date:'dd MMM yyyy, HH:mm' }}</div>
   </div>
@@ -11,7 +11,7 @@
         <span class="label">Dibayar Pakai</span>
         <div class="method">
           <img *ngIf="order.payment_method === 'dana'" src="assets/dana-icon.png" alt="Dana" class="dana-icon" />
-          <ion-icon *ngIf="order.payment_method !== 'dana'" name="cash-outline" color="warning"></ion-icon>
+          <ion-icon *ngIf="order.payment_method !== 'dana'" name="cash-outline" color="primary"></ion-icon>
           <span class="method-text">{{ order.payment_method === 'tunai' ? 'Tunai' : 'Non Tunai : ' + (order.payment_method | titlecase) }}</span>
         </div>
       </div>
@@ -80,8 +80,8 @@
   </div>
 </ion-content>
 
-<ion-footer class="ion-no-border" style="background: #eaedf2;">
+<ion-footer class="ion-no-border">
   <div class="ion-padding">
-    <ion-button expand="block" class="selesai-btn" (click)="finish()">selesai</ion-button>
+    <ion-button expand="block" class="selesai-btn" (click)="finish()">Selesai</ion-button>
   </div>
 </ion-footer>

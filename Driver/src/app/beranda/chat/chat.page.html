@@ -1,7 +1,6 @@
 <ion-header class="ion-no-border">
   <!-- Mode Daftar Chat -->
   <div class="header-section" *ngIf="!orderId">
-    <h1 class="header-title">Chat</h1>
     <ion-segment [(ngModel)]="segmentValue" class="custom-segment" mode="md">
       <ion-segment-button value="chat">
         <ion-label>Chat</ion-label>
@@ -33,12 +32,12 @@
   </div>
 </ion-header>
 
-<ion-content class="bg-light">
+<ion-content [fullscreen]="true" class="bg-light">
 
   <!-- ===== MODE CHAT AKTIF ===== -->
   <ng-container *ngIf="orderId">
     <div class="loading-container" *ngIf="isLoading">
-      <ion-spinner name="crescent" color="warning"></ion-spinner>
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
       <p>Memuat pesan...</p>
     </div>
 
@@ -73,7 +72,7 @@
       </div>
 
       <div class="loading-container" *ngIf="isLoading">
-        <ion-spinner name="crescent" color="warning"></ion-spinner>
+        <ion-spinner name="crescent" color="primary"></ion-spinner>
         <p>Memuat percakapan...</p>
       </div>
 

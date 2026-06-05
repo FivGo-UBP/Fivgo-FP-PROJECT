@@ -1,10 +1,10 @@
 ion-toolbar {
-  --background: #2b4085;
-  --color: white;
+  --background: transparent;
+  --color: #1a365d;
 }
 
 ion-content {
-  --background: #eaedf2;
+  --background: #E5E7EB;
 }
 
 .card {
@@ -215,19 +215,19 @@ ion-content {
     font-weight: 700;
     
     .total-label {
-      color: #2b4085;
+      color: #3B81D1;
       text-transform: uppercase;
     }
     
     .total-val {
-      color: #2b4085;
+      color: #3B81D1;
       font-size: 14px;
     }
   }
 }
 
 .bantuan-btn {
-  --background: #2b4085;
+  --background: #3B81D1;
   --color: white;
   --border-radius: 20px;
   font-weight: 600;

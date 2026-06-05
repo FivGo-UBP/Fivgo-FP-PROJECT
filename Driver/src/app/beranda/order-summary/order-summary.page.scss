@@ -1,33 +1,32 @@
 ion-content {
-  --background: #eaedf2;
+  --background: #E5E7EB;
 }
 
 .top-header {
-  background-color: #2b4085;
-  height: 80px;
+  background: linear-gradient(to bottom, #CFE8F4, #3B81D1);
+  height: 110px;
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding-top: 16px;
+  padding-top: 24px;
   position: absolute;
   top: 0;
   left: 0;
   z-index: 0;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
+  border-radius: 0 0 45px 45px;
 }
 
 .date-time {
-  color: white;
-  font-size: 14px;
-  font-weight: 500;
+  color: #1a365d;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .summary-container {
   position: relative;
   z-index: 1;
-  margin-top: 50px;
+  margin-top: 60px;
   padding: 0 16px;
 }
 
@@ -72,7 +71,7 @@ ion-content {
 }
 
 .income-box {
-  background: #c9d2e5;
+  background: #EBF5FB;
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -83,13 +82,13 @@ ion-content {
   .income-label {
     font-size: 16px;
     font-weight: 600;
-    color: #333;
+    color: #1a365d;
   }
 
   .income-amount {
     font-size: 20px;
     font-weight: 700;
-    color: #222;
+    color: #3B81D1;
   }
 }
 
@@ -179,7 +178,7 @@ ion-content {
 
   .review-textarea {
     width: 100%;
-    background: #eaedf2;
+    background: #F3F4F6;
     border: none;
     border-radius: 12px;
     padding: 12px;
@@ -195,11 +194,22 @@ ion-content {
   }
 }
 
+ion-footer {
+  --background: #E5E7EB;
+  background: #E5E7EB;
+}
+
 .selesai-btn {
-  --background: #2b4085;
-  --color: white;
-  --border-radius: 20px;
-  font-weight: 600;
   margin: 0;
-  text-transform: lowercase;
+  --background: #3B81D1;
+  --color: white;
+  --border-radius: 16px;
+  --padding-top: 14px;
+  --padding-bottom: 14px;
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: none;
+  --box-shadow: none;
+  --background-activated: #2a5fa3;
+  --ripple-color: #ffffff;
 }

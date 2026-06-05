@@ -71,14 +71,14 @@ ion-content {
       margin: 0;
 
       a {
-        color: #f59e0b;
+        color: #3B81D1;
         text-decoration: none;
         font-weight: 600;
         cursor: pointer;
         transition: color 0.2s ease;
 
         &:hover:not(.disabled) {
-          color: #d97706;
+          color: #1a5fa8;
         }
 
         &.disabled {
@@ -103,8 +103,8 @@ ion-content {
     transition: all 0.2s ease;
 
     &:focus {
-      border-color: #f59e0b;
-      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+      border-color: #3B81D1;
+      box-shadow: 0 0 0 2px rgba(59, 129, 209, 0.2);
     }
   }
 }
@@ -117,9 +117,9 @@ ion-content {
 
 
   .verify-btn {
-    --background: #f59e0b;
-    --background-hover: #d97706;
-    --background-activated: #d97706;
+    --background:  #0033ff;
+    --background-hover: #0669d9;
+    --background-activated: #0600ab;
     --color: #ffffff;
     --border-radius: 50px;
     height: 56px;

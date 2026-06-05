@@ -1,5 +1,5 @@
 .wallet-content {
-  --background: #f8fafc;
+  --background: #E5E7EB;
 }
 
 .wallet-container {
@@ -12,7 +12,7 @@
 /* Balance Card Design */
 .balance-card {
   position: relative;
-  background: linear-gradient(135deg, #1e293b, #0f172a);
+  background: linear-gradient(to bottom, #CFE8F4, #3B81D1);
   border-radius: 20px;
   padding: 24px 20px;
   color: white;
@@ -30,7 +30,7 @@
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(251, 191, 36, 0.08) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, transparent 60%);
   pointer-events: none;
 }
 
@@ -38,7 +38,7 @@
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #94a3b8;
+  color: rgba(255, 255, 255, 0.8);
   font-weight: 600;
   margin-bottom: 8px;
 }
@@ -47,11 +47,11 @@
   margin: 0;
   font-size: 32px;
   font-weight: 800;
-  color: #fbbf24; /* Golden Warning accent */
+  color: #ffffff;
   letter-spacing: -0.02em;
 
   &.is-minus {
-    color: #ef4444; /* Red color for negative balance */
+    color: #fca5a5; /* Light red for negative balance on blue background */
   }
 }
 
@@ -96,14 +96,14 @@
 
   &.topup {
     color: #34d399; /* Green icon */
-    background: rgba(52, 211, 153, 0.08);
-    border-color: rgba(52, 211, 153, 0.15);
+    background: rgba(52, 211, 153, 0.15);
+    border-color: rgba(52, 211, 153, 0.25);
   }
 
   &.withdraw {
-    color: #38bdf8; /* Blue icon */
-    background: rgba(56, 189, 248, 0.08);
-    border-color: rgba(56, 189, 248, 0.15);
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.25);
   }
 }
 
@@ -154,16 +154,16 @@
   }
 
   &.warning {
-    background-color: #fffbeb;
-    border: 1px solid #fef3c7;
-    color: #92400e;
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e3a8a;
     
     ion-icon {
-      color: #f59e0b;
+      color: #3B81D1;
     }
     
     p {
-      color: #b45309;
+      color: #1d4ed8;
     }
   }
 }
@@ -338,8 +338,8 @@
   }
 
   &.pending {
-    background: #fef3c7;
-    color: #92400e;
+    background: #dbeafe;
+    color: #1e40af;
   }
 
   &.failed {
@@ -426,7 +426,7 @@
   border: 1px solid #e2e8f0;
 
   &:focus-within {
-    border-color: #fbbf24;
+    border-color: #3B81D1;
   }
 }
 
@@ -466,7 +466,7 @@
   font-family: inherit;
   
   &:focus {
-    border-color: #fbbf24;
+    border-color: #3B81D1;
   }
 }
 
@@ -498,7 +498,7 @@
     padding: 12px 14px;
     
     &:focus {
-      border-color: #fbbf24;
+      border-color: #3B81D1;
       background: white;
     }
   }
@@ -529,9 +529,9 @@
   transition: all 0.15s ease;
 
   &.active {
-    background: #fffbeb;
-    border-color: #fbbf24;
-    color: #b45309;
+    background: #EBF5FB;
+    border-color: #3B81D1;
+    color: #1a365d;
   }
 }
 
@@ -582,11 +582,11 @@
   }
 
   &.selected {
-    background: #f0fdf4;
-    border-color: #34d399;
+    background: #EBF5FB;
+    border-color: #3B81D1;
     
     ion-icon {
-      color: #10b981;
+      color: #3B81D1;
     }
   }
 }
@@ -598,7 +598,8 @@
   font-size: 15px;
   height: 48px;
   text-transform: none;
-  --box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);
+  --background: #3B81D1 !important;
+  --box-shadow: 0 4px 10px rgba(59, 129, 209, 0.2);
 }
 
 /* ========================================== */
@@ -635,7 +636,7 @@
 .gateway-eyebrow {
   display: block;
   font-size: 11px;
-  color: #b45309;
+  color: #3B81D1;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -718,7 +719,7 @@
   .va-number {
     font-size: 14px;
     letter-spacing: 0.05em;
-    color: #b45309;
+    color: #3B81D1;
   }
 }
 
@@ -733,5 +734,6 @@
   font-weight: 700;
   font-size: 15px;
   text-transform: none;
-  --box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);
+  --background: #3B81D1 !important;
+  --box-shadow: 0 4px 10px rgba(59, 129, 209, 0.2);
 }

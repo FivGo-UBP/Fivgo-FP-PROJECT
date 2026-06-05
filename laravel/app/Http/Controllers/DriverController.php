@@ -24,7 +24,8 @@ class DriverController extends Controller
         
         $validated = $request->validate([
             'vehicle_type' => 'required|string',
-            'plate_number' => 'required|string'
+            'plate_number' => 'required|string',
+            'vehicle_brand' => 'nullable|string'
         ]);
 
         $profile = DriverProfile::updateOrCreate(
@@ -32,6 +33,7 @@ class DriverController extends Controller
             [
                 'vehicle_type' => $validated['vehicle_type'],
                 'plate_number' => $validated['plate_number'],
+                'vehicle_brand' => $validated['vehicle_brand'] ?? null,
                 'status' => 'offline'
             ]
         );
@@ -76,6 +78,7 @@ class DriverController extends Controller
             'photo' => 'nullable|image|max:5120', // max 5MB
             'vehicle_type' => 'nullable|string',
             'plate_number' => 'nullable|string',
+            'vehicle_brand' => 'nullable|string',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -96,6 +99,7 @@ class DriverController extends Controller
         $driverProfileData = [];
         if (isset($validated['vehicle_type'])) $driverProfileData['vehicle_type'] = $validated['vehicle_type'];
         if (isset($validated['plate_number'])) $driverProfileData['plate_number'] = $validated['plate_number'];
+        if (isset($validated['vehicle_brand'])) $driverProfileData['vehicle_brand'] = $validated['vehicle_brand'];
         
         if (!empty($driverProfileData)) {
             $user->driverProfile()->update($driverProfileData);

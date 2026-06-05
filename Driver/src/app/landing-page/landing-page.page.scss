@@ -48,9 +48,9 @@ ion-content {
   }
 
   .start-btn {
-    --background: #f59e0b;
-    --background-hover: #d97706;
-    --background-activated: #d97706;
+    --background: linear-gradient(to bottom, #CFE8F4, #3B81D1);
+    --background-hover: #1a5fa8;
+    --background-activated: #1a5fa8;
     --color: #ffffff;
     --border-radius: 50px;
     height: 52px;
@@ -58,6 +58,6 @@ ion-content {
     font-weight: 600;
     text-transform: none;
     letter-spacing: normal;
-    --box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+    --box-shadow: 0 4px 14px rgba(59, 129, 209, 0.3);
   }
 }
