@@ -393,30 +393,45 @@ export class HomePage implements OnInit, OnDestroy {
 
   checkForOrders() {
     console.log('[DriverDebug] checkForOrders executing...');
-    // Jika sudah ada modal order, jangan polling lagi
-    if (this.isOrderModalOpen) {
-      console.log('[DriverDebug] checkForOrders skipped because isOrderModalOpen is true');
-      return;
-    }
 
     this.orderService.getActiveOrder().subscribe({
       next: (order) => {
         console.log('[DriverDebug] getActiveOrder response:', order);
         if (order) {
-          if (order.status === 'pending' && !this.isOrderModalOpen) {
-            console.log('[DriverDebug] New pending order found! Opening modal:', order);
-            this.incomingOrder = order;
-            this.isOrderModalOpen = true;
-            this.startCountdown();
+          if (order.status === 'pending') {
+            if (!this.isOrderModalOpen) {
+              console.log('[DriverDebug] New pending order found! Opening modal:', order);
+              this.incomingOrder = order;
+              this.isOrderModalOpen = true;
+              this.startCountdown();
+            }
           } else if (['accepted', 'arrived', 'started'].includes(order.status)) {
             console.log(`[DriverDebug] Active order with status '${order.status}' found. Navigating to active-order...`);
             this.stopPolling();
+            this.isOrderModalOpen = false;
+            this.stopCountdown();
+            this.incomingOrder = null;
             this.router.navigate(['/active-order', order.id]);
           } else {
-            console.log('[DriverDebug] Active order has status:', order.status, '- skipping popup');
+            // Jika status order berubah (misalnya dibatalkan oleh customer/sistem), tutup modal
+            if (this.isOrderModalOpen && this.incomingOrder && this.incomingOrder.id === order.id) {
+              console.log('[DriverDebug] Order status is no longer pending (cancelled/expired). Closing modal.');
+              this.isOrderModalOpen = false;
+              this.incomingOrder = null;
+              this.stopCountdown();
+              this.showToast('Orderan telah dibatalkan oleh pelanggan.', 'medium');
+            }
           }
         } else {
-          console.log('[DriverDebug] No active order returned from server');
+          // Jika server mengembalikan null (tidak ada order aktif lagi)
+          // tetapi modal orderan masuk driver masih terbuka, berarti orderan tersebut sudah dibatalkan atau kadaluwarsa
+          if (this.isOrderModalOpen) {
+            console.log('[DriverDebug] No active order returned, but modal is open. Closing modal.');
+            this.isOrderModalOpen = false;
+            this.incomingOrder = null;
+            this.stopCountdown();
+            this.showToast('Orderan tidak tersedia lagi.', 'medium');
+          }
         }
       },
       error: (err) => {

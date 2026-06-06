@@ -78,6 +78,7 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
+    this.initMap();
     if (this.orderId) this.loadOrder();
   }
 
@@ -123,73 +124,106 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
         this.isLoading = false;
         if (order) {
           this.startPolling();
-          setTimeout(() => this.initMap(order), 800);
+          if (this.mapReady) {
+            this.setupMapForOrder(order);
+          }
         }
       },
       error: () => { this.isLoading = false; this.hasError = true; }
     });
   }
 
-  async initMap(order: ActiveOrder) {
+  async initMap() {
     if (!mapboxgl) return;
+    if (this.map) {
+      setTimeout(() => this.map.resize(), 100);
+      return;
+    }
 
-    const pickupLat = parseFloat(order.pickup_lat as any);
-    const pickupLng = parseFloat(order.pickup_lng as any);
+    // Default coordinates (Jakarta) as initial center before GPS / order loads
+    let initLat = -6.175392;
+    let initLng = 106.827153;
 
-    // Dapatkan posisi driver saat ini
-    let driverLat = pickupLat - 0.005;
-    let driverLng = pickupLng - 0.005;
-    try {
-      const pos = await Geolocation.getCurrentPosition({ timeout: 5000 });
-      driverLat = pos.coords.latitude;
-      driverLng = pos.coords.longitude;
-    } catch (e) {
-      console.warn('GPS tidak tersedia, menggunakan posisi fallback');
+    if (this.lastDriverLat !== null && this.lastDriverLng !== null) {
+      initLat = this.lastDriverLat;
+      initLng = this.lastDriverLng;
     }
 
     const container = document.getElementById('driver-active-map');
-    if (!container) return;
-
-    // Pastikan container punya ukuran sebelum init map
-    container.style.width = '100%';
-    container.style.height = '100%';
+    if (!container) {
+      setTimeout(() => this.initMap(), 50);
+      return;
+    }
 
     mapboxgl.accessToken = environment.mapboxApiKey;
     this.map = new mapboxgl.Map({
       container: 'driver-active-map',
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [driverLng, driverLat],
+      center: [initLng, initLat],
       zoom: 14,
-      padding: { top: 120, bottom: 360, left: 40, right: 40 }
+      padding: { top: 120, bottom: 280, left: 40, right: 40 }
     });
 
     this.map.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
     this.map.on('load', () => {
       this.mapReady = true;
-      // Force resize agar map mengisi container dengan benar
       setTimeout(() => {
         if (this.map) this.map.resize();
       }, 100);
       
-      const finalDriverLat = this.lastDriverLat !== null ? this.lastDriverLat : driverLat;
-      const finalDriverLng = this.lastDriverLng !== null ? this.lastDriverLng : driverLng;
-
-      this.addMarkers(finalDriverLat, finalDriverLng, pickupLat, pickupLng, order);
-      if (order.status === 'started') {
-        this.updateMapForStartedPhase(order);
-      } else {
-        // Sebelum bersama pelanggan, jangan tampilkan tujuan dulu.
-        this.drawRouteTomTom(finalDriverLat, finalDriverLng, pickupLat, pickupLng, order.vehicle_type || 'motor', 'accepted');
+      if (this.order) {
+        this.setupMapForOrder(this.order);
       }
     });
 
-    // Resize tambahan setelah map selesai render
+    // Additional resize triggers
     setTimeout(() => {
       if (this.map) this.map.resize();
     }, 500);
 
+    // Parallel fetch of actual GPS coordinates to center map
+    try {
+      const pos = await Geolocation.getCurrentPosition({ timeout: 5000 });
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      this.lastDriverLat = lat;
+      this.lastDriverLng = lng;
+      
+      if (this.map) {
+        this.map.setCenter([lng, lat]);
+      }
+      
+      if (this.order && this.mapReady) {
+        this.setupMapForOrder(this.order);
+      }
+    } catch (e) {
+      console.warn('GPS tidak tersedia atau timeout untuk penentuan posisi awal:', e);
+    }
+
     this.startNavigationTracking();
+  }
+
+  setupMapForOrder(order: ActiveOrder) {
+    if (!this.map || !this.mapReady) return;
+
+    const pickupLat = parseFloat(order.pickup_lat as any);
+    const pickupLng = parseFloat(order.pickup_lng as any);
+
+    const finalDriverLat = this.lastDriverLat !== null ? this.lastDriverLat : (pickupLat - 0.005);
+    const finalDriverLng = this.lastDriverLng !== null ? this.lastDriverLng : (pickupLng - 0.005);
+
+    // Reset markers if they already exist
+    if (this.driverMarker) { this.driverMarker.remove(); this.driverMarker = null; }
+    if (this.pickupMarker) { this.pickupMarker.remove(); this.pickupMarker = null; }
+    if (this.dropoffMarker) { this.dropoffMarker.remove(); this.dropoffMarker = null; }
+
+    this.addMarkers(finalDriverLat, finalDriverLng, pickupLat, pickupLng, order);
+    if (order.status === 'started') {
+      this.updateMapForStartedPhase(order);
+    } else {
+      this.drawRouteTomTom(finalDriverLat, finalDriverLng, pickupLat, pickupLng, order.vehicle_type || 'motor', 'accepted');
+    }
   }
 
   // Menggunakan TomTom API — rute SAMA PERSIS dengan yang ditampilkan di aplikasi customer
@@ -233,7 +267,10 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
             (b, c) => b.extend(c),
             new mapboxgl.LngLatBounds(coordinates[0], coordinates[0])
           );
-          this.map.fitBounds(bounds, { padding: { top: 120, bottom: 360, left: 40, right: 40 } });
+          this.map.fitBounds(bounds, {
+            padding: { top: 120, bottom: 260, left: 40, right: 40 },
+            maxZoom: 15 // Mencegah zoom-in ekstrim saat posisi sangat dekat
+          });
         }
 
         // Simpan instruksi turn-by-turn jika ada
@@ -247,6 +284,54 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   addMarkers(driverLat: number, driverLng: number, pickupLat: number, pickupLng: number, order: ActiveOrder) {
+    // Marker titik penjemputan (Titik Biru dengan Animasi Kedap-Kedip seperti Customer App)
+    const pickupEl = document.createElement('div');
+    pickupEl.className = 'marker user-location-pulse';
+    pickupEl.style.backgroundColor = '#007AFF';
+    pickupEl.style.width = '22px';
+    pickupEl.style.height = '22px';
+    pickupEl.style.borderRadius = '50%';
+    pickupEl.style.border = '3px solid #ffffff';
+    pickupEl.style.boxShadow = '0 0 10px rgba(0, 122, 255, 0.6)';
+    pickupEl.style.position = 'relative';
+
+    // Efek Kedap Kedip (Pulsing Halo)
+    const pulse = document.createElement('div');
+    pulse.style.position = 'absolute';
+    pulse.style.top = '-9px';
+    pulse.style.left = '-9px';
+    pulse.style.width = '34px';
+    pulse.style.height = '34px';
+    pulse.style.borderRadius = '50%';
+    pulse.style.border = '2px solid #007AFF';
+    pulse.style.opacity = '0';
+    pulse.style.animation = 'pulseGps 2.2s infinite';
+    pickupEl.appendChild(pulse);
+
+    // Tambahkan style keyframe dinamis jika belum ada di dokumen
+    if (!document.getElementById('pulse-gps-style')) {
+      const style = document.createElement('style');
+      style.id = 'pulse-gps-style';
+      style.innerHTML = `
+        @keyframes pulseGps {
+          0% { transform: scale(0.6); opacity: 0.8; }
+          100% { transform: scale(1.6); opacity: 0; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    this.pickupMarker = new mapboxgl.Marker({ element: pickupEl, anchor: 'center' })
+      .setLngLat([pickupLng, pickupLat])
+      .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${order.pickup_address}</strong>`))
+      .addTo(this.map);
+
+    // Set z-index titik biru di bawah motor
+    const pickupElem = this.pickupMarker.getElement();
+    if (pickupElem) {
+      pickupElem.style.zIndex = '10';
+    }
+
     // Marker driver: gambar kendaraan dari assets (sesuai jenis kendaraan yang dipesan)
     const vehicleType = order.vehicle_type || 'motor';
     const vehicleImg = vehicleType === 'mobil' ? 'assets/mobil driver.png' : 'assets/Motor driver.png';
@@ -263,19 +348,11 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
       .setLngLat([driverLng, driverLat])
       .addTo(this.map);
 
-    // Marker titik penjemputan (Titik Biru seperti Customer App)
-    const pickupEl = document.createElement('div');
-    pickupEl.className = 'marker';
-    pickupEl.style.backgroundColor = '#3880ff';
-    pickupEl.style.width = '20px';
-    pickupEl.style.height = '20px';
-    pickupEl.style.borderRadius = '50%';
-    pickupEl.style.border = '2px solid white';
-    pickupEl.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-    this.pickupMarker = new mapboxgl.Marker({ element: pickupEl, anchor: 'center' })
-      .setLngLat([pickupLng, pickupLat])
-      .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${order.pickup_address}</strong>`))
-      .addTo(this.map);
+    // Set z-index motor di atas titik biru
+    const driverElem = this.driverMarker.getElement();
+    if (driverElem) {
+      driverElem.style.zIndex = '100';
+    }
   }
 
   addDropoffMarker(order: ActiveOrder) {
@@ -301,6 +378,12 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
       .setLngLat([dropLng, dropLat])
       .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${order.dropoff_address}</strong>`))
       .addTo(this.map);
+
+    // Set z-index dropoff di bawah motor
+    const dropElem = this.dropoffMarker.getElement();
+    if (dropElem) {
+      dropElem.style.zIndex = '10';
+    }
   }
 
   updateMapForStartedPhase(order: ActiveOrder) {
@@ -389,12 +472,14 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
             this.driverMarker.setLngLat([lng, lat]);
           }
 
-          // Animasi 3D Mapbox mengikuti pergerakan driver
+          // Animasi Mapbox mengikuti pergerakan driver (flat, utara di atas seperti customer)
+          // Menghilangkan paksaan zoom agar tingkat zoom rute dari fitBounds tetap dipertahankan
+          // Ditambahkan padding bottom agar posisi driver bergeser ke atas (tidak tertutup bottom card)
           this.map.easeTo({
             center: [lng, lat],
-            bearing: heading,
-            pitch: 60, // Memiringkan kamera jadi mode 3D
-            zoom: 17,
+            bearing: 0,
+            pitch: 0,
+            padding: { bottom: 280 },
             duration: 1000
           });
 

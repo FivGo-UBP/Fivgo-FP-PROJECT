@@ -1,13 +1,18 @@
-<ion-content [fullscreen]="true" scrollY="false">
+<!-- Map Background (Mapbox GL) -->
+<div class="map-container">
+  <div id="driver-active-map"></div>
+</div>
+
+<ion-content [fullscreen]="true" scrollY="false" class="transparent-content">
 
   <!-- Loading -->
-  <div class="center-content" *ngIf="isLoading">
+  <div class="center-content overlay-center" *ngIf="isLoading">
     <ion-spinner name="crescent" color="primary"></ion-spinner>
     <p class="loading-text">Memuat data order...</p>
   </div>
 
   <!-- Error -->
-  <div class="center-content" *ngIf="!isLoading && hasError">
+  <div class="center-content overlay-center" *ngIf="!isLoading && hasError">
     <ion-icon name="alert-circle-outline" class="error-icon"></ion-icon>
     <p class="error-text">Gagal memuat order</p>
     <ion-button fill="outline" (click)="loadOrder()">Coba Lagi</ion-button>
@@ -15,22 +20,6 @@
 
   <!-- Main Content -->
   <div *ngIf="!isLoading && order" class="active-order-wrapper">
-
-    <!-- Navigation Guidance Banner -->
-    <div class="navigation-banner" *ngIf="currentInstruction">
-      <div class="nav-icon-col">
-        <ion-icon name="navigate" class="nav-icon"></ion-icon>
-      </div>
-      <div class="nav-text-col">
-        <span class="nav-distance">{{ instructionDistance }}</span>
-        <h3 class="nav-instruction">{{ currentInstruction }}</h3>
-      </div>
-    </div>
-
-    <!-- Map Background (Mapbox GL) -->
-    <div class="map-container">
-      <div id="driver-active-map"></div>
-    </div>
 
     <!-- Bottom Card -->
     <div class="bottom-card-wrapper">

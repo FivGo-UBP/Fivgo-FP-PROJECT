@@ -138,6 +138,13 @@ export class KodeotpPage implements OnInit, OnDestroy {
     return prefix + ' ***';
   }
 
+  onOtpChange(value: string) {
+    const cleanOtp = String(value || '').replace(/[^\d]/g, '');
+    if (cleanOtp.length === 4 && !this.isOtpExpired && !this.isLockedOut) {
+      this.verifyOtp();
+    }
+  }
+
   async verifyOtp() {
     if (this.isOtpExpired) {
       await this.showAlert('Peringatan', 'Kode OTP sudah kadaluarsa. Silakan minta kode baru.');

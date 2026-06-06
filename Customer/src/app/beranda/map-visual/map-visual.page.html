@@ -275,8 +275,14 @@
           : 'Mohon tunggu sebentar, kami sedang mencarikan driver terdekat untukmu' }}
     </p>
 
-    <div class="search-progress-track">
-      <div class="search-progress-fill" [style.width.%]="searchProgress"></div>
+    <!-- Radar Animation Container -->
+    <div class="radar-container">
+      <div class="radar-ring delay-1"></div>
+      <div class="radar-ring delay-2"></div>
+      <div class="radar-ring delay-3"></div>
+      <div class="radar-icon-wrap">
+        <img [src]="'assets/' + selectedVehicle + '.png'" class="radar-vehicle-img" [alt]="selectedVehicle">
+      </div>
     </div>
 
     <div class="search-vehicle-card">
@@ -294,6 +300,11 @@
         {{ getSelectedVehiclePrice() }}
       </span>
     </div>
+
+    <!-- Button to manually cancel search -->
+    <ion-button expand="block" fill="outline" color="danger" class="cancel-search-btn" (click)="cancelSearch()">
+      Batalkan Pencarian
+    </ion-button>
   </div>
 </div>
 

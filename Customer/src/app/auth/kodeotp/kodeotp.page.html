@@ -9,7 +9,7 @@
     </div>
 
     <div class="otp-input-container">
-      <ion-input-otp separators="all" fill="solid" [(ngModel)]="otp" [disabled]="isOtpExpired || isLockedOut"></ion-input-otp>
+      <ion-input-otp separators="all" fill="solid" [(ngModel)]="otp" (ngModelChange)="onOtpChange($event)" [disabled]="isOtpExpired || isLockedOut"></ion-input-otp>
       <br>
       <p class="timer-text" [ngClass]="{'expired': isOtpExpired}">
         {{ isOtpExpired ? 'Kode OTP sudah kadaluarsa' : 'Waktu: ' + formatTime(otpTimeLeft) }}

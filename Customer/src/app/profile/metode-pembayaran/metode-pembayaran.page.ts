@@ -98,13 +98,18 @@ export class MetodePembayaranPage implements OnInit {
         if (this.currentAmount <= 0 || this.walletBalance >= this.currentAmount) {
           this.confirmSelection();
         }
+      } else if (method === 'nontunai') {
+        this.confirmSelection();
       }
     }
   }
 
   toggleNonTunai() {
-    this.selectPayment('nontunai');
-    this.openNonTunaiSheet();
+    if (this.selectedPayment === 'nontunai') {
+      this.openNonTunaiSheet();
+    } else {
+      this.selectPayment('nontunai', true);
+    }
   }
 
   setUtama(method: string) {

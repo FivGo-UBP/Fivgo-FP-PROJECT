@@ -708,62 +708,88 @@ export class MapVisualPage implements OnInit, OnDestroy {
     });
   }
 
-  drawRoute(start: number[], dest: number[], shouldFitBounds: boolean = true) {
+  drawRoute(start: number[], dest: number[], shouldFitBounds: boolean = true, routeResponse?: any) {
     if (!this.map || !this.isPageActive) return;
 
-    this.tomtomService.calculateRoute(start[1], start[0], dest[1], dest[0], this.selectedVehicle).subscribe((res: any) => {
+    const renderRoute = (res: any) => {
       if (!this.map || !res.routes || res.routes.length === 0) return;
       
       if (!this.map.isStyleLoaded()) {
-        this.map.once('idle', () => this.drawRoute(start, dest, shouldFitBounds));
+        this.map.once('idle', () => this.drawRoute(start, dest, shouldFitBounds, res));
         return;
       }
 
       if (res.routes && res.routes.length > 0) {
-        const preferredRoute = this.selectPreferredRoute(res.routes);
-        if (!preferredRoute) return;
-        res.routes = [preferredRoute];
-
-        const routeData = res.routes[0];
-        this.tripDistanceKm = (routeData?.summary?.lengthInMeters || 0) / 1000;
-        const routePoints = routeData.legs[0].points;
-        const coordinates = routePoints.map((point: any) => [point.longitude, point.latitude]);
-
-        if (this.map.getLayer('route-line-main')) this.map.removeLayer('route-line-main');
-        if (this.map.getSource('route-main')) this.map.removeSource('route-main');
-        for (let i = 0; i < 5; i++) {
+        // Hapus layer/source yang tidak terpakai jika jumlah rute baru berkurang
+        const activeRouteCount = res.routes.length;
+        for (let i = activeRouteCount; i < 5; i++) {
           if (this.map.getLayer(`route-line-${i}`)) this.map.removeLayer(`route-line-${i}`);
           if (this.map.getSource(`route-${i}`)) this.map.removeSource(`route-${i}`);
         }
 
-        for (let i = res.routes.length - 1; i >= 0; i--) {
-          const routeData = res.routes[i];
+        const preferredRoute = this.selectPreferredRoute(res.routes);
+        if (!preferredRoute) return;
+        
+        // Simpan satu rute utama saja
+        const mainRoute = [preferredRoute];
+
+        for (let i = mainRoute.length - 1; i >= 0; i--) {
+          const routeData = mainRoute[i];
           const routePoints = routeData.legs[0].points;
           const coordinates = routePoints.map((point: any) => [point.longitude, point.latitude]);
           const isMain = i === 0;
           const sourceId = isMain ? 'route-main' : `route-${i}`;
           const layerId = isMain ? 'route-line-main' : `route-line-${i}`;
 
-          this.map.addSource(sourceId, {
-            type: 'geojson',
-            data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates } }
-          });
-          this.map.addLayer({
-            id: layerId, type: 'line', source: sourceId,
-            layout: { 'line-join': 'round', 'line-cap': 'round' },
-            paint: { 'line-color': isMain ? '#FF9800' : '#888888', 'line-width': isMain ? 5 : 3, 'line-opacity': isMain ? 1 : 0.6 }
-          });
+          const existingSource = this.map.getSource(sourceId);
+          if (existingSource) {
+            // Update data GeoJSON secara dinamis tanpa menghapus layer (mencegah kedipan)
+            existingSource.setData({
+              type: 'Feature',
+              properties: {},
+              geometry: { type: 'LineString', coordinates }
+            });
+          } else {
+            this.map.addSource(sourceId, {
+              type: 'geojson',
+              data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates } }
+            });
+            this.map.addLayer({
+              id: layerId, type: 'line', source: sourceId,
+              layout: { 'line-join': 'round', 'line-cap': 'round' },
+              paint: { 'line-color': isMain ? '#FF9800' : '#888888', 'line-width': isMain ? 5 : 3, 'line-opacity': isMain ? 1 : 0.6 }
+            });
+          }
         }
+
+        const routeData = mainRoute[0];
+        this.tripDistanceKm = (routeData?.summary?.lengthInMeters || 0) / 1000;
+        const routePoints = routeData.legs[0].points;
+        const coordinates = routePoints.map((point: any) => [point.longitude, point.latitude]);
 
         if (shouldFitBounds) {
           const bounds = new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]);
           for (const coord of coordinates) bounds.extend(coord as any);
+          
+          // Sesuaikan padding bawah berdasarkan tipe sheet (lebih pendek jika driver sudah ditemukan)
+          const bottomPadding = (this.isDriverFound || this.isInJourney || this.isSearchingDriver) ? 280 : 500;
+          
           this.map.fitBounds(bounds, {
-            padding: { top: 120, bottom: 500, left: 60, right: 60 }
+            padding: { top: 120, bottom: bottomPadding, left: 60, right: 60 },
+            maxZoom: 16 // Mencegah zoom-in ekstrim jika posisi sangat dekat
           });
         }
       }
-    }, err => console.error('Error fetching route from TomTom:', err));
+    };
+
+    if (routeResponse) {
+      renderRoute(routeResponse);
+    } else {
+      this.tomtomService.calculateRoute(start[1], start[0], dest[1], dest[0], this.selectedVehicle).subscribe(
+        res => renderRoute(res),
+        err => console.error('Error fetching route from TomTom:', err)
+      );
+    }
   }
 
   selectVehicle(type: string) {
@@ -1448,14 +1474,12 @@ export class MapVisualPage implements OnInit, OnDestroy {
     if (this.searchTimer) return; // Jangan double timer
     this.searchTimer = setInterval(() => {
       this.searchElapsed++;
-      this.searchProgress = Math.min(100, Math.round((this.searchElapsed / this.searchDuration) * 100));
-
-      if (this.searchElapsed >= this.searchDuration) {
-        this.stopSearch();
-        this.stopOrderPolling();
-        this.isSearchingDriver = false;
-        this.isDriverNotFound = true;
+      // Loop progress bar infinitely (resetting once it reaches 100%)
+      this.searchProgress = Math.round((this.searchElapsed / this.searchDuration) * 100) % 101;
+      if (this.searchProgress >= 100) {
+        this.searchElapsed = 0;
       }
+      this.cdr.detectChanges();
     }, 1000);
   }
 
@@ -1815,6 +1839,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
     if (this.pickupMarker) {
       this.pickupMarker.remove();
+      this.pickupMarker = null;
     }
 
     if (this.dropoffMarker) {
@@ -1822,7 +1847,10 @@ export class MapVisualPage implements OnInit, OnDestroy {
       this.dropoffMarker = null;
     }
 
-    this.pickupMarker = this.addMarker(this.startCoord, 'start');
+    // Only draw pickup marker if the trip has NOT started yet
+    if (order.status !== 'started') {
+      this.pickupMarker = this.addMarker(this.startCoord, 'start');
+    }
 
     if (order.status === 'started') {
       this.ensureDropoffMarker();
@@ -1865,6 +1893,11 @@ export class MapVisualPage implements OnInit, OnDestroy {
       start = [dLng, dLat];
       dest = this.destCoord;
       this.ensureDropoffMarker();
+      // Remove pickup marker when trip has started!
+      if (this.pickupMarker) {
+        this.pickupMarker.remove();
+        this.pickupMarker = null;
+      }
     } else {
       this.hideDropoffMarkerUntilJourneyStarts();
     }
@@ -1879,7 +1912,8 @@ export class MapVisualPage implements OnInit, OnDestroy {
           const travelMinutes = Math.ceil(routeData.summary.travelTimeInSeconds / 60);
           this.driverEtaText = `${travelMinutes} Menit`;
           // fitBounds hanya pada panggilan pertama agar peta reposisi ke rute driver→pickup/tujuan
-          this.drawRoute(start, dest, isFirstCall);
+          // Meneruskan response 'res' agar tidak perlu memanggil API ulang di dalam drawRoute
+          this.drawRoute(start, dest, isFirstCall, res);
         }
       }
     });
