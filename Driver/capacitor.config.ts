@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
-  appName: 'Driver',
+  appId: 'com.fivgodriver.app',
+  appName: 'FivGo Driver',
   webDir: 'www',
   plugins: {
     SplashScreen: {
