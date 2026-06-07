@@ -1,0 +1,41 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="bg-orange">
+    <ion-buttons slot="start">
+      <ion-button fill="clear" (click)="goBack()" class="text-white" style="--padding-start: 8px;">
+        <ion-icon slot="icon-only" name="chevron-back-outline" style="font-size: 22px;"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ t('alamat.title') }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="bg-light-grey">
+  <div class="alamat-container">
+    <!-- Section Title -->
+    <h2 class="section-title-custom">{{ t('alamat.heading') }}</h2>
+
+    <!-- Saved Locations List -->
+    <div class="locations-list">
+      <div class="loc-card" *ngFor="let loc of savedLocations" (click)="selectAddress(loc)">
+        <div class="icon-square-box">
+          <div class="circle-green-icon">
+            <ion-icon [name]="getSavedIcon(loc.label)"></ion-icon>
+          </div>
+        </div>
+        <div class="loc-details">
+          <h3 class="loc-label">{{ loc.label }}</h3>
+          <p class="loc-address">{{ loc.address }}</p>
+        </div>
+      </div>
+
+      <!-- If empty list, display a message and button to add new -->
+      <div *ngIf="savedLocations.length === 0" class="empty-state">
+        <ion-icon name="location-outline" class="empty-icon"></ion-icon>
+        <p>{{ t('alamat.empty') }}</p>
+        <ion-button expand="block" fill="solid" class="btn-add" routerLink="/simpan-lokasi">
+          {{ t('alamat.add') }}
+        </ion-button>
+      </div>
+    </div>
+  </div>
+</ion-content>

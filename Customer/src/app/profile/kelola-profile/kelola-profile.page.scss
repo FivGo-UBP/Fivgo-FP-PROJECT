@@ -10,8 +10,8 @@ ion-content.bg-light-grey {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  /* padding-top = safe area status bar saja (toolbar sudah dihapus) */
-  padding: var(--ion-safe-area-top, 20px) 0 0;
+  /* Padding atas = safe area status bar + ruang ekstra agar tidak tertutup header hp */
+  padding: calc(var(--ion-safe-area-top, 0px) + 27px) 0 0;
   color: white;
   text-align: center;
   background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
@@ -23,28 +23,25 @@ ion-content.bg-light-grey {
   align-items: center;
   padding: 0 20px;
   width: 100%;
+  position: relative;
 }
 
-/* Custom back button menggantikan ion-header */
 .custom-back-row {
   width: 100%;
   display: flex;
   align-items: center;
-  padding: 8px 0 16px;
+  padding: 4px 0 12px;
 }
 
 .custom-back-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
   background: transparent;
   border: none;
   color: #ffffff;
-  font-size: 17px;
-  font-weight: 600;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 8px;
+  padding: 4px;
   transition: opacity 0.2s;
 
   ion-icon {
@@ -52,7 +49,7 @@ ion-content.bg-light-grey {
   }
 
   &:active {
-    opacity: 0.7;
+    opacity: 0.6;
   }
 }
 
@@ -84,7 +81,7 @@ ion-content.bg-light-grey {
 }
 
 .profile-name {
-  margin: 0;
+  margin: 12px 0 0;
   font-size: 1.25rem;
   font-weight: 700;
   margin-bottom: 6px;

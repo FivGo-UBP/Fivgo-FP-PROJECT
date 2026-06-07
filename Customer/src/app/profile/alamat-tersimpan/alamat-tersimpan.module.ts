@@ -4,17 +4,17 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { LandingPagePageRoutingModule } from './landing-page-routing.module';
+import { AlamatTersimpanPageRoutingModule } from './alamat-tersimpan-routing.module';
 
-import { LandingPagePage } from './landing-page.page';
+import { AlamatTersimpanPage } from './alamat-tersimpan.page';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    LandingPagePageRoutingModule
+    AlamatTersimpanPageRoutingModule
   ],
-  declarations: [LandingPagePage]
+  declarations: [AlamatTersimpanPage]
 })
-export class LandingPagePageModule {}
+export class AlamatTersimpanPageModule {}

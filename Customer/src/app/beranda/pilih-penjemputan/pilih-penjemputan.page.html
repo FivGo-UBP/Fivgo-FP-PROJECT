@@ -4,7 +4,7 @@
   <div class="search-header">
     <div class="header-row">
       <ion-button fill="clear" (click)="goBack()" class="back-btn">
-        <ion-icon name="arrow-back" style="font-size: 24px; color: #1a1a1a;"></ion-icon>
+        <ion-icon name="chevron-back-outline" style="font-size: 24px; color: #1a1a1a;"></ion-icon>
       </ion-button>
       <div class="blue-dot"><div class="inner-dot"></div></div>
       <div class="search-input-wrap">
@@ -76,7 +76,7 @@
     <!-- Saved Location Items -->
     <div class="loc-item" *ngFor="let loc of savedLocations" (click)="selectResult(loc)">
       <div class="icon-wrap">
-        <div class="circle-icon" style="background-color: #168356;">
+        <div class="circle-icon" style="background-color: #f05214;">
           <ion-icon [name]="getSavedIcon(loc.label)"></ion-icon>
         </div>
       </div>
@@ -99,4 +99,23 @@
       </div>
     </div>
   </div>
+
+  <!-- Popup Konfirmasi Hapus Alamat -->
+  <div class="delete-modal-overlay" *ngIf="showDeleteConfirm">
+    <div class="delete-modal-backdrop" (click)="cancelDelete()"></div>
+    <div class="delete-modal-card">
+      <div class="delete-modal-icon">
+        <ion-icon name="trash-outline"></ion-icon>
+      </div>
+      <h3 class="delete-modal-title">Hapus Alamat?</h3>
+      <p class="delete-modal-message">
+        Alamat <strong>{{ pendingDeleteLoc?.label || pendingDeleteLoc?.name }}</strong> akan dihapus dari daftar tersimpan.
+      </p>
+      <div class="delete-modal-actions">
+        <button class="btn-cancel-delete" (click)="cancelDelete()">Batal</button>
+        <button class="btn-confirm-delete" (click)="confirmDelete()">Hapus</button>
+      </div>
+    </div>
+  </div>
+
 </ion-content>

@@ -5,7 +5,7 @@ import { locationGuard } from './guards/location.guard';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'landing-page',
+    redirectTo: 'welcome-page',
     pathMatch: 'full'
   },
   {
@@ -18,9 +18,14 @@ const routes: Routes = [
     loadChildren: () => import('./aktivasi-lokasi/aktivasi-lokasi.module').then( m => m.AktivasiLokasiPageModule)
   },
   {
-    path: 'landing-page',
-    loadChildren: () => import('./landing-page/landing-page.module').then( m => m.LandingPagePageModule),
+    path: 'welcome-page',
+    loadChildren: () => import('./welcome-page/welcome-page.module').then( m => m.WelcomePagePageModule),
     canActivate: [locationGuard]
+  },
+  {
+    path: 'landing-page',
+    redirectTo: 'welcome-page',
+    pathMatch: 'full'
   },
   {
     path: 'menu-login',

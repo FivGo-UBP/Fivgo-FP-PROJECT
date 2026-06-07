@@ -62,6 +62,10 @@ export class EditProfilePage implements OnInit {
     this.router.navigate(['/ganti-nomor']);
   }
 
+  goBack() {
+    this.navCtrl.navigateBack('/kelola-profile');
+  }
+
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {

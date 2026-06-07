@@ -1,11 +1,10 @@
 <ion-content [fullscreen]="true" class="bg-light-grey">
   <!-- Custom Header -->
-  <div class="promo-header bg-orange">
+  <div class="promo-header">
     <div class="header-content">
       <div class="custom-back-row">
         <button class="custom-back-btn" (click)="goBack()">
           <ion-icon name="chevron-back-outline"></ion-icon>
-          <span>{{ isIndonesian ? 'Profil' : 'Profile' }}</span>
         </button>
       </div>
       <h2 class="page-title">{{ isIndonesian ? 'Promo Tersedia' : 'Available Promos' }}</h2>

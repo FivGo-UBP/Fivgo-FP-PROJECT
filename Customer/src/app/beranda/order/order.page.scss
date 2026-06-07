@@ -1,27 +1,10 @@
-ion-toolbar.header-toolbar {
-  --background: #eef1f5;
-  --padding-top: 12px;
-  --padding-bottom: 8px;
+ion-toolbar.bg-orange {
+  --background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+  --color: #ffffff;
 }
 
-.header-content {
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
-}
-
-.custom-back-btn {
-  color: #111827;
-  font-size: 28px;
-  margin: 40px 12px 0 0;
-  cursor: pointer;
-}
-
-.header-title {
-  font-weight: 800;
-  font-size: 1.15rem;
-  color: #111827;
-  margin-top: 40px;
+.text-white {
+  --color: #ffffff;
 }
 
 ion-content.bg-light {

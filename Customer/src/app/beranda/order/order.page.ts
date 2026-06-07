@@ -42,11 +42,6 @@ export class OrderPage {
   }
 
   ionViewWillEnter() {
-    this.route.queryParams.subscribe(params => {
-      if (params && params['vehicle']) {
-        this.vehicle = params['vehicle'];
-      }
-    });
     this.jemputKeyword = '';
     this.tujuanKeyword = '';
     this.searchResults = [];
@@ -61,6 +56,39 @@ export class OrderPage {
     if (storedTujuan) this.historyTujuan = JSON.parse(storedTujuan);
 
     this.getCurrentLocation();
+
+    this.route.queryParams.subscribe(params => {
+      if (params && params['vehicle']) {
+        this.vehicle = params['vehicle'];
+      }
+      if (params && params['tujuan']) {
+        this.tujuanKeyword = params['tujuan'];
+        this.activeField = 'tujuan';
+
+        if (params['tLat'] && params['tLng']) {
+          const locObj = {
+            name: params['tujuan'],
+            address: params['address'] || '',
+            originalResult: {
+              position: {
+                lat: parseFloat(params['tLat']),
+                lon: parseFloat(params['tLng'])
+              }
+            }
+          };
+          this.autoSelectPrefilledLocation(locObj);
+        }
+      }
+    });
+  }
+
+  async autoSelectPrefilledLocation(loc: any) {
+    let attempts = 0;
+    while ((!this.jemputLat || !this.jemputLng) && attempts < 50) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      attempts++;
+    }
+    this.selectLocation(loc);
   }
 
   async getCurrentLocation() {

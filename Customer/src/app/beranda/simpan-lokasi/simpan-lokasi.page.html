@@ -79,9 +79,9 @@
       </div>
       
       <div class="quick-tags">
-        <span class="tag-chip" [class.active]="locationLabel === 'Rumah'" (click)="locationLabel = 'Rumah'">🏠 Rumah</span>
-        <span class="tag-chip" [class.active]="locationLabel === 'Kantor'" (click)="locationLabel = 'Kantor'">💼 Kantor</span>
-        <span class="tag-chip" [class.active]="locationLabel === 'Lainnya'" (click)="locationLabel = 'Lainnya'">📍 Lainnya</span>
+        <span class="tag-chip" [class.active]="locationLabel === 'Rumah'" (click)="locationLabel = 'Rumah'"> <ion-icon name="home-sharp"></ion-icon> Rumah</span>
+        <span class="tag-chip" [class.active]="locationLabel === 'Kantor'" (click)="locationLabel = 'Kantor'"><ion-icon name="briefcase-sharp"></ion-icon> Kantor</span>
+        <span class="tag-chip" [class.active]="locationLabel === 'Lainnya'" (click)="locationLabel = 'Lainnya'"><ion-icon name="pin-sharp"></ion-icon> Lainnya</span>
       </div>
       
       <div class="sheet-actions">

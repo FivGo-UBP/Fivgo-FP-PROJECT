@@ -104,7 +104,7 @@
 
 .target-icon {
   font-size: 24px;
-  color: #064e3b;
+  color: #fc8535;
 }
 
 .home-icon {
@@ -115,7 +115,7 @@
 .circle-icon {
   width: 24px;
   height: 24px;
-  background-color: #064e3b;
+  background-color: #fc8535;
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -160,5 +160,111 @@
   ion-icon {
     color: #6b7280;
     font-size: 20px;
+  }
+}
+
+/* ── Delete Confirmation Modal ── */
+.delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 24px;
+}
+
+.delete-modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
+}
+
+.delete-modal-card {
+  position: relative;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 28px 24px 22px;
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  animation: popIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.delete-modal-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #fee2e2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+
+  ion-icon {
+    font-size: 30px;
+    color: #ef4444;
+  }
+}
+
+.delete-modal-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  text-align: center;
+}
+
+.delete-modal-message {
+  margin: 0 0 22px;
+  font-size: 13px;
+  color: #475569;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.delete-modal-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+
+  button {
+    flex: 1;
+    height: 46px;
+    border-radius: 23px;
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s;
+    outline: none;
+
+    &:active { transform: scale(0.97); }
+  }
+
+  .btn-cancel-delete {
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+
+  .btn-confirm-delete {
+    background: #ef4444;
+    color: #ffffff;
   }
 }

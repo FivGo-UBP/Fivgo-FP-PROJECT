@@ -38,7 +38,7 @@ export class InlineAuthInterceptor implements HttpInterceptor {
         if (error.status === 401) {
           localStorage.removeItem('jwt_token');
           localStorage.removeItem('user');
-          this.router.navigate(['/landing-page']);
+          this.router.navigate(['/welcome-page']);
         }
         return throwError(() => error);
       })

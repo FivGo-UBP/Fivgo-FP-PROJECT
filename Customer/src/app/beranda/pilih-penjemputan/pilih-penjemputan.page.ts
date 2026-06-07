@@ -24,6 +24,8 @@ export class PilihPenjemputanPage implements OnInit {
   currentLng: number = 0;
   currentLocationName: string = 'Mencari lokasi...';
   savedLocations: any[] = [];
+  showDeleteConfirm: boolean = false;
+  pendingDeleteLoc: any = null;
 
   constructor(
     private tomtomService: TomtomService,
@@ -223,17 +225,30 @@ export class PilihPenjemputanPage implements OnInit {
 
   deleteSavedLocation(loc: any, event: Event) {
     event.stopPropagation();
+    this.pendingDeleteLoc = loc;
+    this.showDeleteConfirm = true;
+  }
+
+  confirmDelete() {
+    if (!this.pendingDeleteLoc) return;
     const stored = localStorage.getItem('savedLocations');
     if (stored) {
       try {
         let saved = JSON.parse(stored);
-        saved = saved.filter((i: any) => i.name !== loc.name || i.address !== loc.address);
+        saved = saved.filter((i: any) => i.name !== this.pendingDeleteLoc.name || i.address !== this.pendingDeleteLoc.address);
         localStorage.setItem('savedLocations', JSON.stringify(saved));
         this.savedLocations = saved;
       } catch (e) {
         console.error('Error deleting saved location', e);
       }
     }
+    this.showDeleteConfirm = false;
+    this.pendingDeleteLoc = null;
+  }
+
+  cancelDelete() {
+    this.showDeleteConfirm = false;
+    this.pendingDeleteLoc = null;
   }
 
   getSavedIcon(label: string): string {

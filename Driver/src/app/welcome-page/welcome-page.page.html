@@ -1,0 +1,183 @@
+<ion-content [fullscreen]="true">
+  <div class="welcome-container">
+    
+    <!-- Swiper Container -->
+    <swiper-container 
+      #swiperRef 
+      (swiperslidechange)="onSlideChange()"
+      (swipertransitionend)="onSlideChange()">
+      
+      <!-- Slide 1: Share your vision -->
+      <swiper-slide>
+        <div class="slide-content">
+          <div class="svg-container">
+            <img src="assets/welcome-page-driv-1.png" alt="welcome-page-1">
+          </div>
+          <h2 class="slide-title">Mulai Perjalanan Dengan Kami</h2>
+          <p class="slide-desc">Antar penumpang dan selesaikan pesanan dengan mudah melalui aplikasi FivGo Driver</p>
+        </div>
+      </swiper-slide>
+      
+      <!-- Slide 2: Setup and customization -->
+      <swiper-slide>
+        <div class="slide-content">
+          <div class="svg-container">
+           <img src="assets/welcome-page-driv-2.png" alt="welcome-page-2">
+          </div>
+          <h2 class="slide-title">Raih Penghasilan Lebih Mudah</h2>
+          <p class="slide-desc">Terima order dan pantau pendapatan Anda secara real-time  </p>
+        </div>
+      </swiper-slide>
+      
+      <!-- Slide 3: Landing Page Content -->
+      <swiper-slide>
+        <div class="landing-container">
+          <!-- Background wave decoration -->
+          <svg class="landing-bg-wave" viewBox="0 0 400 300" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 0 80 C 100 160, 250 30, 400 120 L 400 300 L 0 300 Z" fill="#CFE8F4" opacity="0.8" />
+          </svg>
+
+          <div class="header-text">
+            <h1>Selamat Datang di<br>FivGo Driver!</h1>
+          </div>
+          
+          <div class="image-container">
+           <img src="assets/landing-page.png" alt="FivGo Illustration">
+          </div>
+      
+          <div class="bottom-content">
+            <p class="subtitle">Jelajahi kemudahan dalam satu aplikasi</p>
+          </div>
+        </div>
+      </swiper-slide>
+      
+    </swiper-container>
+    
+    <!-- Topbar: logo + skip button (only for onboarding slides 1 & 2) -->
+    <div class="slide-topbar" *ngIf="activeIndex < 2">
+      <div class="slide-brand-header">
+        <img src="assets/logo-fivgo-driver.png" alt="FivGo Logo" class="slide-brand-logo">
+        <span class="slide-brand-name">FivGo Driver</span>
+      </div>
+      <button class="skip-top-btn" (click)="skipToLanding()">Lewati</button>
+    </div>
+
+    <!-- Bottom Navigation: dots + full button (always visible, actions change on slide 3) -->
+    <div class="bottom-nav">
+      <div class="dots-pagination">
+        <span class="dot" [class.active]="activeIndex === 0" (click)="goToSlide(0)"></span>
+        <span class="dot" [class.active]="activeIndex === 1" (click)="goToSlide(1)"></span>
+        <span class="dot" [class.active]="activeIndex === 2" (click)="goToSlide(2)"></span>
+      </div>
+      <ion-button class="next-full-btn" shape="round" expand="block" (click)="activeIndex === 2 ? openPrivacyModal() : nextSlide()">
+        {{ activeIndex === 2 ? 'Mulai Sekarang' : 'Selanjutnya' }}
+      </ion-button>
+    </div>
+
+  </div>
+
+  <!-- Privacy Policy Modal -->
+  <ion-modal [isOpen]="isPrivacyModalOpen" (didDismiss)="closePrivacyModal()" class="privacy-modal">
+    <ng-template>
+      <div class="modal-wrapper">
+        <div class="modal-header">
+          <div class="brand-title">FivGo Driver</div>
+          <div class="privacy-chip">KEBIJAKAN PRIVASI</div>
+        </div>
+
+        <div class="modal-body-container" (scroll)="onPolicyScroll($event)">
+          <div class="intro-card">
+            <h3>Selamat datang di FivGo Driver</h3>
+            <p>Sebelum kita mulai perjalanan Anda, mohon luangkan waktu sejenak untuk membaca dan menyetujui Kebijakan Privasi dan Ketentuan Penggunaan aplikasi kami.</p>
+          </div>
+
+          <div class="policy-card">
+            <div class="card-header">
+              <span class="badge yellow-badge">
+                <ion-icon name="shield-checkmark-outline"></ion-icon>
+              </span>
+              <h4>1. Informasi Profil & Akun Terdaftar</h4>
+            </div>
+            <p>Kami menyimpan dan menampilkan data profil Anda yang meliputi nama lengkap, nomor telepon, tanggal lahir, jenis kelamin, kota domisili, email, serta foto profil yang telah diverifikasi oleh kantor pusat untuk keperluan identifikasi sistem. Nomor ponsel Anda akan digunakan untuk pengiriman kode verifikasi satu kali (OTP) melalui WhatsApp demi keamanan setiap login.</p>
+          </div>
+
+          <div class="policy-card">
+            <div class="card-header">
+              <span class="badge yellow-badge">
+                <ion-icon name="location-outline"></ion-icon>
+              </span>
+              <h4>2. Data Lokasi (GPS)</h4>
+            </div>
+            <p>Akses lokasi diperlukan untuk memastikan ketersediaan Anda dalam menerima order, estimasi waktu tiba yang akurat, dan pelacakan rute secara real-time.</p>
+          </div>
+
+          <div class="policy-card">
+            <div class="card-header">
+              <span class="badge yellow-badge">
+                <ion-icon name="lock-closed-outline"></ion-icon>
+              </span>
+              <h4>3. Penggunaan & Keamanan Data</h4>
+            </div>
+            <p>Semua riwayat perjalanan dan data pribadi Anda dilindungi dengan enkripsi tingkat tinggi. Kami berkomitmen untuk melindungi data Anda dan tidak akan pernah menyebarluaskan atau menjual data pribadi Anda kepada pihak ketiga tanpa persetujuan eksplisit Anda.</p>
+          </div>
+
+          <div class="policy-card">
+            <div class="card-header">
+              <span class="badge yellow-badge">
+                <ion-icon name="analytics-outline"></ion-icon>
+              </span>
+              <h4>4. Data Aktivitas, Dompet, & Kinerja</h4>
+            </div>
+            <p>Sistem melacak detail transaksi dompet, rincian pendapatan dari setiap pesanan, status riwayat order (selesai atau dibatalkan), rincian rute perjalanan, performa rating pelanggan, serta ringkasan data kinerja berkendara Anda untuk memberikan pelaporan operasional yang transparan.</p>
+          </div>
+
+          <div class="policy-card">
+            <div class="card-header">
+              <span class="badge yellow-badge">
+                <ion-icon name="key-outline"></ion-icon>
+              </span>
+              <h4>5. Alur Penghapusan Akun & Retensi Hukum</h4>
+            </div>
+            <p>Aplikasi tidak menyediakan fitur penghapusan akun instan otomatis. Penghapusan akun wajib diajukan melalui Customer Service resmi dengan waktu proses verifikasi selama 3–7 hari kerja. Setelah dihapus, data profil akan langsung dibersihkan, namun data riwayat transaksi keuangan, catatan perjalanan, dan log keamanan tetap disimpan (retensi) selama hingga 90 hari demi kepentingan audit resmi dan pencegahan tindakan kecurangan (fraud).</p>
+          </div>
+
+          <div class="policy-card">
+            <div class="card-header">
+              <span class="badge yellow-badge">
+                <ion-icon name="mail-outline"></ion-icon>
+              </span>
+              <h4>6. Keamanan Sistem & Layanan Pengaduan</h4>
+            </div>
+            <p>Seluruh informasi dilindungi melalui protokol komunikasi HTTPS dan kontrol akses internal yang ketat. Jika Anda memiliki pertanyaan mengenai hak privasi data pribadi Anda, silakan hubungi kami via email resmi di fivgoubp@gmail.com.</p>
+          </div>
+
+          <p class="policy-consent-text">
+            Dengan menekan tombol setuju anda menyatakan bahwa Anda telah membaca dan memahami seluruh isi kebijakan privasi kami serta menyetujui penggunaan data tersebut demi kenyamanan layanan.
+          </p>
+        </div>
+
+
+        <div class="scroll-helper-hint" *ngIf="!hasReadToBottom">
+          <ion-icon name="arrow-down-outline" class="bounce-icon"></ion-icon> Scroll ke bawah untuk membaca seluruh kebijakan
+        </div>
+
+        <div class="modal-footer">
+          <div class="checkbox-container">
+            <ion-checkbox [disabled]="!hasReadToBottom" [(ngModel)]="isAgreed" mode="md" class="privacy-checkbox">
+              <span class="checkbox-text">Saya menyetujui Kebijakan Privasi & Ketentuan Layanan</span>
+            </ion-checkbox>
+          </div>
+
+          <ion-button
+            [disabled]="!isAgreed || !hasReadToBottom" 
+            class="submit-btn" 
+            expand="block" 
+            shape="round" 
+            (click)="acceptAndProceed()">
+            Setuju & Lanjutkan <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
+</ion-content>

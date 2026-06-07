@@ -15,15 +15,7 @@
       <p class="banner-sub">Jelajahi & pelajari layanan kami</p>
     </div>
     <div class="banner-right">
-      <!-- Book Illustration SVG -->
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="book-svg">
-        <circle cx="50" cy="50" r="42" fill="rgba(255, 255, 255, 0.15)" />
-        <rect x="35" y="40" width="30" height="24" rx="3" fill="#ffffff" />
-        <rect x="32" y="44" width="36" height="4" rx="1" fill="#ffffff" opacity="0.6" />
-        <path d="M45,46 L55,52 L45,58 Z" fill="#ea580c" />
-        <rect x="38" y="36" width="24" height="2" rx="0.5" fill="#ffffff" opacity="0.8" />
-        <rect x="42" y="32" width="16" height="2" rx="0.5" fill="#ffffff" opacity="0.5" />
-      </svg>
+      <img src="" alt="">
     </div>
   </div>
 
@@ -42,10 +34,203 @@
         <!-- Answer Panel -->
         <div class="faq-answer-panel">
           <div class="faq-answer-content">
-            <p>{{ item.answer }}</p>
+            <div [innerHTML]="item.answer"></div>
+            
+            <!-- Email Bantuan Button if item hasForm is true -->
+            <div *ngIf="item.hasForm" class="faq-form-button-container">
+              <ion-button class="email-bantuan-btn" shape="round" expand="block" (click)="openBantuanForm(item.formType!)">
+                Email Layanan Bantuan
+              </ion-button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Form Bantuan Modal -->
+  <ion-modal [isOpen]="isBantuanModalOpen" (didDismiss)="closeBantuanForm()" class="bantuan-form-modal">
+    <ng-template>
+      <ion-header class="ion-no-border">
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button (click)="closeBantuanForm()">
+              <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-title>Pusat Bantuan</ion-title>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="bg-grey">
+        <div class="bantuan-form-wrapper">
+          <h2 class="form-main-title">Anda memerlukan bantuan?</h2>
+
+          <!-- User Email Display Card -->
+          <div class="email-card">
+            <span class="email-label">Alamat e-mail Anda</span>
+            <span class="email-value">{{ userEmail }}</span>
+          </div>
+
+          <!-- ============================================ -->
+          <!-- FORM 1: Lupa / Kurang Membayar              -->
+          <!-- ============================================ -->
+          <ng-container *ngIf="activeFormType === 'lupa-bayar'">
+
+            <div class="form-group">
+              <label class="form-label">Nominal tunggakan (Rp)</label>
+              <div class="input-text-wrapper">
+                <ion-icon name="cash-outline" class="input-icon"></ion-icon>
+                <input
+                  type="number"
+                  [(ngModel)]="formLupaBayar.nominalTunggakan"
+                  class="form-text-input"
+                  placeholder="Masukkan nominal tunggakan" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Metode pembayaran yang digunakan</label>
+              <div class="custom-select-wrapper">
+                <select [(ngModel)]="formLupaBayar.metodePembayaran" class="form-select">
+                  <option value="" disabled selected hidden>Pilih metode pembayaran</option>
+                  <option value="tunai">Tunai</option>
+                  <option value="fivgo-pay">FivGo Pay</option>
+                </select>
+                <ion-icon name="chevron-down-outline" class="select-arrow-icon"></ion-icon>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Ceritakan masalah Anda</label>
+              <textarea
+                [(ngModel)]="formLupaBayar.description"
+                class="form-textarea"
+                placeholder="Deskripsi"
+                maxlength="1500"
+                (input)="updateCharCount()">
+              </textarea>
+              <div class="textarea-helper">
+                <span class="min-char-hint">min. 35 karakter</span>
+                <span class="char-counter">{{ formLupaBayar.description.length }} / 1500 karakter</span>
+              </div>
+            </div>
+
+            <div class="consent-container">
+              <ion-checkbox [(ngModel)]="formLupaBayar.isAgreed" mode="md" class="orange-checkbox"></ion-checkbox>
+              <span class="checkbox-text">
+                Dengan ini Saya memberikan persetujuan untuk pengumpulan, penggunaan, pemrosesan, dan pengungkapan data pribadi saya untuk layanan dukungan dan bantuan, serta tujuan lain yang wajar sesuai dengan Pemberitahuan Privasi FivGo (<a href="https://www.fivgo.com/id/terms-policies/privacy-notice/" target="_blank">https://www.fivgo.com/id/terms-policies/privacy-notice/</a>)
+              </span>
+            </div>
+
+          </ng-container>
+
+          <!-- ============================================ -->
+          <!-- FORM 2: Pengemudi Tidak Sampai Tujuan       -->
+          <!-- ============================================ -->
+          <ng-container *ngIf="activeFormType === 'tidak-sampai-tujuan'">
+
+            <div class="form-group">
+              <label class="form-label">Tanggal perjalanan</label>
+              <div class="input-text-wrapper">
+                <ion-icon name="calendar-outline" class="input-icon"></ion-icon>
+                <input
+                  type="date"
+                  [(ngModel)]="formTidakSampaiTujuan.tanggalPerjalanan"
+                  class="form-text-input" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Alasan pengemudi meminta turun</label>
+              <div class="custom-select-wrapper">
+                <select [(ngModel)]="formTidakSampaiTujuan.alasanTurun" class="form-select">
+                  <option value="" disabled selected hidden>Pilih alasan</option>
+                  <option value="macet">Kemacetan / kondisi jalan</option>
+                  <option value="penumpang">Penumpang meminta turun</option>
+                  <option value="pengemudi">Pengemudi memaksa penumpang turun</option>
+                  <option value="lainnya">Lainnya</option>
+                </select>
+                <ion-icon name="chevron-down-outline" class="select-arrow-icon"></ion-icon>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Ceritakan masalah Anda</label>
+              <textarea
+                [(ngModel)]="formTidakSampaiTujuan.description"
+                class="form-textarea"
+                placeholder="Deskripsi"
+                maxlength="1500"
+                (input)="updateCharCount()">
+              </textarea>
+              <div class="textarea-helper">
+                <span class="min-char-hint">min. 35 karakter</span>
+                <span class="char-counter">{{ formTidakSampaiTujuan.description.length }} / 1500 karakter</span>
+              </div>
+            </div>
+
+            <div class="consent-container">
+              <ion-checkbox [(ngModel)]="formTidakSampaiTujuan.isAgreed" mode="md" class="orange-checkbox"></ion-checkbox>
+              <span class="checkbox-text">
+                Dengan ini Saya memberikan persetujuan untuk pengumpulan, penggunaan, pemrosesan, dan pengungkapan data pribadi saya untuk layanan dukungan dan bantuan, serta tujuan lain yang wajar sesuai dengan Pemberitahuan Privasi FivGo (<a href="https://www.fivgo.com/id/terms-policies/privacy-notice/" target="_blank">https://www.fivgo.com/id/terms-policies/privacy-notice/</a>)
+              </span>
+            </div>
+
+          </ng-container>
+
+          <!-- ============================================ -->
+          <!-- FORM 3: Informasi Mitra Tidak Sesuai        -->
+          <!-- ============================================ -->
+          <ng-container *ngIf="activeFormType === 'info-tidak-sesuai'">
+
+            <div class="form-group">
+              <label class="form-label">Apakah Anda mengalami kejadian berikut?</label>
+              <div class="custom-select-wrapper">
+                <select [(ngModel)]="formInfoTidakSesuai.incidentType" class="form-select">
+                  <option value="" disabled selected hidden>Pilih ketidaksesuaian</option>
+                  <option value="driver_different">Profile Mitra Pengemudi</option>
+                  <option value="vehicle_different">Pelat Kendaraan</option>
+                </select>
+                <ion-icon name="chevron-down-outline" class="select-arrow-icon"></ion-icon>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Ceritakan masalah Anda</label>
+              <textarea
+                [(ngModel)]="formInfoTidakSesuai.description"
+                class="form-textarea"
+                placeholder="Deskripsi"
+                maxlength="1500"
+                (input)="updateCharCount()">
+              </textarea>
+              <div class="textarea-helper">
+                <span class="min-char-hint">min. 35 karakter</span>
+                <span class="char-counter">{{ formInfoTidakSesuai.description.length }} / 1500 karakter</span>
+              </div>
+            </div>
+
+            <div class="consent-container">
+              <ion-checkbox [(ngModel)]="formInfoTidakSesuai.isAgreed" mode="md" class="orange-checkbox"></ion-checkbox>
+              <span class="checkbox-text">
+                Dengan ini Saya memberikan persetujuan untuk pengumpulan, penggunaan, pemrosesan, dan pengungkapan data pribadi saya untuk layanan dukungan dan bantuan, serta tujuan lain yang wajar sesuai dengan Pemberitahuan Privasi FivGo (<a href="https://www.fivgo.com/id/terms-policies/privacy-notice/" target="_blank">https://www.fivgo.com/id/terms-policies/privacy-notice/</a>)
+              </span>
+            </div>
+
+          </ng-container>
+
+          <!-- Submit Button (shared) -->
+          <ion-button
+            [disabled]="!isFormValid()"
+            class="submit-form-btn"
+            expand="block"
+            shape="round"
+            (click)="submitBantuanForm()">
+            Kirim
+          </ion-button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>

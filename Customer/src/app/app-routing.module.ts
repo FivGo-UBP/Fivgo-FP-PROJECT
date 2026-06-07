@@ -15,13 +15,13 @@ const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'landing-page',
+    redirectTo: 'welcome-page',
     pathMatch: 'full'
   },
   {
     path: 'landing-page',
-    loadChildren: () => import('./landing-page/landing-page.module').then( m => m.LandingPagePageModule),
-    canActivate: [locationGuard]
+    redirectTo: 'welcome-page',
+    pathMatch: 'full'
   },
   {
     path: 'login',
@@ -127,6 +127,15 @@ const routes: Routes = [
   {
     path: 'laporan-masalah',
     loadChildren: () => import('./profile/laporan-masalah/laporan-masalah.module').then( m => m.LaporanMasalahPageModule)
+  },
+  {
+    path: 'welcome-page',
+    loadChildren: () => import('./welcome-page/welcome-page.module').then( m => m.WelcomePagePageModule),
+    canActivate: [locationGuard]
+  },
+  {
+    path: 'alamat-tersimpan',
+    loadChildren: () => import('./profile/alamat-tersimpan/alamat-tersimpan.module').then( m => m.AlamatTersimpanPageModule)
   },
 ];
 

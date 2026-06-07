@@ -250,7 +250,7 @@
 .marker-container {
   width: 36px;
   height: 36px;
-  background-color: #d1fae5; /* soft green badge */
+  background-color: #fae1d1; /* soft green badge */
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -258,7 +258,7 @@
   flex-shrink: 0;
   
   .location-pin {
-    color: #10b981;
+    color: #ea580c;
     font-size: 20px;
   }
 }
@@ -312,7 +312,7 @@
   background: #ffffff;
   
   &:focus {
-    border-color: #168356;
+    border-color: #833c16;
   }
 }
 
@@ -334,9 +334,9 @@
   transition: all 0.2s;
   
   &.active {
-    background: #d1fae5;
-    border-color: #a7f3d0;
-    color: #065f46;
+    background: #fae3d1;
+    border-color: #f3c5a7;
+    color: #5f2106;
   }
 }
 
@@ -362,7 +362,7 @@
   height: 48px;
   border-radius: 24px;
   border: none;
-  background: #168356;
+  background: #ea580c;
   color: #ffffff;
   font-size: 15px;
   font-weight: 700;

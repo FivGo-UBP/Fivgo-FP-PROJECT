@@ -29,6 +29,10 @@ export class BahasaPage implements OnInit {
     this.navCtrl.navigateBack('/kelola-profile');
   }
 
+  goBack() {
+    this.navCtrl.navigateBack('/kelola-profile');
+  }
+
   t(key: string): string {
     return this.langService.translate(key);
   }

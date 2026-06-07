@@ -2,16 +2,15 @@
   <div class="profile-header bg-orange">
 
     <div class="header-content">
-      <!-- Tombol Back custom (menggantikan ion-header agar seamless) -->
+      <!-- Tombol back di kiri, di atas foto profil -->
       <div class="custom-back-row">
         <button class="custom-back-btn" (click)="goBack()">
           <ion-icon name="chevron-back-outline"></ion-icon>
-          <span>{{ t('profile.title') }}</span>
         </button>
       </div>
 
+      <!-- Avatar di tengah -->
       <div class="avatar-container">
-        <!-- Menggunakan foto dari desain jika ada, atau fallback inisial nama -->
         <img *ngIf="user?.photo" [src]="user?.photo" alt="Profile" referrerpolicy="no-referrer" />
         <div *ngIf="!user?.photo" class="avatar-fallback">
           {{ user?.name?.charAt(0)?.toUpperCase() || 'U' }}
@@ -60,7 +59,7 @@
       </ion-item>
       <div class="divider"></div>
 
-      <ion-item button detail="true" class="menu-item" routerLink="/alamat">
+      <ion-item button detail="true" class="menu-item" routerLink="/alamat-tersimpan">
         <div class="icon-box" slot="start">
           <ion-icon name="location"></ion-icon>
         </div>

@@ -12,7 +12,6 @@ export class LanguageService {
 
   private translations: any = {
     id: {
-      'profile.title': 'Profil',
       'profile.edit': 'Edit Profile',
       'profile.phone.empty': 'Belum ada nomor telepon',
       'profile.email.empty': 'Belum ada email',
@@ -100,10 +99,13 @@ export class LanguageService {
       'bantuan.title': 'Pusat Bantuan',
       'bantuan.faq.title': 'Telusuri FAQ',
       'bantuan.reports.title': 'Lihat laporan',
-      'bantuan.email.title': 'Kirim email'
+      'bantuan.email.title': 'Kirim email',
+      'alamat.title': 'Favorit',
+      'alamat.heading': 'Perjalanan ke Alamat Tersimpan',
+      'alamat.empty': 'Belum ada alamat tersimpan.',
+      'alamat.add': 'Tambah Alamat Baru'
     },
     en: {
-      'profile.title': 'Profile',
       'profile.edit': 'Edit Profile',
       'profile.phone.empty': 'No phone number yet',
       'profile.email.empty': 'No email yet',
@@ -191,7 +193,11 @@ export class LanguageService {
       'bantuan.title': 'Help Center',
       'bantuan.faq.title': 'Browse FAQ',
       'bantuan.reports.title': 'View reports',
-      'bantuan.email.title': 'Send email'
+      'bantuan.email.title': 'Send email',
+      'alamat.title': 'Favorites',
+      'alamat.heading': 'Trip to Saved Address',
+      'alamat.empty': 'No saved addresses yet.',
+      'alamat.add': 'Add New Address'
     }
   };
 
