@@ -27,6 +27,7 @@ export class OrderPage {
   
   historyJemput: any[] = [];
   historyTujuan: any[] = [];
+  hasProcessedPrefilled: boolean = false;
 
   constructor(
     private tomtomService: TomtomService,
@@ -47,6 +48,7 @@ export class OrderPage {
     this.searchResults = [];
     this.isSearching = false;
     this.activeField = 'jemput';
+    this.hasProcessedPrefilled = false;
     
     // Load history
     const storedJemput = localStorage.getItem('historyJemput');
@@ -58,6 +60,9 @@ export class OrderPage {
     this.getCurrentLocation();
 
     this.route.queryParams.subscribe(params => {
+      if (this.hasProcessedPrefilled) {
+        return;
+      }
       if (params && params['vehicle']) {
         this.vehicle = params['vehicle'];
       }
@@ -66,6 +71,7 @@ export class OrderPage {
         this.activeField = 'tujuan';
 
         if (params['tLat'] && params['tLng']) {
+          this.hasProcessedPrefilled = true;
           const locObj = {
             name: params['tujuan'],
             address: params['address'] || '',
@@ -76,6 +82,15 @@ export class OrderPage {
               }
             }
           };
+          
+          // Clear query parameters from URL history to avoid back-navigation loops
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { tujuan: null, tLat: null, tLng: null, address: null, vehicle: null },
+            queryParamsHandling: 'merge',
+            replaceUrl: true
+          });
+
           this.autoSelectPrefilledLocation(locObj);
         }
       }
@@ -272,6 +287,16 @@ export class OrderPage {
       } else {
         finalJemputLat = this.jemputLat !== 0 ? this.jemputLat : this.currentLat;
         finalJemputLng = this.jemputLng !== 0 ? this.jemputLng : this.currentLng;
+      }
+
+      if (!finalJemputLat || !finalJemputLng || isNaN(finalJemputLat) || isNaN(finalJemputLng)) {
+        const alert = await this.alertController.create({
+          header: 'Gagal Mendapatkan Lokasi',
+          message: 'Pastikan GPS perangkat Anda aktif dan izin lokasi telah diberikan.',
+          buttons: ['OK']
+        });
+        await alert.present();
+        return;
       }
 
       this.router.navigate(['/map-visual'], {

@@ -5,14 +5,14 @@ const config: CapacitorConfig = {
   appName: 'Driver',
   webDir: 'www',
   plugins: {
-   SplashScreen: {
-      launchAutoHide: false,
-      backgroundColor: "#079cff",
+    SplashScreen: {
+      launchShowDuration: 0,
+      launchAutoHide: true,
+      backgroundColor: "#ffffff",
       showSpinner: false,
       androidSpinnerStyle: "small",
       iosSpinnerStyle: "small",
       splashFullScreen: false,
-      layoutName: "custom_splash",
     },
   },
 };

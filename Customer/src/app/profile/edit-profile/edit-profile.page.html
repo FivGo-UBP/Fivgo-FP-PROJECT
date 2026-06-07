@@ -1,9 +1,14 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="bg-orange">
     <ion-buttons slot="start">
+<<<<<<< Updated upstream
       <ion-button fill="clear" (click)="goBack()" class="text-white" style="--padding-start: 8px;">
         <ion-icon slot="icon-only" name="chevron-back-outline" style="font-size: 22px;"></ion-icon>
       </ion-button>
+=======
+      <ion-back-button defaultHref="/kelola-profile" [text]="t('editprofile.title')" icon="chevron-back-outline"
+        class="text-white"></ion-back-button>
+>>>>>>> Stashed changes
     </ion-buttons>
     <ion-title>{{ t('editprofile.title') }}</ion-title>
   </ion-toolbar>
@@ -32,7 +37,8 @@
       <ion-label class="input-label">{{ t('editprofile.fullname') }}</ion-label>
       <div class="input-wrapper">
         <ion-icon name="person-outline" class="field-icon"></ion-icon>
-        <ion-input type="text" [(ngModel)]="name" (ngModelChange)="onInteraction()" [placeholder]="t('editprofile.fullname')"></ion-input>
+        <ion-input type="text" [(ngModel)]="name" (ngModelChange)="onInteraction()"
+          [placeholder]="t('editprofile.fullname')"></ion-input>
       </div>
     </div>
 
@@ -40,7 +46,8 @@
       <ion-label class="input-label">{{ t('editprofile.email') }}</ion-label>
       <div class="input-wrapper">
         <ion-icon name="mail-outline" class="field-icon"></ion-icon>
-        <ion-input type="email" [(ngModel)]="email" (ngModelChange)="onInteraction()" [placeholder]="t('editprofile.email')"></ion-input>
+        <ion-input type="email" [(ngModel)]="email" (ngModelChange)="onInteraction()"
+          [placeholder]="t('editprofile.email')"></ion-input>
         <ion-icon *ngIf="isEmailVerified" name="checkmark-circle-outline" class="verified-icon"></ion-icon>
       </div>
     </div>
@@ -77,7 +84,8 @@
     <ion-button expand="block" class="btn-simpan" (click)="saveChanges()">{{ t('editprofile.save') }}</ion-button>
   </div>
 
-  <ion-modal [isOpen]="isGenderModalOpen" (didDismiss)="setGenderModalOpen(false)" [initialBreakpoint]="0.5" [breakpoints]="[0, 0.5]" handleBehavior="cycle">
+  <ion-modal [isOpen]="isGenderModalOpen" (didDismiss)="setGenderModalOpen(false)" [initialBreakpoint]="0.5"
+    [breakpoints]="[0, 0.5]" handleBehavior="cycle">
     <ng-template>
       <div class="modal-content">
         <h2 class="modal-title">{{ t('editprofile.modal.title') }}</h2>

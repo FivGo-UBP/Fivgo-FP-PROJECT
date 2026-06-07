@@ -80,7 +80,11 @@ export class LanguageService {
       'editprofile.gender.other': 'Tidak ingin menyebutkan',
       'editprofile.modal.footer': 'Untuk alasan keamanan, kami dapat melakukan pengecekan secara berkala terkait informasi yang kamu berikan saat ini dengan informasi yang tersimpan pada sistem kami',
       'editprofile.toast.success': 'Profil berhasil diperbarui!',
-      'editprofile.toast.error': 'Gagal memperbarui profil.'
+      'editprofile.toast.error': 'Gagal memperbarui profil.',
+      'exit.alert.title': 'Keluar Aplikasi',
+      'exit.alert.msg': 'Apakah Anda yakin ingin keluar dari aplikasi FivGo?',
+      'exit.alert.cancel': 'Batal',
+      'exit.alert.confirm': 'Keluar'
     },
     en: {
       'profile.title': 'Profile',
@@ -151,7 +155,11 @@ export class LanguageService {
       'editprofile.gender.other': 'Prefer not to say',
       'editprofile.modal.footer': 'For security reasons, we may periodically check the information you provide with the information stored in our system',
       'editprofile.toast.success': 'Profile updated successfully!',
-      'editprofile.toast.error': 'Failed to update profile.'
+      'editprofile.toast.error': 'Failed to update profile.',
+      'exit.alert.title': 'Exit Application',
+      'exit.alert.msg': 'Are you sure you want to exit the FivGo application?',
+      'exit.alert.cancel': 'Cancel',
+      'exit.alert.confirm': 'Exit'
     }
   };
 

@@ -80,9 +80,7 @@ export class MenuLoginPage implements OnInit {
 
       const response: any = await SocialLogin.login({
         provider: 'google',
-        options: {
-          scopes: ['email', 'profile'],
-        },
+        options: {},
       });
 
       const googleResult = response?.result || response;
@@ -104,10 +102,11 @@ export class MenuLoginPage implements OnInit {
           await this.showAlert('Google Login Gagal', err.error?.message || 'Terjadi kesalahan saat masuk dengan Google.');
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Native Google login error:', error);
       await loading.dismiss();
-      await this.showAlert('Google Login Gagal', 'Login Google Android gagal. Pastikan OAuth Android memakai package com.fivgo.app dan SHA-1 yang benar.');
+      const errMsg = error?.message || error?.error || JSON.stringify(error);
+      await this.showAlert('Google Login Gagal', `Detail Error: ${errMsg}. Pastikan OAuth Android memakai package com.fivgo.app dan SHA-1 yang benar.`);
     }
   }
 

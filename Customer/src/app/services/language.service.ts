@@ -103,7 +103,11 @@ export class LanguageService {
       'alamat.title': 'Favorit',
       'alamat.heading': 'Perjalanan ke Alamat Tersimpan',
       'alamat.empty': 'Belum ada alamat tersimpan.',
-      'alamat.add': 'Tambah Alamat Baru'
+      'alamat.add': 'Tambah Alamat Baru',
+      'exit.alert.title': 'Keluar Aplikasi',
+      'exit.alert.msg': 'Apakah Anda yakin ingin keluar dari aplikasi FivGo?',
+      'exit.alert.cancel': 'Batal',
+      'exit.alert.confirm': 'Keluar'
     },
     en: {
       'profile.edit': 'Edit Profile',
@@ -197,7 +201,11 @@ export class LanguageService {
       'alamat.title': 'Favorites',
       'alamat.heading': 'Trip to Saved Address',
       'alamat.empty': 'No saved addresses yet.',
-      'alamat.add': 'Add New Address'
+      'alamat.add': 'Add New Address',
+      'exit.alert.title': 'Exit Application',
+      'exit.alert.msg': 'Are you sure you want to exit the FivGo application?',
+      'exit.alert.cancel': 'Cancel',
+      'exit.alert.confirm': 'Exit'
     }
   };
 
