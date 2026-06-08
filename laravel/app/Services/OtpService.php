@@ -16,8 +16,17 @@ class OtpService
      */
     public function sendOtp(string $phone, string $role): array
     {
-        // Generate a random 4-digit OTP (matching frontend spec)
-        $otp = (string) rand(1000, 9999);
+        // Clean phone number from non-numeric characters for comparison
+        $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
+        // If it starts with 62, replace with 0
+        if (str_starts_with($cleanPhone, '62')) {
+            $cleanPhone = '0' . substr($cleanPhone, 2);
+        }
+
+        $isTestPhone = ($cleanPhone === '081298682260' || $cleanPhone === '089501858234');
+
+        // Generate a random 4-digit OTP (or static '1234' for test phone)
+        $otp = $isTestPhone ? '1234' : (string) rand(1000, 9999);
         
         // Delete previous OTP records for this phone/role
         Otp::where('phone', $phone)->where('role', $role)->delete();
@@ -34,8 +43,8 @@ class OtpService
 
         Log::info("OTP Generated for $phone ($role): $otp");
 
+        // Send via Fonnte API
         try {
-            // Send via Fonnte API
             $response = \Illuminate\Support\Facades\Http::withHeaders([
                 'Authorization' => env('FONNTE_TOKEN', 'TOKEN_ANDA_DISINI')
             ])->post('https://api.fonnte.com/send', [

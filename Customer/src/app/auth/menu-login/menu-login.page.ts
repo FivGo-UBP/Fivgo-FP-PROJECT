@@ -106,6 +106,9 @@ export class MenuLoginPage implements OnInit {
       console.error('Native Google login error:', error);
       await loading.dismiss();
       const errMsg = error?.message || error?.error || JSON.stringify(error);
+      if (errMsg.toLowerCase().includes('cancel') || errMsg.toLowerCase().includes('dibatalkan')) {
+        return;
+      }
       await this.showAlert('Google Login Gagal', `Detail Error: ${errMsg}. Pastikan OAuth Android memakai package com.fivgo.app dan SHA-1 yang benar.`);
     }
   }

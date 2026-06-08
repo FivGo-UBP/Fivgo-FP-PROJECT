@@ -12,7 +12,7 @@ import { OrderService, ActiveOrder, OrderDetail, OrderHistory } from '../../serv
 export class RatingDriverPage implements OnInit {
   orderId: string | null = null;
   driverName: string = '';
-  driverPhoto: string = 'assets/default-avatar.png'; // fallback
+  driverPhoto: string = 'https://ionicframework.com/docs/img/demos/avatar.svg'; // fallback
   vehicleInfo: string = '';
   orderDate: string = '';
 
@@ -54,7 +54,7 @@ export class RatingDriverPage implements OnInit {
           if (order.driver) {
             this.driverName = order.driver.name || 'Driver';
             if (order.driver.photo) {
-              this.driverPhoto = 'http://127.0.0.1:8000/storage/' + order.driver.photo;
+              this.driverPhoto = order.driver.photo;
             }
             
             const vType = order.driver.vehicle_type ? (order.driver.vehicle_type.charAt(0).toUpperCase() + order.driver.vehicle_type.slice(1)) : 'Kendaraan';

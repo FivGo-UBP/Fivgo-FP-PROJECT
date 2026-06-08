@@ -1,6 +1,5 @@
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../services/auth.service';
 import { register } from 'swiper/element/bundle';
 
 // Register Swiper Element (Web Components)
@@ -22,18 +21,13 @@ export class WelcomePagePage implements OnInit {
   private shouldNavigateToLogin = false;
 
   constructor(
-    private authService: AuthService,
     private router: Router
   ) { }
 
   ngOnInit() {
   }
 
-  ionViewWillEnter() {
-    if (this.authService.getToken()) {
-      this.router.navigate(['/home'], { replaceUrl: true });
-    }
-  }
+
 
   onSlideChange(event?: any) {
     const swiper = this.swiperRef?.nativeElement?.swiper;
@@ -90,6 +84,7 @@ export class WelcomePagePage implements OnInit {
 
   acceptAndProceed() {
     if (this.isAgreed && this.hasReadToBottom) {
+      localStorage.setItem('welcome_seen', 'true');
       // Tandai bahwa kita perlu navigasi setelah modal tutup
       this.shouldNavigateToLogin = true;
       // Tutup modal dulu, navigasi akan terjadi di closePrivacyModal() via (didDismiss)

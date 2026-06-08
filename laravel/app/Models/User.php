@@ -13,6 +13,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Support\Facades\Storage;
 
 #[Fillable(['name', 'email', 'phone', 'role', 'phone_verified_at', 'email_verified_at', 'password', 'photo', 'gender', 'wallet_balance'])]
 #[Hidden(['password', 'remember_token'])]
@@ -63,5 +64,24 @@ class User extends Authenticatable implements JWTSubject
     public function walletTransactions()
     {
         return $this->hasMany(WalletTransaction::class);
+    }
+
+    public function getPhotoAttribute($value)
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        // Jika berupa URL lengkap eksternal (seperti Google photo), kembalikan langsung
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
+            // Jika URL lokal lama (mengandung /storage/profile_photos/), konversi ke URL host aktif
+            if (preg_match('/\/storage\/(profile_photos\/.*)$/', $value, $matches)) {
+                return url('/storage/' . $matches[1]);
+            }
+            return $value;
+        }
+
+        // Untuk path relatif baru (misal: profile_photos/xxx.jpg)
+        return url('/storage/' . $value);
     }
 }

@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Events\MessageSent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Cloudinary\Api\Upload\UploadApi;
 
 class ChatController extends Controller
 {
@@ -68,8 +69,9 @@ class ChatController extends Controller
         // Handle image upload
         $imageUrl = null;
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('chats', 'public');
-            $imageUrl = asset('storage/' . $path);
+            $upload = new UploadApi();
+            $response = $upload->upload($request->file('image')->getRealPath());
+            $imageUrl = $response['secure_url'];
         }
 
         $chat = Chat::create([

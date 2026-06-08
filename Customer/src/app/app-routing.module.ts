@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { locationGuard } from './guards/location.guard';
+import { welcomeGuard } from './guards/welcome.guard';
 
 const routes: Routes = [
   {
@@ -131,7 +132,7 @@ const routes: Routes = [
   {
     path: 'welcome-page',
     loadChildren: () => import('./welcome-page/welcome-page.module').then( m => m.WelcomePagePageModule),
-    canActivate: [locationGuard]
+    canActivate: [welcomeGuard, locationGuard]
   },
   {
     path: 'alamat-tersimpan',

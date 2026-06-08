@@ -8,6 +8,7 @@ use App\Services\OtpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Cloudinary\Api\Upload\UploadApi;
 
 class CustomerController extends Controller
 {
@@ -34,8 +35,9 @@ class CustomerController extends Controller
         ]);
 
         if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('profile_photos', 'public');
-            $validated['photo'] = url('/storage/' . $path);
+            $upload = new UploadApi();
+            $response = $upload->upload($request->file('photo')->getRealPath());
+            $validated['photo'] = $response['secure_url'];
         }
 
         if (isset($validated['email'])) {

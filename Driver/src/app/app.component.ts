@@ -54,11 +54,18 @@ export class AppComponent {
 
       // 1. Jika berada di tab non-beranda (aktivitas, pesan, dompet), tekan back akan mengarahkan ke tab beranda
       if (
-        currentUrl === '/tabs/aktivitas' ||
-        currentUrl === '/tabs/pesan' ||
-        currentUrl === '/tabs/dompet'
+        currentUrl.startsWith('/tabs/aktivitas') ||
+        currentUrl.startsWith('/tabs/dompet')
       ) {
         this.router.navigateByUrl('/tabs/beranda');
+      } else if (currentUrl.startsWith('/tabs/pesan')) {
+        // Jika sedang di dalam chat room (ada query param order_id), kembali ke list pesan
+        if (currentUrl.includes('order_id=')) {
+          this.router.navigateByUrl('/tabs/pesan');
+        } else {
+          // Jika sudah di list pesan, kembali ke beranda
+          this.router.navigateByUrl('/tabs/beranda');
+        }
       }
       // 2. Jika sudah di tab beranda atau root, tampilkan alert konfirmasi keluar
       else if (currentUrl === '/tabs/beranda' || currentUrl === '/') {
