@@ -1,7 +1,8 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="bg-blue">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/menu-profile" [text]="'Edit Profile'" icon="chevron-back-outline" class="text-white"></ion-back-button>
+      <ion-back-button defaultHref="/menu-profile" [text]="'Info Profile'" icon="chevron-back-outline"
+        class="text-white"></ion-back-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -13,11 +14,6 @@
         <!-- Menggunakan foto dari desain -->
         <img [src]="profileImage" alt="Profile" referrerpolicy="no-referrer" />
       </div>
-      <div class="edit-badge" (click)="fileInput.click(); onInteraction()">
-        <ion-icon name="camera"></ion-icon>
-      </div>
-      <!-- Input file tersembunyi untuk memilih gambar -->
-      <input type="file" #fileInput accept="image/*" style="display: none;" (change)="onFileSelected($event)">
     </div>
   </div>
 
@@ -26,7 +22,7 @@
       <ion-label class="input-label">Nama Lengkap</ion-label>
       <div class="input-wrapper">
         <ion-icon name="person-outline" class="field-icon"></ion-icon>
-        <ion-input type="text" [(ngModel)]="name" (ngModelChange)="onInteraction()" placeholder="Nama Lengkap"></ion-input>
+        <ion-input type="text" [value]="name" readonly placeholder="Nama Lengkap"></ion-input>
       </div>
     </div>
 
@@ -43,52 +39,14 @@
       <div class="input-wrapper phone-locked">
         <ion-icon name="call-outline" class="field-icon"></ion-icon>
         <ion-input type="tel" [value]="phone" readonly placeholder="Belum ada nomor"></ion-input>
-        <button class="btn-ganti-nomor" (click)="goToGantiNomor()">
-          Ubah
-          <ion-icon name="chevron-forward-outline"></ion-icon>
-        </button>
       </div>
-      <p class="phone-hint">Butuh OTP untuk mengubah nomor ini</p>
     </div>
     <div class="input-group">
       <ion-label class="input-label">Jenis Kelamin</ion-label>
-      <div class="input-wrapper" (click)="setGenderModalOpen(true); onInteraction()">
+      <div class="input-wrapper">
         <ion-icon name="male-female-outline" class="field-icon"></ion-icon>
         <ion-input type="text" [value]="getTranslatedGender()" readonly></ion-input>
-        <ion-icon name="caret-down" class="dropdown-icon"></ion-icon>
       </div>
     </div>
   </div>
-
-  <div class="action-buttons" *ngIf="showSaveButton">
-    <ion-button expand="block" class="btn-simpan" (click)="saveChanges()">Simpan Perubahan</ion-button>
-  </div>
-
-  <ion-modal [isOpen]="isGenderModalOpen" (didDismiss)="setGenderModalOpen(false)" [initialBreakpoint]="0.5" [breakpoints]="[0, 0.5]" handleBehavior="cycle">
-    <ng-template>
-      <div class="modal-content">
-        <h2 class="modal-title">Pilih Jenis Kelamin</h2>
-        <p class="modal-desc">Sesuaikan jenis kelamin Anda untuk pengalaman yang lebih baik.</p>
-
-        <ion-radio-group [(ngModel)]="selectedGender" (ionChange)="setGenderModalOpen(false)" mode="md">
-          <ion-item lines="full" class="gender-item">
-            <ion-label>Perempuan</ion-label>
-            <ion-radio slot="end" value="Perempuan"></ion-radio>
-          </ion-item>
-          <ion-item lines="full" class="gender-item">
-            <ion-label>Laki-laki</ion-label>
-            <ion-radio slot="end" value="Laki-laki"></ion-radio>
-          </ion-item>
-          <ion-item lines="none" class="gender-item">
-            <ion-label>Tidak ingin menyebutkan</ion-label>
-            <ion-radio slot="end" value="Tidak ingin menyebutkan"></ion-radio>
-          </ion-item>
-        </ion-radio-group>
-
-        <p class="modal-footer-text">
-          Informasi ini hanya digunakan untuk keperluan profil.
-        </p>
-      </div>
-    </ng-template>
-  </ion-modal>
 </ion-content>
