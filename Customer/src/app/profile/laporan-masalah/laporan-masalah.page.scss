@@ -1,3 +1,13 @@
+ion-toolbar.bg-orange {
+  --background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+  --color: #ffffff;
+}
+
+.text-white {
+  --color: #ffffff;
+  font-weight: 600;
+}
+
 ion-content.bg-grey {
   --background: #f8fafc;
 }

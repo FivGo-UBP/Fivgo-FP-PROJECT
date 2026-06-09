@@ -1940,7 +1940,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
   // ─── Helpers ─────────────────────────────────────────────────────────────
 
   getDriverPhoto(): string {
-    return this.activeOrder?.driver?.photo || 'https://ionicframework.com/docs/img/demos/avatar.svg';
+    return this.activeOrder?.driver?.photo || 'assets/Profile-Default.jpeg';
   }
 
   getDriverName(): string {

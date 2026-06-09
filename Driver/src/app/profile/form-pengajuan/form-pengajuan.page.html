@@ -1,0 +1,129 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="bg-blue">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/keamanan" text="" icon="chevron-back-outline" class="text-white"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ pageTitle }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page-container">
+
+    <div class="header-section">
+      <div class="icon-wrapper" [ngClass]="formType === 'delete' ? 'danger-bg' : 'primary-bg'">
+        <ion-icon [name]="formType === 'delete' ? 'trash-outline' : 'create-outline'"
+                  [color]="formType === 'delete' ? 'danger' : 'primary'"></ion-icon>
+      </div>
+      <h2>Pengajuan {{ pageTitle }}</h2>
+      <p *ngIf="formType === 'update'">Silakan lengkapi data di bawah ini untuk memperbarui akun Anda.</p>
+      <p *ngIf="formType === 'delete'">Perhatian! Akun yang dihapus tidak dapat dipulihkan. Isi form di bawah untuk melanjutkan.</p>
+    </div>
+
+    <!-- ===== FORM UPDATE AKUN ===== -->
+    <div class="form-section" *ngIf="formType === 'update'">
+
+      <ion-label class="field-label">Nama Lengkap</ion-label>
+      <div class="input-wrapper">
+        <ion-icon name="person-outline" class="prefix-icon"></ion-icon>
+        <ion-input type="text" [(ngModel)]="formData.nama" placeholder="Masukkan Nama Lengkap"></ion-input>
+      </div>
+
+      <ion-label class="field-label">Email</ion-label>
+      <div class="input-wrapper">
+        <ion-icon name="mail-outline" class="prefix-icon"></ion-icon>
+        <ion-input type="email" [(ngModel)]="formData.email" placeholder="Masukkan Email Aktif"></ion-input>
+      </div>
+
+      <ion-label class="field-label">Nomor Telepon</ion-label>
+      <div class="input-wrapper">
+        <ion-icon name="call-outline" class="prefix-icon"></ion-icon>
+        <ion-input type="tel" [(ngModel)]="formData.telepon" placeholder="Masukkan Nomor Telepon"></ion-input>
+      </div>
+
+      <ion-label class="field-label">Data yang Ingin Diubah</ion-label>
+      <div class="input-wrapper select-wrapper">
+        <ion-icon name="list-outline" class="prefix-icon"></ion-icon>
+        <ion-select [(ngModel)]="formData.alasan" justify="space-between" interface="popover"
+                    [interfaceOptions]="customPopoverOptions" placeholder="Pilih data yang diubah..." aria-label="Data yang Diubah">
+          <ion-select-option *ngFor="let alasan of alasanList" [value]="alasan">{{ alasan }}</ion-select-option>
+        </ion-select>
+      </div>
+
+      <ion-label class="field-label" *ngIf="formData.alasan === 'Lainnya'">Detail Perubahan</ion-label>
+      <ion-label class="field-label" *ngIf="formData.alasan && formData.alasan !== 'Lainnya'">Catatan Tambahan (Opsional)</ion-label>
+      <div class="textarea-wrapper" *ngIf="formData.alasan">
+        <ion-textarea [(ngModel)]="formData.catatan" rows="3" placeholder="Tuliskan keterangan perubahan..."></ion-textarea>
+      </div>
+
+    </div>
+
+    <!-- ===== FORM HAPUS AKUN ===== -->
+    <div class="form-section" *ngIf="formType === 'delete'">
+
+      <ion-label class="field-label">Nama Lengkap</ion-label>
+      <div class="input-wrapper">
+        <ion-icon name="person-outline" class="prefix-icon"></ion-icon>
+        <ion-input type="text" [(ngModel)]="formData.nama" placeholder="Masukkan Nama Lengkap"></ion-input>
+      </div>
+
+      <ion-label class="field-label">Nomor Telepon</ion-label>
+      <div class="input-wrapper">
+        <ion-icon name="call-outline" class="prefix-icon"></ion-icon>
+        <ion-input type="tel" [(ngModel)]="formData.telepon" placeholder="Masukkan Nomor Telepon Terdaftar"></ion-input>
+      </div>
+
+      <ion-label class="field-label">Konfirmasi Password</ion-label>
+      <div class="input-wrapper">
+        <ion-icon name="lock-closed-outline" class="prefix-icon"></ion-icon>
+        <ion-input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="formData.password" placeholder="Masukkan Password Akun"></ion-input>
+        <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" class="suffix-icon" (click)="togglePassword()"></ion-icon>
+      </div>
+
+      <ion-label class="field-label">Alasan Penghapusan</ion-label>
+      <div class="input-wrapper select-wrapper">
+        <ion-icon name="list-outline" class="prefix-icon"></ion-icon>
+        <ion-select [(ngModel)]="formData.alasan" justify="space-between" interface="popover"
+                    [interfaceOptions]="customPopoverOptions" placeholder="Pilih alasan..." aria-label="Alasan Penghapusan">
+          <ion-select-option *ngFor="let alasan of alasanList" [value]="alasan">{{ alasan }}</ion-select-option>
+        </ion-select>
+      </div>
+
+      <ion-label class="field-label" *ngIf="formData.alasan === 'Lainnya'">Detail Alasan</ion-label>
+      <ion-label class="field-label" *ngIf="formData.alasan && formData.alasan !== 'Lainnya'">Catatan Tambahan (Opsional)</ion-label>
+      <div class="textarea-wrapper" *ngIf="formData.alasan">
+        <ion-textarea [(ngModel)]="formData.catatan" rows="3" placeholder="Tuliskan keterangan lebih lanjut..."></ion-textarea>
+      </div>
+
+      <!-- Peringatan hapus akun -->
+      <div class="warning-box">
+        <ion-icon name="warning-outline"></ion-icon>
+        <p>Tindakan ini bersifat permanen. Semua data akun, riwayat perjalanan, dan saldo akan hilang selamanya.</p>
+      </div>
+
+    </div>
+
+    <div class="bottom-section">
+      <!-- Tombol Update Akun -->
+      <ion-button *ngIf="formType === 'update'"
+                  expand="block"
+                  class="submit-btn btn-primary"
+                  [disabled]="!formData.nama || !formData.email || !formData.telepon || !formData.alasan || (formData.alasan === 'Lainnya' && !formData.catatan)"
+                  (click)="submitForm()">
+        Kirim Pengajuan
+        <ion-icon name="paper-plane-outline" slot="end"></ion-icon>
+      </ion-button>
+
+      <!-- Tombol Hapus Akun -->
+      <ion-button *ngIf="formType === 'delete'"
+                  expand="block"
+                  class="submit-btn btn-danger"
+                  [disabled]="!formData.nama || !formData.telepon || !formData.password || !formData.alasan || (formData.alasan === 'Lainnya' && !formData.catatan)"
+                  (click)="submitForm()">
+        Hapus Akun Saya
+        <ion-icon name="trash-outline" slot="end"></ion-icon>
+      </ion-button>
+    </div>
+
+  </div>
+</ion-content>

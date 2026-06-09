@@ -124,11 +124,11 @@
     <div class="detail-card driver-card" *ngIf="order.driver">
       <div class="driver-row">
         <img
-          [src]="order.driver.photo || 'https://ionicframework.com/docs/img/demos/avatar.svg'"
+          [src]="order.driver.photo || 'assets/Profile-Default.jpeg'"
           [alt]="order.driver.name"
           class="driver-photo"
           referrerpolicy="no-referrer"
-          onerror="this.src='https://ionicframework.com/docs/img/demos/avatar.svg'" />
+          onerror="this.src='assets/Profile-Default.jpeg'" />
         <div class="driver-info">
           <p class="driver-name">{{ order.driver.name }}</p>
           <p class="driver-meta">

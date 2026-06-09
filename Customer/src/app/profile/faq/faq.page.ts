@@ -219,7 +219,7 @@ export class FAQPage implements OnInit {
   }
 
   goBack() {
-    this.navCtrl.back();
+    this.navCtrl.navigateBack('/bantuan');
   }
 
   t(key: string): string {

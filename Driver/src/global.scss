@@ -117,3 +117,16 @@ app-menu-profile ion-header {
   }
 }
 
+/* Override: Flat & transparent header for help pages so header merges with banner */
+app-bantuan ion-header,
+app-faq ion-header,
+app-laporan-masalah ion-header {
+  ion-toolbar {
+    border-radius: 0 !important;
+    overflow: visible !important;
+    --background: transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    --box-shadow: none !important;
+  }
+}

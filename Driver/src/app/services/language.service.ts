@@ -84,7 +84,8 @@ export class LanguageService {
       'exit.alert.title': 'Keluar Aplikasi',
       'exit.alert.msg': 'Apakah Anda yakin ingin keluar dari aplikasi FivGo?',
       'exit.alert.cancel': 'Batal',
-      'exit.alert.confirm': 'Keluar'
+      'exit.alert.confirm': 'Keluar',
+      'bantuan.title': 'Pusat Bantuan'
     },
     en: {
       'profile.title': 'Profile',
@@ -159,7 +160,8 @@ export class LanguageService {
       'exit.alert.title': 'Exit Application',
       'exit.alert.msg': 'Are you sure you want to exit the FivGo application?',
       'exit.alert.cancel': 'Cancel',
-      'exit.alert.confirm': 'Exit'
+      'exit.alert.confirm': 'Exit',
+      'bantuan.title': 'Help Center'
     }
   };
 

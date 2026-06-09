@@ -11,10 +11,7 @@
 
       <!-- Avatar di tengah -->
       <div class="avatar-container">
-        <img *ngIf="user?.photo" [src]="user?.photo" alt="Profile" referrerpolicy="no-referrer" />
-        <div *ngIf="!user?.photo" class="avatar-fallback">
-          {{ user?.name?.charAt(0)?.toUpperCase() || 'U' }}
-        </div>
+        <img [src]="user?.photo || 'assets/Profile-Default.jpeg'" alt="Profile" referrerpolicy="no-referrer" />
       </div>
       <h2 class="profile-name">{{ user?.name || '...' }}</h2>
       <p class="profile-phone">

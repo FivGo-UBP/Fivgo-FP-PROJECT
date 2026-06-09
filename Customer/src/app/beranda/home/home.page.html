@@ -3,10 +3,7 @@
     <div class="search-row">
       <ion-searchbar readonly="true" routerLink="/cari-lokasi" class="custom-search" searchIcon="undefined" [placeholder]="t('home.search')"></ion-searchbar>
       <div class="profile-circle" routerLink="/kelola-profile" style="overflow: hidden;">
-        <img *ngIf="user?.photo" [src]="user?.photo" style="width: 100%; height: 100%; object-fit: cover;" referrerpolicy="no-referrer" />
-        <div *ngIf="!user?.photo" class="avatar-fallback">
-          {{ user?.name?.charAt(0)?.toUpperCase() || 'U' }}
-        </div>
+        <img [src]="user?.photo || 'assets/Profile-Default.jpeg'" style="width: 100%; height: 100%; object-fit: cover;" referrerpolicy="no-referrer" />
       </div>
     </div>
   </div>

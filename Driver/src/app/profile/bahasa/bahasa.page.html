@@ -1,0 +1,47 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()" fill="clear" color="dark">
+        <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ t('menu.language') }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="bg-light-grey">
+  <div class="content-container">
+    <h2 class="page-title">{{ t('bahasa.title') }}</h2>
+    <p class="page-subtitle">{{ t('bahasa.subtitle') }}</p>
+
+    <div class="language-card" (click)="selectLanguage('id')">
+      <div class="flag-container">
+        <img src="https://flagcdn.com/w80/id.png" alt="Indonesia Flag">
+      </div>
+      <div class="language-info">
+        <h3>Indonesia</h3>
+        <p>Bahasa Indonesia</p>
+      </div>
+      <div class="check-circle" [class.active]="selectedLanguage === 'id'">
+        <ion-icon name="checkmark" *ngIf="selectedLanguage === 'id'"></ion-icon>
+      </div>
+    </div>
+
+    <div class="language-card" (click)="selectLanguage('en')">
+      <div class="flag-container">
+        <img src="https://flagcdn.com/w80/gb.png" alt="UK Flag">
+      </div>
+      <div class="language-info">
+        <h3>English</h3>
+        <p>English (United Kingdom)</p>
+      </div>
+      <div class="check-circle" [class.active]="selectedLanguage === 'en'">
+        <ion-icon name="checkmark" *ngIf="selectedLanguage === 'en'"></ion-icon>
+      </div>
+    </div>
+
+    <ion-button expand="block" class="save-btn" (click)="saveChanges()">
+      {{ t('bahasa.save') }}
+    </ion-button>
+  </div>
+</ion-content>

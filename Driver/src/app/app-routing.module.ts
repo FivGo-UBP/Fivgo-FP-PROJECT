@@ -75,7 +75,31 @@ const routes: Routes = [
   {
     path: 'transaction-detail/:id',
     loadChildren: () => import('./beranda/transaction-detail/transaction-detail.module').then( m => m.TransactionDetailPageModule)
+  },  {
+    path: 'keamanan',
+    loadChildren: () => import('./profile/keamanan/keamanan.module').then( m => m.KeamananPageModule)
+  },
+  {
+    path: 'bahasa',
+    loadChildren: () => import('./profile/bahasa/bahasa.module').then( m => m.BahasaPageModule)
+  },
+  {
+    path: 'bantuan',
+    loadChildren: () => import('./profile/bantuan/bantuan.module').then( m => m.BantuanPageModule)
+  },
+  {
+    path: 'form-pengajuan',
+    loadChildren: () => import('./profile/form-pengajuan/form-pengajuan.module').then( m => m.FormPengajuanPageModule)
+  },
+  {
+    path: 'faq',
+    loadChildren: () => import('./profile/faq/faq.module').then( m => m.FaqPageModule)
+  },
+  {
+    path: 'laporan-masalah',
+    loadChildren: () => import('./profile/laporan-masalah/laporan-masalah.module').then( m => m.LaporanMasalahPageModule)
   }
+
 ];
 
 @NgModule({

@@ -77,7 +77,7 @@ export class BantuanPage implements OnInit {
   }
 
   goBack() {
-    this.navCtrl.back();
+    this.navCtrl.navigateBack('/kelola-profile');
   }
 
   goToActivities() {
@@ -85,15 +85,15 @@ export class BantuanPage implements OnInit {
   }
 
   openTripDetail(trip: OrderHistory) {
-    this.router.navigate(['/order-detail', trip.id]);
+    this.navCtrl.navigateForward(`/order-detail/${trip.id}`);
   }
 
   openFaq() {
-    this.router.navigate(['/faq']);
+    this.navCtrl.navigateForward('/faq');
   }
 
   openReports() {
-    this.router.navigate(['/laporan-masalah']);
+    this.navCtrl.navigateForward('/laporan-masalah');
   }
 
   sendEmail() {

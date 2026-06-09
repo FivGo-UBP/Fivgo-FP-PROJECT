@@ -11,7 +11,7 @@ import { LanguageService } from '../../services/language.service';
   standalone: false,
 })
 export class EditProfilePage implements OnInit {
-  profileImage: string | ArrayBuffer | null = 'https://ionicframework.com/docs/img/demos/avatar.svg';
+  profileImage: string | ArrayBuffer | null = 'assets/Profile-Default.jpeg';
   selectedFile: File | null = null;
   
   name: string = '';
@@ -37,10 +37,7 @@ export class EditProfilePage implements OnInit {
         if (user.gender) {
           this.selectedGender = user.gender;
         }
-        if (user.photo) {
-          this.profileImage = user.photo;
-        }
-
+        this.profileImage = user.photo || 'assets/Profile-Default.jpeg';
       }
     });
   }

@@ -27,7 +27,7 @@ export class HomePage implements OnInit, OnDestroy {
   isOrderModalOpen: boolean = false;
   isAccepting: boolean = false;
   isRejecting: boolean = false;
-  profileImage: string = 'https://ionicframework.com/docs/img/demos/avatar.svg';
+  profileImage: string = 'assets/Profile-Default.jpeg';
 
   // Countdown Timer
   countdownValue: number = 30;
@@ -55,11 +55,7 @@ export class HomePage implements OnInit, OnDestroy {
     this.checkForActiveOrderOnStartup();
 
     this.authService.currentUser.subscribe(user => {
-      if (user?.photo) {
-        this.profileImage = user.photo;
-      } else {
-        this.profileImage = 'https://ionicframework.com/docs/img/demos/avatar.svg';
-      }
+      this.profileImage = user?.photo || 'assets/Profile-Default.jpeg';
     });
   }
 
@@ -527,7 +523,7 @@ export class HomePage implements OnInit, OnDestroy {
   // ─── Helpers ─────────────────────────────────────────────────────────────
 
   getCustomerPhoto(): string {
-    return this.incomingOrder?.customer?.photo || 'https://ionicframework.com/docs/img/demos/avatar.svg';
+    return this.incomingOrder?.customer?.photo || 'assets/Profile-Default.jpeg';
   }
 
   getCustomerName(): string {

@@ -43,7 +43,7 @@ export class AppComponent {
             splashEl.remove();
           }, 900);
         }
-      }, 2500);
+      }, 1500);
 
       // Register custom hardware back button behavior
       this.setupBackButtonBehavior();

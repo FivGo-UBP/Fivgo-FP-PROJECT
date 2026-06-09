@@ -1,3 +1,13 @@
+ion-toolbar.bg-orange {
+  --background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+  --color: #ffffff;
+}
+
+.text-white {
+  --color: #ffffff;
+  font-weight: 600;
+}
+
 ion-content.bg-grey {
   --background: #f8fafc;
 }
@@ -12,19 +22,16 @@ ion-content.bg-grey {
   overflow: hidden;
 }
 
-.banner-right {
+.cs-img {
   position: absolute;
-  bottom: 0;
   right: 0;
-  display: flex;
-  align-items: flex-end;
-}
-
-.banner-book-img {
-  width: 130px;
-  height: auto;
+  bottom: 0;
+  height: 115%;
+  width: auto;
   object-fit: contain;
-  display: block;
+  object-position: bottom;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .greeting-text {
@@ -40,13 +47,6 @@ ion-content.bg-grey {
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
   margin: 0;
-}
-
-.agent-svg {
-  width: 72px;
-  height: 72px;
-  opacity: 0.95;
-  flex-shrink: 0;
 }
 
 .content-wrapper {
@@ -216,13 +216,13 @@ ion-content.bg-grey {
 }
 
 .menu-icon-box {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+  font-size: 32px;
   margin-right: 16px;
   flex-shrink: 0;
 
@@ -250,6 +250,7 @@ ion-content.bg-grey {
   flex-shrink: 0;
   border-radius: 0;
   margin-right: 0;
+  transform: scale(1.15);
 }
 
 .menu-text-info {

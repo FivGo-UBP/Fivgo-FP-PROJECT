@@ -715,7 +715,7 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
     return 'other';
   }
 
-  getCustomerPhoto(): string { return this.order?.customer?.photo || 'https://ionicframework.com/docs/img/demos/avatar.svg'; }
+  getCustomerPhoto(): string { return this.order?.customer?.photo || 'assets/Profile-Default.jpeg'; }
   getCustomerName(): string { return this.order?.customer?.name || 'Pelanggan'; }
   getCustomerRating(): string { const r = this.order?.customer?.rating; return r ? r.toFixed(1) : '4.8'; }
   formatPrice(price: number | null | undefined): string { if (!price) return 'Rp 0'; return 'Rp ' + price.toLocaleString('id-ID'); }

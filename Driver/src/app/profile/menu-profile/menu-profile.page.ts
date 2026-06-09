@@ -11,7 +11,7 @@ import { AlertController } from '@ionic/angular';
 })
 export class MenuProfilePage implements OnInit {
   user: User | null = null;
-  profileImage: string = 'https://ionicframework.com/docs/img/demos/avatar.svg';
+  profileImage: string = 'assets/Profile-Default.jpeg';
   showLogoutConfirm: boolean = false;
 
   constructor(
@@ -24,14 +24,24 @@ export class MenuProfilePage implements OnInit {
     this.authService.getProfile().subscribe(); // Fetch latest from server
     this.authService.currentUser.subscribe(user => {
       this.user = user;
-      if (user?.photo) {
-        this.profileImage = user.photo;
-      }
+      this.profileImage = user?.photo || 'assets/Profile-Default.jpeg';
     });
   }
 
   goToKinerjaDriver() {
     this.router.navigate(['/kinerja-driver']);
+  }
+
+  goToKeamanan() {
+    this.router.navigate(['/keamanan']);
+  }
+
+  goToBahasa() {
+    this.router.navigate(['/bahasa']);
+  }
+
+  goToBantuan() {
+    this.router.navigate(['/bantuan']);
   }
 
   confirmLogout() {

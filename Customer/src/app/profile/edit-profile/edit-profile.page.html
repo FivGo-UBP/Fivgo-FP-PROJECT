@@ -13,11 +13,8 @@
   <div class="profile-edit-header">
     <div class="avatar-wrapper">
       <div class="avatar-container">
-        <!-- Menggunakan foto dari desain jika ada, atau fallback inisial nama -->
-        <img *ngIf="profileImage" [src]="profileImage" alt="Profile" referrerpolicy="no-referrer" />
-        <div *ngIf="!profileImage" class="avatar-fallback">
-          {{ name?.charAt(0)?.toUpperCase() || 'U' }}
-        </div>
+        <!-- Menggunakan foto dari desain jika ada, atau fallback default profile -->
+        <img [src]="profileImage || 'assets/Profile-Default.jpeg'" alt="Profile" referrerpolicy="no-referrer" />
       </div>
       <div class="edit-badge" (click)="fileInput.click(); onInteraction()">
         <ion-icon name="camera"></ion-icon>

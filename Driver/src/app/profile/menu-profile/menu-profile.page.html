@@ -27,20 +27,14 @@
   </div>
 
   <div class="menu-list-container">
-    <ion-list class="menu-list" lines="full">
-      <ion-item button detail="true">
+    <ion-list class="menu-list" lines="none">
+      <ion-item button detail="true" (click)="goToKeamanan()">
         <div class="icon-wrapper bg-blue-light" slot="start">
           <ion-icon name="shield-checkmark" class="text-blue"></ion-icon>
         </div>
         <ion-label>Keamanan</ion-label>
       </ion-item>
-
-      <ion-item button detail="true" routerLink="/tabs/aktivitas">
-        <div class="icon-wrapper bg-blue-light" slot="start">
-          <ion-icon name="time" class="text-blue"></ion-icon>
-        </div>
-        <ion-label>Aktivitas</ion-label>
-      </ion-item>
+      <div class="divider"></div>
 
       <ion-item button detail="true" (click)="goToKinerjaDriver()">
         <div class="icon-wrapper bg-blue-light" slot="start">
@@ -48,16 +42,18 @@
         </div>
         <ion-label>Kinerja Driver</ion-label>
       </ion-item>
+      <div class="divider"></div>
 
-      <ion-item button detail="true">
+      <ion-item button detail="true" (click)="goToBahasa()">
         <div class="icon-wrapper bg-blue-light" slot="start">
           <ion-icon name="globe" class="text-blue"></ion-icon>
         </div>
         <ion-label>Bahasa</ion-label>
         <span slot="end" class="language-text">Bahasa Indonesia</span>
       </ion-item>
+      <div class="divider"></div>
 
-      <ion-item button detail="true">
+      <ion-item button detail="true" (click)="goToBantuan()">
         <div class="icon-wrapper bg-blue-light" slot="start">
           <ion-icon name="help-circle" class="text-blue"></ion-icon>
         </div>

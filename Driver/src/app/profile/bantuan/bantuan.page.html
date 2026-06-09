@@ -1,0 +1,101 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()" fill="clear" color="dark">
+        <ion-icon name="chevron-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ t('bantuan.title') }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="bg-grey">
+  <!-- Orange Banner -->
+ <div class="help-banner">
+    <div class="banner-left">
+      <h2 class="greeting-text">Hai {{ user?.name || 'User' }}</h2>
+      <p class="sub-greeting-text">Chat kami atau telusuri FAQ</p>
+    </div>
+    <img src="assets/Customer-Service.png" alt="cs" class="cs-img">
+  </div>
+
+  <div class="content-wrapper">
+    <!-- Card 1: Aktivitas mana yang ingin dibantu? -->
+    <div class="help-card activity-card">
+      <h3 class="card-header-title">Aktivitas mana yang ingin dibantu?</h3>
+      
+      <!-- Loading State -->
+      <div class="card-loading" *ngIf="isLoading">
+        <ion-spinner name="crescent" color="primary"></ion-spinner>
+      </div>
+
+      <!-- Empty State -->
+      <div class="card-empty" *ngIf="!isLoading && recentTrips.length === 0">
+        <p>Belum ada aktivitas perjalanan baru-baru ini.</p>
+      </div>
+
+      <!-- Trips List -->
+      <div class="trips-list" *ngIf="!isLoading && recentTrips.length > 0">
+        <div class="trip-item" *ngFor="let trip of recentTrips" (click)="openTripDetail(trip)">
+          <div class="trip-icon-wrapper">
+            <img src="assets/motor kuning.png" alt="Motor" *ngIf="trip.vehicle_type?.toLowerCase() === 'motor'" />
+            <img src="assets/mobil kuning.png" alt="Mobil" *ngIf="trip.vehicle_type?.toLowerCase() === 'mobil'" />
+          </div>
+          <div class="trip-info">
+            <h4 class="trip-title">Ride to {{ trip.dropoff_address }}</h4>
+            <p class="trip-time">{{ formatDateTime(trip.created_at) }}</p>
+          </div>
+          <div class="trip-price">
+            {{ formatPrice(trip.final_price) }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Lihat Lainnya Button -->
+      <div class="action-row" *ngIf="recentTrips.length > 0">
+        <button class="btn-lihat-lainnya" (click)="goToActivities()">
+          Lihat lainnya
+        </button>
+      </div>
+    </div>
+
+    <!-- Menu Cards -->
+    <div class="menu-cards-container">
+      <!-- Telusuri FAQ -->
+      <div class="menu-card" (click)="openFaq()">
+        <div class="menu-icon-box faq-icon">
+          <img src="assets/FAQ.png" alt="FAQ" class="menu-img-icon">
+        </div>
+        <div class="menu-text-info">
+          <h4 class="menu-title">Telusuri FAQ</h4>
+          <p class="menu-subtitle">Temukan solusi di artikel dan panduan kami</p>
+        </div>
+        <ion-icon name="chevron-forward" class="menu-arrow"></ion-icon>
+      </div>
+
+      <!-- Lihat laporan -->
+      <div class="menu-card" (click)="openReports()">
+        <div class="menu-icon-box report-icon">
+          <img src="assets/laporan-masalah.png" alt="Laporan" class="menu-img-icon">
+        </div>
+        <div class="menu-text-info">
+          <h4 class="menu-title">Lihat laporan</h4>
+          <p class="menu-subtitle">Cek laporan aktif dan sebelumnya di 90 hari terakhir</p>
+        </div>
+        <ion-icon name="chevron-forward" class="menu-arrow"></ion-icon>
+      </div>
+
+      <!-- Kirim Email (New Card!) -->
+      <div class="menu-card" (click)="sendEmail()">
+        <div class="menu-icon-box email-icon">
+          <ion-icon name="mail"></ion-icon>
+        </div>
+        <div class="menu-text-info">
+          <h4 class="menu-title">Kirim email</h4>
+          <p class="menu-subtitle">Kirim email bantuan langsung ke tim customer service kami</p>
+        </div>
+        <ion-icon name="chevron-forward" class="menu-arrow"></ion-icon>
+      </div>
+    </div>
+  </div>
+</ion-content>

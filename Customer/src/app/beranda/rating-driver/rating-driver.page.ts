@@ -12,7 +12,7 @@ import { OrderService, ActiveOrder, OrderDetail, OrderHistory } from '../../serv
 export class RatingDriverPage implements OnInit {
   orderId: string | null = null;
   driverName: string = '';
-  driverPhoto: string = 'https://ionicframework.com/docs/img/demos/avatar.svg'; // fallback
+  driverPhoto: string = 'assets/Profile-Default.jpeg'; // fallback
   vehicleInfo: string = '';
   orderDate: string = '';
 
