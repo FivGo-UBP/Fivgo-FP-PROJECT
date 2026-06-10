@@ -91,8 +91,8 @@ export class OrderService {
     return this.http.post<any>(`${environment.apiUrl}/orders/${id}/complete`, {});
   }
 
-  cancelOrderByDriver(id: string): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}/orders/${id}/reject`, {});
+  cancelOrderByDriver(id: string, reason?: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/orders/${id}/reject`, { reason });
   }
 
   // ─── Driver Status & Location ─────────────────────────────────────────────

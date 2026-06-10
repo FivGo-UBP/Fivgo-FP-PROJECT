@@ -49,7 +49,7 @@ export class MenuProfilePage implements OnInit {
   }
 
   logout() {
-    sessionStorage.removeItem('driver_session_initialized');
+    this.authService.isSessionInitialized = false;
     this.authService.logout().subscribe({
       next: () => this.router.navigate(['/welcome-page']),
       error: () => this.router.navigate(['/welcome-page'])

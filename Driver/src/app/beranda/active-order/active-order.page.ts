@@ -32,6 +32,7 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
 
   isCancelModalOpen: boolean = false;
   selectedCancelReason: string = '';
+  customCancelReason: string = '';
   cancelReasons: string[] = [
     'Kendaraan mengalami kendala/ban bocor',
     'Pelanggan tidak bisa di hubungi',
@@ -651,6 +652,7 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
 
   async confirmCancel() {
     this.selectedCancelReason = '';
+    this.customCancelReason = '';
     this.isCancelModalOpen = true;
   }
 
@@ -688,7 +690,9 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
     const currentCount = this.getCancelCount();
     localStorage.setItem('driverCancelCount', String(Math.min(5, currentCount + 1)));
 
-    this.orderService.cancelOrderByDriver(this.order.id).subscribe({
+    const finalReason = this.selectedCancelReason === 'Alasan Lainnya' ? this.customCancelReason : this.selectedCancelReason;
+
+    this.orderService.cancelOrderByDriver(this.order.id, finalReason).subscribe({
       next: () => {
         this.stopPolling();
         this.isCancelling = false;

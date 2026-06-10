@@ -31,6 +31,7 @@ export interface User {
 export class AuthService {
     private currentUserSubject: BehaviorSubject<User | null>;
     public currentUser: Observable<User | null>;
+    public isSessionInitialized: boolean = false;
 
     constructor(private http: HttpClient) {
         const userStr = localStorage.getItem('user');

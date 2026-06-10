@@ -195,8 +195,17 @@
       </ion-item>
     </ion-list>
 
+    <!-- Custom reason text input area when "Alasan Lainnya" is selected -->
+    <div *ngIf="selectedCancelReason === 'Alasan Lainnya'" class="custom-reason-container">
+      <ion-textarea 
+        placeholder="Masukkan alasan pembatalan Anda..." 
+        [(ngModel)]="customCancelReason"
+        rows="3">
+      </ion-textarea>
+    </div>
+
     <div class="cancel-actions-row">
-      <ion-button expand="block" class="cancel-btn-light" [disabled]="!selectedCancelReason || isCancelling" (click)="cancelOrder()">
+      <ion-button expand="block" class="cancel-btn-light" [disabled]="!selectedCancelReason || (selectedCancelReason === 'Alasan Lainnya' && !customCancelReason.trim()) || isCancelling" (click)="cancelOrder()">
         <ion-spinner name="crescent" *ngIf="isCancelling" slot="start"></ion-spinner>
         Batalkan Orderan
       </ion-button>

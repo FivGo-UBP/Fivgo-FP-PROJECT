@@ -602,6 +602,29 @@ ion-content.transparent-content {
     }
   }
 
+  .custom-reason-container {
+    margin-bottom: 24px;
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
+    background: #f9fafb;
+    padding: 4px;
+
+    &:focus-within {
+      border-color: #1a2b6d;
+    }
+
+    ion-textarea {
+      --padding-top: 8px;
+      --padding-bottom: 8px;
+      --padding-start: 8px;
+      --padding-end: 8px;
+      font-size: 14px;
+      color: #374151;
+      --background: transparent;
+      margin: 0;
+    }
+  }
+
   .cancel-actions-row {
     display: flex;
     gap: 12px;

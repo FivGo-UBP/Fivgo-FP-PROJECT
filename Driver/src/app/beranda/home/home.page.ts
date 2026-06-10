@@ -184,10 +184,10 @@ export class HomePage implements OnInit, OnDestroy {
     console.log('[DriverDebug] syncDriverStatus called');
     
     // Periksa jika ini adalah inisialisasi awal sesi aplikasi
-    const isSessionInitialized = sessionStorage.getItem('driver_session_initialized');
+    const isSessionInitialized = this.authService.isSessionInitialized;
     if (!isSessionInitialized) {
       console.log('[DriverDebug] First session initialization. Forcing status to offline.');
-      sessionStorage.setItem('driver_session_initialized', 'true');
+      this.authService.isSessionInitialized = true;
       this.isInitializingOffline = true;
       this.isOnline = false;
       this.updateLocalUserStatus('offline');
@@ -302,22 +302,8 @@ export class HomePage implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('[DriverDebug] updateDriverStatus API failed with error:', err);
-        // Toggle anyway for demo purposes if backend is unreachable
-        this.isOnline = !this.isOnline;
-        console.log('[DriverDebug] (Fallback) Local isOnline status toggled to:', this.isOnline);
-        this.updateLocalUserStatus(this.isOnline ? 'online' : 'offline');
-        
-        if (this.isOnline) {
-          this.startLocationUpdates();
-          this.startPollingOrders();
-          this.showToast('Anda sekarang AKTIF. Menunggu orderan...', 'success');
-        } else {
-          this.stopPolling();
-          this.stopLocationUpdates();
-          this.isOrderModalOpen = false;
-          this.incomingOrder = null;
-          this.showToast('Anda sekarang TIDAK AKTIF.', 'medium');
-        }
+        const errMsg = err?.error?.message || 'Gagal memperbarui status ke server. Silakan coba lagi.';
+        this.showToast(errMsg, 'danger');
       }
     });
   }
