@@ -1,7 +1,4 @@
-ion-toolbar.bg-orange {
-  --background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
-  --color: #ffffff;
-}
+/* No page-level toolbar is needed since header is merged into banner */
 
 .text-white {
   --color: #ffffff;
@@ -14,19 +11,62 @@ ion-content.bg-grey {
 
 .help-banner {
   background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
-  padding: 30px 24px 60px;
+  padding: calc(var(--ion-safe-area-top, 0px) + 16px) 24px 60px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  margin-bottom: 80px;
+  min-height: 40px;
+  z-index: 10;
+}
+
+.back-btn {
+  position: absolute;
+  left: 0;
+  background: transparent;
+  border: none;
+  padding: 8px 12px 8px 0;
+  color: #ffffff;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  outline: none;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.banner-header-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  text-align: center;
+}
+
+.banner-body {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  position: relative;
-  overflow: hidden;
+  width: 100%;
 }
 
 .cs-img {
   position: absolute;
   right: 0;
   bottom: 0;
-  height: 115%;
+  height: 160px;
   width: auto;
   object-fit: contain;
   object-position: bottom;

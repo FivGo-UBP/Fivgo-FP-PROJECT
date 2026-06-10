@@ -1,7 +1,9 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="detail-toolbar">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/activity" icon="chevron-back-outline" text="" (click)="goBack()"></ion-back-button>
+      <ion-button (click)="goBack()" fill="clear">
+        <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+      </ion-button>
     </ion-buttons>
     <ion-title>Detail Aktivitas</ion-title>
   </ion-toolbar>

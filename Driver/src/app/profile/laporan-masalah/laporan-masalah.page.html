@@ -1,31 +1,20 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button (click)="goBack()" fill="clear" color="dark">
-        <ion-icon name="chevron-back-outline" slot="icon-only"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <ion-title>Pusat Bantuan</ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true">
+<ion-content>
   <!-- Light Banner -->
   <div class="report-banner">
-    <div class="banner-left">
-      <h2 class="banner-title">Laporan Anda</h2>
-      <p class="banner-sub">Berikut adalah daftar dari seluruh pertanyaan/keluhan Anda</p>
+    <div class="banner-header">
+      <button (click)="goBack()" class="back-btn-dark">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </button>
+      <h1 class="banner-header-title-dark">Pusat Bantuan</h1>
     </div>
-    <div class="banner-right">
-      <!-- Agent Helpline SVG -->
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="report-agent-svg">
-        <circle cx="50" cy="50" r="42" fill="rgba(59, 129, 209, 0.12)" />
-        <rect x="35" y="28" width="30" height="45" rx="5" fill="#64748b" />
-        <rect x="38" y="32" width="24" height="28" rx="2" fill="#ffffff" />
-        <circle cx="50" cy="65" r="3" fill="#ffffff" />
-        <path d="M72,32 C72,37 68,41 63,41 C61,41 60,40 59,39 L55,41 L56,37 C54,36 54,34 54,32 C54,27 58,23 63,23 C68,23 72,27 72,32 Z" fill="#3B81D1" />
-        <text x="61" y="35.5" font-size="9" font-weight="900" fill="#ffffff" font-family="system-ui">i</text>
-      </svg>
+
+    <div class="banner-body">
+      <div class="banner-left">
+        <h2 class="banner-title">Laporan Anda</h2>
+        <p class="banner-sub">Berikut adalah daftar dari seluruh pertanyaan/keluhan Anda</p>
+      </div>
+      <div class="banner-circle"></div>
+      <img src="assets/Laporan-masalah-icon.png" alt="icon laporan masalah" class="banner-report-img">
     </div>
   </div>
 

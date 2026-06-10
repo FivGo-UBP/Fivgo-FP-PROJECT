@@ -1,22 +1,19 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button (click)="goBack()" fill="clear" color="dark">
-        <ion-icon name="chevron-back-outline" slot="icon-only"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <ion-title>{{ t('bantuan.title') }}</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content class="bg-grey">
-  <!-- Orange Banner -->
- <div class="help-banner">
-    <div class="banner-left">
-      <h2 class="greeting-text">Hai {{ user?.name || 'User' }}</h2>
-      <p class="sub-greeting-text">Chat kami atau telusuri FAQ</p>
+  <div class="help-banner">
+    <div class="banner-header">
+      <button (click)="goBack()" class="back-btn-dark">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </button>
+      <h1 class="banner-header-title-dark">{{ t('bantuan.title') }}</h1>
     </div>
-    <img src="assets/Customer-Service.png" alt="cs" class="cs-img">
+
+    <div class="banner-body">
+      <div class="banner-left">
+        <h2 class="greeting-text">Hai {{ user?.name || 'User' }}</h2>
+        <p class="sub-greeting-text">Chat kami atau telusuri FAQ</p>
+      </div>
+      <img src="assets/Customer-Service.png" alt="cs" class="cs-img">
+    </div>
   </div>
 
   <div class="content-wrapper">

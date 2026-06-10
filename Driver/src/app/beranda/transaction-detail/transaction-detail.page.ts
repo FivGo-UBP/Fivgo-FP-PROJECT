@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { OrderService, OrderDetail } from '../../services/order.service';
 
+import { NavController } from '@ionic/angular';
+
 @Component({
   selector: 'app-transaction-detail',
   templateUrl: './transaction-detail.page.html',
@@ -16,8 +18,13 @@ export class TransactionDetailPage implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private navCtrl: NavController
   ) { }
+
+  goBack() {
+    this.navCtrl.navigateBack('/tabs/beranda');
+  }
 
   ngOnInit() {
     this.orderId = this.route.snapshot.paramMap.get('id') || '';

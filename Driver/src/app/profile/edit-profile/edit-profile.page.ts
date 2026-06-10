@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ToastController } from '@ionic/angular';
+import { ToastController, NavController } from '@ionic/angular';
 import { AuthService, User } from '../../services/auth.service';
 import { LanguageService } from '../../services/language.service';
 
@@ -25,8 +25,13 @@ export class EditProfilePage implements OnInit {
     private authService: AuthService,
     private toastCtrl: ToastController,
     private router: Router,
-    public langService: LanguageService
+    public langService: LanguageService,
+    private navCtrl: NavController
   ) { }
+
+  goBack() {
+    this.navCtrl.navigateBack('/menu-profile');
+  }
 
   ngOnInit() {
     this.authService.getProfile().subscribe(); // Fetch latest from server
@@ -85,7 +90,7 @@ export class EditProfilePage implements OnInit {
           color: 'success'
         });
         toast.present();
-        this.router.navigate(['/menu-profile']);
+        this.navCtrl.navigateBack('/menu-profile');
       },
       error: async (err) => {
         console.error(err);

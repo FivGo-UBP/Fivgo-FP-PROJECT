@@ -223,4 +223,9 @@ export class GantiNomorPage implements OnInit, OnDestroy {
     const alert = await this.alertCtrl.create({ header, message, buttons: ['OK'] });
     await alert.present();
   }
+
+  goBack() {
+    this.navCtrl.navigateBack('/keamanan');
+  }
 }
+

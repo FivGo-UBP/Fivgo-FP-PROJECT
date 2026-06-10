@@ -148,3 +148,10 @@ Route::middleware('auth:api')->group(function () {
 // Webhook outside sanctum middleware
 Route::post('/payments/webhook', [PaymentController::class, 'webhook']);
 Route::post('/wallet/webhook', [\App\Http\Controllers\WalletController::class, 'webhook']);
+
+// Form Submissions (public — no auth required)
+use App\Http\Controllers\FormPengajuanController;
+use App\Http\Controllers\LaporanMasalahController;
+
+Route::post('/form-pengajuan', [FormPengajuanController::class, 'submit']);
+Route::post('/laporan-masalah', [LaporanMasalahController::class, 'submit']);

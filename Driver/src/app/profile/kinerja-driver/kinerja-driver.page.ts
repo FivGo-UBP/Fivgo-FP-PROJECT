@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { OrderService, DriverPerformance } from '../../services/order.service';
+import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-kinerja-driver',
@@ -17,7 +18,14 @@ export class KinerjaDriverPage {
   };
   isLoading = true;
 
-  constructor(private orderService: OrderService) { }
+  constructor(
+    private orderService: OrderService,
+    private navCtrl: NavController
+  ) { }
+
+  goBack() {
+    this.navCtrl.navigateBack('/menu-profile');
+  }
 
   ionViewWillEnter() {
     this.loadPerformance();

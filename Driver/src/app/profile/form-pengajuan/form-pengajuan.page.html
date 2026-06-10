@@ -1,7 +1,9 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="bg-blue">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/keamanan" text="" icon="chevron-back-outline" class="text-white"></ion-back-button>
+      <ion-button fill="clear" (click)="goBack()">
+        <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+      </ion-button>
     </ion-buttons>
     <ion-title>{{ pageTitle }}</ion-title>
   </ion-toolbar>
@@ -23,38 +25,133 @@
     <!-- ===== FORM UPDATE AKUN ===== -->
     <div class="form-section" *ngIf="formType === 'update'">
 
-      <ion-label class="field-label">Nama Lengkap</ion-label>
-      <div class="input-wrapper">
-        <ion-icon name="person-outline" class="prefix-icon"></ion-icon>
-        <ion-input type="text" [(ngModel)]="formData.nama" placeholder="Masukkan Nama Lengkap"></ion-input>
-      </div>
+      <!-- OPSI 1: GANTI FOTO PROFIL -->
+      <ng-container *ngIf="selectedOption === 'foto'">
+        <ion-label class="field-label">Nama Lengkap</ion-label>
+        <div class="input-wrapper">
+          <ion-icon name="person-outline" class="prefix-icon"></ion-icon>
+          <ion-input type="text" [(ngModel)]="formData.nama" placeholder="Masukkan Nama Lengkap"></ion-input>
+        </div>
 
-      <ion-label class="field-label">Email</ion-label>
-      <div class="input-wrapper">
-        <ion-icon name="mail-outline" class="prefix-icon"></ion-icon>
-        <ion-input type="email" [(ngModel)]="formData.email" placeholder="Masukkan Email Aktif"></ion-input>
-      </div>
+        <ion-label class="field-label">Nomor Telepon</ion-label>
+        <div class="input-wrapper">
+          <ion-icon name="call-outline" class="prefix-icon"></ion-icon>
+          <ion-input type="tel" [(ngModel)]="formData.telepon" placeholder="Masukkan Nomor Telepon Baru"></ion-input>
+        </div>
 
-      <ion-label class="field-label">Nomor Telepon</ion-label>
-      <div class="input-wrapper">
-        <ion-icon name="call-outline" class="prefix-icon"></ion-icon>
-        <ion-input type="tel" [(ngModel)]="formData.telepon" placeholder="Masukkan Nomor Telepon"></ion-input>
-      </div>
+        <ion-label class="field-label">Upload Foto Profil Baru</ion-label>
+        <input #fileInputFoto type="file" accept="image/jpeg,image/png" style="display:none" (change)="onFileSelected($event, 'foto')">
+        <div class="file-upload-box" (click)="fileInputFoto.click()">
+          <ion-icon name="cloud-upload-outline" class="upload-icon"></ion-icon>
+          <p>{{ fotoFileName || 'Pilih foto (JPG/PNG, maks 2MB)' }}</p>
+        </div>
 
-      <ion-label class="field-label">Data yang Ingin Diubah</ion-label>
-      <div class="input-wrapper select-wrapper">
-        <ion-icon name="list-outline" class="prefix-icon"></ion-icon>
-        <ion-select [(ngModel)]="formData.alasan" justify="space-between" interface="popover"
-                    [interfaceOptions]="customPopoverOptions" placeholder="Pilih data yang diubah..." aria-label="Data yang Diubah">
-          <ion-select-option *ngFor="let alasan of alasanList" [value]="alasan">{{ alasan }}</ion-select-option>
-        </ion-select>
-      </div>
+        <ion-label class="field-label">Catatan Tambahan (Opsional)</ion-label>
+        <div class="textarea-wrapper">
+          <ion-textarea [(ngModel)]="formData.catatan" rows="3" placeholder="Tuliskan keterangan tambahan..."></ion-textarea>
+        </div>
+      </ng-container>
 
-      <ion-label class="field-label" *ngIf="formData.alasan === 'Lainnya'">Detail Perubahan</ion-label>
-      <ion-label class="field-label" *ngIf="formData.alasan && formData.alasan !== 'Lainnya'">Catatan Tambahan (Opsional)</ion-label>
-      <div class="textarea-wrapper" *ngIf="formData.alasan">
-        <ion-textarea [(ngModel)]="formData.catatan" rows="3" placeholder="Tuliskan keterangan perubahan..."></ion-textarea>
-      </div>
+      <!-- OPSI 2: GANTI NOMOR TELEPON -->
+      <ng-container *ngIf="selectedOption === 'telepon'">
+        <ion-label class="field-label">Nama Lengkap</ion-label>
+        <div class="input-wrapper">
+          <ion-icon name="person-outline" class="prefix-icon"></ion-icon>
+          <ion-input type="text" [(ngModel)]="formData.nama" placeholder="Masukkan Nama Lengkap"></ion-input>
+        </div>
+
+        <ion-label class="field-label">Nomor Telepon</ion-label>
+        <div class="input-wrapper">
+          <ion-icon name="call-outline" class="prefix-icon"></ion-icon>
+          <ion-input type="tel" [(ngModel)]="formData.teleponLama" placeholder="Masukkan Nomor Telepon Lama"></ion-input>
+        </div>
+
+        <ion-label class="field-label">Nomor Telepon Baru</ion-label>
+        <div class="input-wrapper">
+          <ion-icon name="call-outline" class="prefix-icon"></ion-icon>
+          <ion-input type="tel" [(ngModel)]="formData.teleponBaru" placeholder="Masukkan Nomor Telepon Baru"></ion-input>
+        </div>
+
+        <ion-label class="field-label">Catatan Tambahan (Opsional)</ion-label>
+        <div class="textarea-wrapper">
+          <ion-textarea [(ngModel)]="formData.catatan" rows="3" placeholder="Tuliskan keterangan tambahan..."></ion-textarea>
+        </div>
+      </ng-container>
+
+      <!-- OPSI 3: GANTI KENDARAAN -->
+      <ng-container *ngIf="selectedOption === 'kendaraan'">
+        <ion-label class="field-label">Nama Lengkap</ion-label>
+        <div class="input-wrapper">
+          <ion-icon name="person-outline" class="prefix-icon"></ion-icon>
+          <ion-input type="text" [(ngModel)]="formData.nama" placeholder="Masukkan Nama Lengkap"></ion-input>
+        </div>
+
+        <ion-label class="field-label">Nomor Telepon</ion-label>
+        <div class="input-wrapper">
+          <ion-icon name="call-outline" class="prefix-icon"></ion-icon>
+          <ion-input type="tel" inputmode="numeric" [(ngModel)]="formData.telepon" placeholder="Masukkan Nomor Telepon Terdaftar"></ion-input>
+        </div>
+
+        <ion-label class="field-label">Tipe/Merek Kendaraan Baru</ion-label>
+        <div class="input-wrapper">
+          <ion-icon name="car-sport-outline" class="prefix-icon"></ion-icon>
+          <ion-input type="text" [(ngModel)]="formData.tipeKendaraan" placeholder="Contoh: Honda Vario 160 / Toyota Avanza"></ion-input>
+        </div>
+
+        <ion-label class="field-label">Plat Nomor Kendaraan Baru</ion-label>
+        <div class="input-wrapper">
+          <ion-icon name="card-outline" class="prefix-icon"></ion-icon>
+          <ion-input type="text" [(ngModel)]="formData.platKendaraan" placeholder="Contoh: B 1234 ABC"></ion-input>
+        </div>
+
+        <ion-label class="field-label">Upload STNK Baru</ion-label>
+        <input #fileInputStnk type="file" accept="application/pdf,image/jpeg,image/png" style="display:none" (change)="onFileSelected($event, 'stnk')">
+        <div class="file-upload-box" (click)="fileInputStnk.click()">
+          <ion-icon name="document-attach-outline" class="upload-icon"></ion-icon>
+          <p>{{ stnkFileName || 'Pilih file STNK (PDF/JPG, maks 2MB)' }}</p>
+        </div>
+
+        <ion-label class="field-label">Catatan Tambahan (Opsional)</ion-label>
+        <div class="textarea-wrapper">
+          <ion-textarea [(ngModel)]="formData.catatan" rows="3" placeholder="Tuliskan keterangan tambahan..."></ion-textarea>
+        </div>
+      </ng-container>
+
+      <!-- FALLBACK (OLD UPDATE FORM) -->
+      <ng-container *ngIf="!selectedOption">
+        <ion-label class="field-label">Nama Lengkap</ion-label>
+        <div class="input-wrapper">
+          <ion-icon name="person-outline" class="prefix-icon"></ion-icon>
+          <ion-input type="text" [(ngModel)]="formData.nama" placeholder="Masukkan Nama Lengkap"></ion-input>
+        </div>
+
+        <ion-label class="field-label">Email</ion-label>
+        <div class="input-wrapper">
+          <ion-icon name="mail-outline" class="prefix-icon"></ion-icon>
+          <ion-input type="email" [(ngModel)]="formData.email" placeholder="Masukkan Email Aktif"></ion-input>
+        </div>
+
+        <ion-label class="field-label">Nomor Telepon</ion-label>
+        <div class="input-wrapper">
+          <ion-icon name="call-outline" class="prefix-icon"></ion-icon>
+          <ion-input type="tel" [(ngModel)]="formData.telepon" placeholder="Masukkan Nomor Telepon"></ion-input>
+        </div>
+
+        <ion-label class="field-label">Data yang Ingin Diubah</ion-label>
+        <div class="input-wrapper select-wrapper">
+          <ion-icon name="list-outline" class="prefix-icon"></ion-icon>
+          <ion-select [(ngModel)]="formData.alasan" justify="space-between" interface="popover"
+                      [interfaceOptions]="customPopoverOptions" placeholder="Pilih data yang diubah..." aria-label="Data yang Diubah">
+            <ion-select-option *ngFor="let alasan of alasanList" [value]="alasan">{{ alasan }}</ion-select-option>
+          </ion-select>
+        </div>
+
+        <ion-label class="field-label" *ngIf="formData.alasan === 'Lainnya'">Detail Perubahan</ion-label>
+        <ion-label class="field-label" *ngIf="formData.alasan && formData.alasan !== 'Lainnya'">Catatan Tambahan (Opsional)</ion-label>
+        <div class="textarea-wrapper" *ngIf="formData.alasan">
+          <ion-textarea [(ngModel)]="formData.catatan" rows="3" placeholder="Tuliskan keterangan perubahan..."></ion-textarea>
+        </div>
+      </ng-container>
 
     </div>
 
@@ -108,7 +205,7 @@
       <ion-button *ngIf="formType === 'update'"
                   expand="block"
                   class="submit-btn btn-primary"
-                  [disabled]="!formData.nama || !formData.email || !formData.telepon || !formData.alasan || (formData.alasan === 'Lainnya' && !formData.catatan)"
+                  [disabled]="isSubmitDisabled()"
                   (click)="submitForm()">
         Kirim Pengajuan
         <ion-icon name="paper-plane-outline" slot="end"></ion-icon>

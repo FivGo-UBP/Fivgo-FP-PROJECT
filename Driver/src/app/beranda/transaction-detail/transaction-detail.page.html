@@ -1,7 +1,9 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/beranda" icon="chevron-back"></ion-back-button>
+      <ion-button (click)="goBack()" fill="clear">
+        <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+      </ion-button>
     </ion-buttons>
     <ion-title style="font-size: 16px; font-weight: 600;">Detail Transaksi</ion-title>
   </ion-toolbar>

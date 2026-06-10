@@ -47,7 +47,7 @@ export class OrderDetailPage implements OnInit {
   }
 
   goBack() {
-    this.navCtrl.back();
+    this.navCtrl.navigateBack('/tabs/aktivitas');
   }
 
   formatPrice(price: number): string {

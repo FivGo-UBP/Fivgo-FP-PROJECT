@@ -1,8 +1,11 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="bg-orange">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/edit-profile" text="Ganti Nomor" icon="chevron-back-outline" class="text-white"></ion-back-button>
+      <ion-button fill="clear" (click)="goBack()" class="text-white" style="--padding-start: 8px;">
+        <ion-icon slot="icon-only" name="chevron-back-outline" style="font-size: 22px;"></ion-icon>
+      </ion-button>
     </ion-buttons>
+    <ion-title>Ganti Nomor</ion-title>
   </ion-toolbar>
 </ion-header>
 

@@ -1,62 +1,91 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar class="bg-orange">
-    <ion-buttons slot="start">
-      <ion-button fill="clear" (click)="goBack()" class="text-white" style="--padding-start: 8px;">
-        <ion-icon slot="icon-only" name="chevron-back-outline" style="font-size: 22px;"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <ion-title>Pusat Bantuan</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content class="bg-grey">
-  <!-- Light Banner -->
+  <!-- Orange Banner -->
   <div class="report-banner">
-    <div class="banner-left">
-      <h2 class="banner-title">Laporan Anda</h2>
-      <p class="banner-sub">Berikut adalah daftar dari seluruh pertanyaan/keluhan Anda</p>
+    <div class="banner-header">
+      <button (click)="goBack()" class="back-btn">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </button>
+      <h1 class="banner-header-title">Laporan Masalah</h1>
     </div>
-    <div class="banner-right">
-      <!-- Agent Helpline SVG -->
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="report-agent-svg">
-        <circle cx="50" cy="50" r="42" fill="rgba(234, 88, 12, 0.08)" />
-        <rect x="35" y="28" width="30" height="45" rx="5" fill="#64748b" />
-        <rect x="38" y="32" width="24" height="28" rx="2" fill="#ffffff" />
-        <circle cx="50" cy="65" r="3" fill="#ffffff" />
-        <path d="M72,32 C72,37 68,41 63,41 C61,41 60,40 59,39 L55,41 L56,37 C54,36 54,34 54,32 C54,27 58,23 63,23 C68,23 72,27 72,32 Z" fill="#ea580c" />
-        <text x="61" y="35.5" font-size="9" font-weight="900" fill="#ffffff" font-family="system-ui">i</text>
-      </svg>
+
+    <div class="banner-body">
+      <div class="banner-left">
+        <h2 class="banner-title">Laporkan Masalah</h2>
+        <p class="banner-sub">Ceritakan masalah Anda, kami siap membantu</p>
+      </div>
+      <div class="banner-circle"></div>
+      <img src="assets/Laporan-masalah-icon.png" alt="icon laporan masalah" class="banner-report-img">
     </div>
   </div>
 
   <div class="content-wrapper">
-    <!-- Main Reports Card Area -->
     <div class="reports-container">
-      
+
       <!-- Loading State -->
       <div class="loading-state" *ngIf="isLoading">
         <ion-spinner name="crescent" color="warning"></ion-spinner>
-        <p>Memperbarui laporan...</p>
+        <p>Mengirim laporan...</p>
       </div>
 
-      <!-- Empty State -->
-      <div class="empty-state" *ngIf="!isLoading">
-        <div class="document-icon-wrapper">
-          <!-- Document SVG -->
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="document-svg">
-            <path d="M35,20 L58,20 L73,35 L73,80 L35,80 Z" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2" />
-            <path d="M58,20 L58,35 L73,35 Z" fill="#cbd5e1" />
-            <line x1="43" y1="45" x2="52" y2="45" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" />
-            <line x1="43" y1="54" x2="65" y2="54" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" />
-            <line x1="43" y1="63" x2="65" y2="63" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" />
-          </svg>
+      <!-- Success State -->
+      <div class="success-state" *ngIf="isSuccess">
+        <div class="success-icon-wrapper">
+          <ion-icon name="checkmark-circle" class="success-icon"></ion-icon>
         </div>
-        
-        <h3 class="empty-title">Permintaan bantuan Anda akan muncul di sini</h3>
-        <p class="empty-subtitle">Setelah Anda mengirimkan permintaan bantuan, kami mungkin butuh waktu untuk muncul di sini.</p>
-        
-        <button class="btn-reload" (click)="reloadData()">
-          Muat Ulang
+        <h3 class="success-title">Laporan Terkirim!</h3>
+        <p class="success-subtitle">Tim kami akan menindaklanjuti laporan Anda dalam 1–3 hari kerja. Terima kasih!</p>
+        <button class="btn-new-report" (click)="resetForm()">
+          Kirim Laporan Lain
+        </button>
+      </div>
+
+      <!-- Form Laporan -->
+      <div class="form-section" *ngIf="!isLoading && !isSuccess">
+        <p class="form-intro">Isi form di bawah ini dengan lengkap agar kami dapat membantu Anda dengan cepat.</p>
+
+        <!-- Nama Lengkap -->
+        <ion-label class="field-label">Nama Lengkap</ion-label>
+        <div class="input-wrapper">
+          <ion-icon name="person-outline" class="prefix-icon"></ion-icon>
+          <ion-input type="text" [(ngModel)]="formData.nama" placeholder="Masukkan Nama Lengkap"></ion-input>
+        </div>
+
+        <!-- Nomor Telepon -->
+        <ion-label class="field-label">Nomor Telepon</ion-label>
+        <div class="input-wrapper">
+          <ion-icon name="call-outline" class="prefix-icon"></ion-icon>
+          <ion-input type="tel" inputmode="numeric" [(ngModel)]="formData.telepon" placeholder="Contoh: 08123456789"></ion-input>
+        </div>
+
+        <!-- Kategori Masalah -->
+        <ion-label class="field-label">Kategori Masalah</ion-label>
+        <div class="input-wrapper select-wrapper">
+          <ion-icon name="list-outline" class="prefix-icon"></ion-icon>
+          <ion-select [(ngModel)]="formData.kategori" justify="space-between" interface="popover"
+                      placeholder="Pilih kategori masalah..." aria-label="Kategori Masalah">
+            <ion-select-option value="Masalah Pembayaran">Masalah Pembayaran</ion-select-option>
+            <ion-select-option value="Masalah Driver">Masalah Driver</ion-select-option>
+            <ion-select-option value="Masalah Aplikasi">Masalah Aplikasi</ion-select-option>
+            <ion-select-option value="Masalah Pesanan">Masalah Pesanan</ion-select-option>
+            <ion-select-option value="Masalah Akun">Masalah Akun</ion-select-option>
+            <ion-select-option value="Lainnya">Lainnya</ion-select-option>
+          </ion-select>
+        </div>
+
+        <!-- Deskripsi Masalah -->
+        <ion-label class="field-label">Deskripsi Masalah</ion-label>
+        <div class="textarea-wrapper">
+          <ion-textarea
+            [(ngModel)]="formData.deskripsi"
+            rows="5"
+            placeholder="Ceritakan masalah Anda secara lengkap...">
+          </ion-textarea>
+        </div>
+
+        <!-- Tombol Kirim -->
+        <button class="btn-submit" (click)="submitForm()" [disabled]="isSubmitDisabled()">
+          <ion-icon name="send-outline"></ion-icon>
+          Kirim Laporan
         </button>
       </div>
 

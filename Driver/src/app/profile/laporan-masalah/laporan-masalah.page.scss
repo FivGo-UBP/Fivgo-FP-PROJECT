@@ -2,12 +2,59 @@ ion-content {
   --background: #f8fafc;
 }
 
+/* No page-level toolbar is needed since header is merged into banner */
+
 .report-banner {
   background: linear-gradient(135deg, #CFE8F4 0%, #3B81D1 60%, #1a5db5 100%);
-  padding: calc(var(--ion-safe-area-top, 0px) + 100px) 24px 40px;
+  padding: calc(var(--ion-safe-area-top, 0px) + 16px) 24px 60px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  margin-bottom: 80px;
+  min-height: 40px;
+  z-index: 10;
+}
+
+.back-btn-dark {
+  position: absolute;
+  left: 0;
+  background: transparent;
+  border: none;
+  padding: 8px 12px 8px 0;
+  color: #1a365d;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  outline: none;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.banner-header-title-dark {
+  font-size: 19px;
+  font-weight: 700;
+  color: #1a365d;
+  margin: 0;
+  text-align: center;
+}
+
+.banner-body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
 }
 
 .banner-title {
@@ -27,10 +74,26 @@ ion-content {
   max-width: 200px;
 }
 
-.report-agent-svg {
-  width: 76px;
-  height: 76px;
-  flex-shrink: 0;
+.banner-circle {
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: rgba(26, 54, 93, 0.15);
+  bottom: -35px;
+  right: -15px;
+  z-index: 1;
+}
+
+.banner-report-img {
+  position: absolute;
+  width: 160px;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  bottom: -10px;
+  right: -5px;
+  z-index: 2;
 }
 
 .content-wrapper {

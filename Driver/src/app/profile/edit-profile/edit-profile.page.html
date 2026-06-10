@@ -1,9 +1,11 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="bg-blue">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/menu-profile" [text]="'Info Profile'" icon="chevron-back-outline"
-        class="text-white"></ion-back-button>
+      <ion-button fill="clear" (click)="goBack()">
+        <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+      </ion-button>
     </ion-buttons>
+    <ion-title>Info Profile</ion-title>
   </ion-toolbar>
 </ion-header>
 

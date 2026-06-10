@@ -1,7 +1,9 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="bg-blue">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/profile" text="" icon="chevron-back-outline" class="text-white"></ion-back-button>
+      <ion-button fill="clear" (click)="goBack()">
+        <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+      </ion-button>
     </ion-buttons>
     <ion-title>Keamanan</ion-title>
   </ion-toolbar>
@@ -15,16 +17,41 @@
     </div>
 
     <div class="card-container">
-      <ion-item button detail="false" routerLink="/form-pengajuan" [queryParams]="{ type: 'update' }" class="menu-item">
-        <div class="icon-wrapper" slot="start">
-          <ion-icon name="create-outline" class="text-blue"></ion-icon>
+      <div class="dropdown-wrapper">
+        <div class="dropdown-trigger" (click)="toggleDropdown()" [class.is-open]="isDropdownOpen">
+          <div class="icon-wrapper" slot="start">
+            <ion-icon name="create-outline" class="text-blue"></ion-icon>
+          </div>
+          <div class="label-wrapper">
+            <h2>Update Akun</h2>
+            <p>Perbarui informasi akun Anda</p>
+          </div>
+          <ion-icon name="chevron-down-outline" slot="end" class="arrow-icon"></ion-icon>
         </div>
-        <ion-label>
-          <h2>Update Akun</h2>
-          <p>Perbarui informasi akun Anda</p>
-        </ion-label>
-        <ion-icon name="chevron-forward-outline" slot="end" class="arrow-icon"></ion-icon>
-      </ion-item>
+        
+        <div class="dropdown-options" *ngIf="isDropdownOpen">
+          <div class="dropdown-option" (click)="navigateToForm('foto')" [class.selected]="selectedOption === 'foto'">
+            <div class="option-content">
+              <span>Ganti Foto Profil</span>
+            </div>
+            <ion-icon name="checkmark-outline" class="check-icon" *ngIf="selectedOption === 'foto'"></ion-icon>
+          </div>
+
+          <div class="dropdown-option" (click)="navigateToForm('telepon')" [class.selected]="selectedOption === 'telepon'">
+            <div class="option-content">
+              <span>Ganti Nomor Telepon</span>
+            </div>
+            <ion-icon name="checkmark-outline" class="check-icon" *ngIf="selectedOption === 'telepon'"></ion-icon>
+          </div>
+
+          <div class="dropdown-option" (click)="navigateToForm('kendaraan')" [class.selected]="selectedOption === 'kendaraan'">
+            <div class="option-content">
+              <span>Ganti Kendaraan</span>
+            </div>
+            <ion-icon name="checkmark-outline" class="check-icon" *ngIf="selectedOption === 'kendaraan'"></ion-icon>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="section-title mt-4">
