@@ -283,9 +283,35 @@ class OrderController extends Controller
                     // Reload relation
                     $order->load('driver.driverProfile');
                 } else {
-                    // Jika belum 30 detik sejak penolakan, tetap biarkan mencari (pending, driver_id null)
-                    // Ini agar customer app tetap bisa menampilkan animasi "Mencari Driver..." dan memberikan kesempatan driver lain online
-                    // Keep searching indefinitely; customer can cancel manually.
+                    // Jika sudah lebih dari 30 detik sejak penolakan, ubah ke rejected dan lakukan refund otomatis
+                    if ($secondsSinceRejection >= 30) {
+                        \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
+                            $order->update([
+                                'status' => 'rejected',
+                                'cancel_reason' => 'No drivers available after rejection'
+                            ]);
+
+                            $payment = \App\Models\Payment::where('order_id', $order->id)
+                                ->whereIn('status', ['paid', 'captured', 'success', 'settled'])
+                                ->first();
+
+                            $customer = $order->customer;
+                            if ($payment && $customer) {
+                                $customer->increment('wallet_balance', $payment->total_amount);
+
+                                \App\Models\WalletTransaction::create([
+                                    'id' => (string) \Illuminate\Support\Str::uuid(),
+                                    'user_id' => $customer->id,
+                                    'amount' => $payment->total_amount,
+                                    'type' => 'refund',
+                                    'status' => 'success',
+                                    'reference' => 'FIVGO-REFUND-REJECT-' . $order->id . '-' . \Illuminate\Support\Str::upper(\Illuminate\Support\Str::random(8)),
+                                    'payment_method' => 'wallet',
+                                    'description' => 'Refund Pembatalan Perjalanan (No Driver)',
+                                ]);
+                            }
+                        });
+                    }
                 }
             }
         }
@@ -534,7 +560,7 @@ class OrderController extends Controller
     public function reject(Request $request, $id)
     {
         $order = Order::where('driver_id', $request->user()->id)
-            ->whereIn('status', ['pending', 'accepted'])
+            ->whereIn('status', ['pending', 'accepted', 'arrived'])
             ->findOrFail($id);
 
         $driverId = $request->user()->id;

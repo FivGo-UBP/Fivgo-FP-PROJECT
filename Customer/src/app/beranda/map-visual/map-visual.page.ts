@@ -627,12 +627,17 @@ export class MapVisualPage implements OnInit, OnDestroy {
     el.className = 'marker';
 
     if (type === 'start') {
-      el.style.backgroundColor = '#3880ff';
-      el.style.width = '20px';
-      el.style.height = '20px';
-      el.style.borderRadius = '50%';
-      el.style.border = '2px solid white';
-      el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+      el.style.width = '36px';
+      el.style.height = '36px';
+      el.style.display = 'flex';
+      el.style.alignItems = 'center';
+      el.style.justifyContent = 'center';
+      el.style.filter = 'drop-shadow(0 3px 6px rgba(0,0,0,0.35))';
+      el.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24">
+          <path fill="#007AFF" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+          <circle cx="12" cy="9" r="2.5" fill="white"/>
+        </svg>`;
     } else {
       el.style.width = '36px';
       el.style.height = '36px';
@@ -1568,6 +1573,30 @@ export class MapVisualPage implements OnInit, OnDestroy {
             this.stopOrderPolling();
             this.showToast('Pesanan dibatalkan.', 'danger');
             this.cancelOrder();
+          } else if (order.status === 'pending') {
+            if (this.isDriverFound) {
+              // Driver membatalkan/melepas pesanan, kembali mencari driver baru
+              this.isDriverFound = false;
+              this.isDriverArrived = false;
+              this.isInJourney = false;
+              this.isSearchingDriver = true;
+              
+              if (this.driverMarker) {
+                this.driverMarker.remove();
+                this.driverMarker = null;
+              }
+              this.disconnectTrackingWebsocket();
+              
+              this.showToast('Driver membatalkan pesanan. Mencari driver baru...', 'warning');
+              
+              // Kembalikan rute awal penjemputan -> tujuan
+              this.restorePreOrderRoute();
+              if (!this.pickupMarker) {
+                this.pickupMarker = this.addMarker(this.startCoord, 'start');
+              }
+              this.startProgressTimer();
+              this.cdr.detectChanges();
+            }
           }
         },
         error: (err) => console.error('Error polling order status:', err)

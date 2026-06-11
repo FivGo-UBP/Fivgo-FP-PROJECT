@@ -85,7 +85,9 @@ export class BantuanPage implements OnInit {
   }
 
   openTripDetail(trip: OrderHistory) {
-    this.navCtrl.navigateForward(`/order-detail/${trip.id}`);
+    this.navCtrl.navigateForward(`/chatbot-bantuan`, {
+      queryParams: { order_id: trip.id }
+    });
   }
 
   openFaq() {

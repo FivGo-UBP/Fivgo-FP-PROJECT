@@ -1,0 +1,116 @@
+<ion-header class="ion-no-border">
+  <div class="chatbot-header">
+    <div class="header-container">
+      <button (click)="goBack()" class="back-btn">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </button>
+      <div class="header-title-wrapper">
+        <h1 class="header-title">FivGo Assistant</h1>
+        <p class="header-subtitle">Pusat Bantuan Otomatis</p>
+      </div>
+    </div>
+  </div>
+</ion-header>
+
+<ion-content class="bg-grey" [forceOverscroll]="false">
+  <!-- Chat Messages Feed -->
+  <div class="messages-container" #messageList>
+    <div *ngFor="let msg of messages" [ngClass]="{'msg-bot-row': msg.sender === 'bot', 'msg-user-row': msg.sender === 'user'}">
+      
+      <!-- Bot Avatar -->
+      <div class="bot-avatar-wrapper" *ngIf="msg.sender === 'bot'">
+        <div class="bot-avatar">
+          <img src="assets/Customer-Service.png" alt="Bot" />
+        </div>
+      </div>
+
+      <!-- Chat Bubble -->
+      <div [ngClass]="{'bubble-bot': msg.sender === 'bot', 'bubble-user': msg.sender === 'user'}">
+        <p class="message-text" [innerHTML]="formatMessageText(msg.text)"></p>
+        <span class="message-time">{{ msg.time | date:'HH:mm' }}</span>
+      </div>
+
+    </div>
+
+    <!-- Sending/Loading Indicator -->
+    <div class="msg-bot-row" *ngIf="currentState === 'submitting'">
+      <div class="bot-avatar-wrapper">
+        <div class="bot-avatar">
+          <img src="assets/Customer-Service.png" alt="Bot" />
+        </div>
+      </div>
+      <div class="bubble-bot typing-bubble">
+        <ion-spinner name="dots" color="warning"></ion-spinner>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Controls Section (Fixed at bottom) -->
+  <div class="controls-panel">
+    
+    <!-- State: Welcome (Main Categories) -->
+    <div class="quick-replies-container" *ngIf="currentState === 'welcome'">
+      <p class="quick-reply-instruction">Pilih kategori masalah Anda:</p>
+      <div class="quick-replies-grid">
+        <button 
+          *ngFor="let cat of categories" 
+          class="reply-btn" 
+          (click)="selectCategory(cat.key, cat.label)">
+          {{ cat.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- State: Choosing Subcategory for payment issues -->
+    <div class="quick-replies-container" *ngIf="currentState === 'choosing_subcategory'">
+      <p class="quick-reply-instruction">Pilih jenis masalah pembayaran:</p>
+      <div class="quick-replies-grid">
+        <button 
+          *ngFor="let sub of paymentSubCategories" 
+          class="reply-btn sub-btn" 
+          (click)="selectSubCategory(sub.key, sub.label)">
+          {{ sub.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- State: Waiting Description (Text input area) -->
+    <div class="description-input-container" *ngIf="currentState === 'waiting_description'">
+      <div class="input-row">
+        <ion-textarea 
+          placeholder="Ketik rincian masalah Anda di sini..." 
+          [(ngModel)]="userTextInput"
+          [rows]="2"
+          [autoGrow]="true"
+          class="custom-textarea">
+        </ion-textarea>
+        
+        <button class="send-btn" (click)="submitDescription()" [disabled]="!userTextInput.trim()">
+          <ion-icon name="send"></ion-icon>
+        </button>
+      </div>
+
+      <!-- Action Row: Skip/Direct Submit -->
+      <div class="action-row">
+        <button class="skip-btn" (click)="processLaporanSubmission()">
+          Kirim Laporan Tanpa Detail Tambahan
+        </button>
+      </div>
+    </div>
+
+    <!-- State: Completed -->
+    <div class="done-container" *ngIf="currentState === 'done'">
+      <button class="done-btn" (click)="goBack()">
+        Kembali ke Pusat Bantuan
+      </button>
+    </div>
+
+    <!-- State: Error Loading -->
+    <div class="done-container" *ngIf="currentState === 'error'">
+      <button class="done-btn retry-btn" (click)="goBack()">
+        Kembali
+      </button>
+    </div>
+
+  </div>
+</ion-content>

@@ -138,6 +138,10 @@ const routes: Routes = [
     path: 'alamat-tersimpan',
     loadChildren: () => import('./profile/alamat-tersimpan/alamat-tersimpan.module').then( m => m.AlamatTersimpanPageModule)
   },
+  {
+    path: 'chatbot-bantuan',
+    loadChildren: () => import('./profile/chatbot-bantuan/chatbot-bantuan.module').then( m => m.ChatbotBantuanPageModule)
+  },
 ];
 
 @NgModule({

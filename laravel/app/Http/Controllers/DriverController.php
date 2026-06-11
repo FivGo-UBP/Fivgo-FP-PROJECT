@@ -183,7 +183,15 @@ class DriverController extends Controller
             ], 403);
         }
 
-        $profile = DriverProfile::where('user_id', $user->id)->firstOrFail();
+        $profile = DriverProfile::firstOrCreate(
+            ['user_id' => $user->id],
+            [
+                'status' => 'offline',
+                'vehicle_type' => 'motor',
+                'rating' => 5.0,
+                'wallet_balance' => 0
+            ]
+        );
         $profile->update(['status' => $validated['status']]);
         \Illuminate\Support\Facades\Log::info('[DriverDebug] updateStatus DB updated successfully', [
             'user_id' => $user->id,
@@ -294,7 +302,15 @@ class DriverController extends Controller
             'amount' => 'required|integer|min:10000'
         ]);
 
-        $profile = DriverProfile::where('user_id', $request->user()->id)->firstOrFail();
+        $profile = DriverProfile::firstOrCreate(
+            ['user_id' => $request->user()->id],
+            [
+                'status' => 'offline',
+                'vehicle_type' => 'motor',
+                'rating' => 5.0,
+                'wallet_balance' => 0
+            ]
+        );
         
         if ($profile->wallet_balance < $validated['amount']) {
             return response()->json(['message' => 'Insufficient balance'], 400);
