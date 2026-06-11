@@ -141,7 +141,11 @@ const routes: Routes = [
   {
     path: 'chatbot-bantuan',
     loadChildren: () => import('./profile/chatbot-bantuan/chatbot-bantuan.module').then( m => m.ChatbotBantuanPageModule)
+  },  {
+    path: 'daftar-aktivitas',
+    loadChildren: () => import('./profile/daftar-aktivitas/daftar-aktivitas.module').then( m => m.DaftarAktivitasPageModule)
   },
+
 ];
 
 @NgModule({

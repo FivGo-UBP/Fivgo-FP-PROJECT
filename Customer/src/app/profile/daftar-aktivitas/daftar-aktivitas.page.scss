@@ -1,0 +1,433 @@
+/* ─── Content Background ─────────────────────────────────────────────── */
+ion-content.daftar-bg {
+  --background: #f8fafc;
+}
+
+/* ─── Banner Orange (sama persis seperti FAQ & Bantuan) ─────────────── */
+.daftar-banner {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+  padding: calc(var(--ion-safe-area-top, 0px) + 16px) 24px 28px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  margin-bottom: 20px;
+  min-height: 40px;
+  z-index: 10;
+}
+
+.back-btn {
+  position: absolute;
+  left: 0;
+  background: transparent;
+  border: none;
+  padding: 8px 12px 8px 0;
+  color: #ffffff;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  outline: none;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.banner-header-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  text-align: center;
+}
+
+.banner-body {
+  width: 100%;
+}
+
+.banner-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.5px;
+  line-height: 1.35;
+}
+
+/* ─── Chip Area (Background Putih, terpisah dari konten abu) ─────────── */
+.chip-area {
+  background: #ffffff;
+  padding: 14px 0 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.chip-scroll {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  overflow-x: auto;
+  padding-right: 16px;
+
+  &::-webkit-scrollbar { display: none; }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.chip-btn {
+  flex-shrink: 0;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 20px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+
+  &.chip-active {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    border-color: transparent;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+/* ─── Content Area (Background Abu-abu, terpisah dari chip) ──────────── */
+.content-area {
+  background: #E5E7EB;
+  min-height: calc(100vh - 200px);
+  padding: 14px 16px 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ─── Trip Card ──────────────────────────────────────────────────────── */
+.trip-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+
+  &:active {
+    transform: scale(0.985);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  }
+}
+
+/* ─── Card Top Row ───────────────────────────────────────────────────── */
+.card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.vehicle-icon-wrap {
+  width: 64px;
+  height: 48px;
+  border-radius: 8px;
+  background: #ffeed6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+
+  img {
+    width: 130%;
+    height: 130%;
+    object-fit: contain;
+  }
+}
+
+.card-top-info {
+  flex: 1;
+  min-width: 0;
+
+  .vehicle-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 2px;
+  }
+
+  .card-datetime {
+    font-size: 10px;
+    color: #94a3b8;
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+.card-top-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.trip-price {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.status-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+
+  &.badge-selesai { background: #dcfce7; color: #15803d; }
+}
+
+/* ─── Divider ────────────────────────────────────────────────────────── */
+.card-divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin-bottom: 10px;
+}
+
+/* ─── Route Section ──────────────────────────────────────────────────── */
+.route-section {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.route-item {
+  display: flex;
+  gap: 10px;
+}
+
+.route-icon-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.blue-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: #2a4175;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+
+  .inner-dot {
+    width: 6px;
+    height: 6px;
+    background-color: #ffffff;
+    border-radius: 50%;
+  }
+}
+
+.dotted-line {
+  width: 4px;
+  height: 22px;
+  background-image: url("data:image/svg+xml,%3Csvg width='4' height='10' viewBox='0 0 4 10' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='2' fill='%23cbd5e1'/%3E%3C/svg%3E");
+  background-position: center top;
+  background-repeat: repeat-y;
+  margin: 2px 0;
+}
+
+.orange-pin {
+  color: #f59e0b;
+  font-size: 18px;
+  margin-top: -2px;
+}
+
+.route-info-box {
+  flex: 1;
+  padding-bottom: 6px;
+
+  .route-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 2px;
+  }
+
+  .route-address {
+    font-size: 11px;
+    font-weight: 400;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+/* ─── Card Actions ───────────────────────────────────────────────────── */
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.btn-bantuan {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: all 0.2s ease;
+
+  ion-icon { font-size: 14px; }
+  &:active { transform: scale(0.95); }
+}
+
+/* ─── Empty / Error State ────────────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px;
+  text-align: center;
+  background: transparent;
+}
+
+.empty-icon {
+  font-size: 56px;
+  color: #cbd5e1;
+  margin-bottom: 16px;
+}
+
+.error-icon { color: #fca5a5; }
+
+.illustration-card {
+  width: 100%;
+  max-width: 280px;
+  height: 180px;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+
+  .illustration-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.empty-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 8px;
+}
+
+.empty-desc {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0 0 20px;
+}
+
+.btn-retry {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  ion-icon { font-size: 16px; }
+}
+
+.btn-reset {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: all 0.2s ease;
+  ion-icon { font-size: 18px; }
+  &:active { transform: scale(0.95); background: #f1f5f9; }
+}
+
+/* ─── Skeleton ───────────────────────────────────────────────────────── */
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.skeleton-card { pointer-events: none; }
+
+.skeleton-box {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.sk-icon        { width: 64px; height: 48px; border-radius: 10px; flex-shrink: 0; }
+.sk-title       { width: 80px; height: 13px; margin-bottom: 8px; }
+.sk-sub         { width: 120px; height: 10px; }
+.sk-price       { width: 70px; height: 14px; margin-left: auto; flex-shrink: 0; }
+.sk-divider     { width: 100%; height: 1px; margin-bottom: 10px; }
+.sk-addr        { width: 90%; height: 10px; margin-bottom: 7px; }
+.sk-addr-short  { width: 60%; }
+.skeleton-lines { flex: 1; }

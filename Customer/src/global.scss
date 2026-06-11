@@ -157,10 +157,11 @@ app-kelola-profile ion-header {
   }
 }
 
-/* Override: Restore straight header for Bantuan, FAQ & Laporan Masalah pages */
+/* Override: Restore straight header for Bantuan, FAQ, Laporan Masalah & Daftar Aktivitas pages */
 app-bantuan ion-header,
 app-faq ion-header,
-app-laporan-masalah ion-header {
+app-laporan-masalah ion-header,
+app-daftar-aktivitas ion-header {
   ion-toolbar {
     border-radius: 0 !important;
   }
@@ -168,7 +169,8 @@ app-laporan-masalah ion-header {
 
 app-bantuan ion-back-button,
 app-faq ion-back-button,
-app-laporan-masalah ion-back-button {
+app-laporan-masalah ion-back-button,
+app-daftar-aktivitas ion-back-button {
   --color: #ffffff !important;
   color: #ffffff !important;
 }

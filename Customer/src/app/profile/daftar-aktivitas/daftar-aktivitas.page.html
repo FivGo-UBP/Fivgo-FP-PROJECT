@@ -1,0 +1,137 @@
+<ion-content class="daftar-bg">
+
+  <!-- Banner Orange (sama seperti FAQ & Bantuan) -->
+  <div class="daftar-banner">
+    <div class="banner-header">
+      <button (click)="goBack()" class="back-btn">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </button>
+      <h1 class="banner-header-title">Pusat Bantuan</h1>
+    </div>
+
+    <div class="banner-body">
+      <h2 class="banner-title">Aktivitas mana yang ingin dibantu?</h2>
+    </div>
+  </div>
+
+  <!-- Chip Filter (background putih, terpisah dari konten) -->
+  <div class="chip-area" *ngIf="!isLoading && !hasError && allTrips.length > 0">
+    <div class="chip-scroll">
+      <button class="chip-btn" [class.chip-active]="selectedFilter === 'semua'" (click)="setFilter('semua')">
+        Semua Aktivitas
+      </button>
+      <button class="chip-btn" [class.chip-active]="selectedFilter === 'hari_ini'" (click)="setFilter('hari_ini')">
+        Hari Ini
+      </button>
+      <button class="chip-btn" [class.chip-active]="selectedFilter === 'minggu_ini'" (click)="setFilter('minggu_ini')">
+        Minggu Ini
+      </button>
+      <button class="chip-btn" [class.chip-active]="selectedFilter === 'bulan_ini'" (click)="setFilter('bulan_ini')">
+        Bulan Ini
+      </button>
+    </div>
+  </div>
+
+  <!-- Konten (background abu) -->
+  <div class="content-area">
+
+    <!-- Loading Skeleton -->
+    <div class="skeleton-list" *ngIf="isLoading">
+      <div class="trip-card skeleton-card" *ngFor="let i of [1,2,3]">
+        <div class="skeleton-row">
+          <div class="skeleton-box sk-icon"></div>
+          <div class="skeleton-lines">
+            <div class="skeleton-box sk-title"></div>
+            <div class="skeleton-box sk-sub"></div>
+          </div>
+          <div class="skeleton-box sk-price"></div>
+        </div>
+        <div class="skeleton-box sk-divider"></div>
+        <div class="skeleton-box sk-addr"></div>
+        <div class="skeleton-box sk-addr sk-addr-short"></div>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div class="empty-state" *ngIf="!isLoading && hasError">
+      <ion-icon name="wifi-outline" class="empty-icon error-icon"></ion-icon>
+      <h2 class="empty-title">Gagal Memuat Data</h2>
+      <p class="empty-desc">Periksa koneksi internet Anda lalu coba lagi.</p>
+      <button class="btn-retry" (click)="loadTrips()">
+        <ion-icon name="refresh-outline"></ion-icon> Coba Lagi
+      </button>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && !hasError && filteredTrips.length === 0">
+      <div class="illustration-card">
+        <img src="assets/aktivitas.png" alt="Tidak ada aktivitas" class="illustration-img" />
+      </div>
+      <h2 class="empty-title">{{ allTrips.length > 0 ? 'Tidak Ditemukan' : 'Belum Ada Aktivitas' }}</h2>
+      <p class="empty-desc">
+        {{ allTrips.length > 0 ? 'Tidak ada perjalanan di periode ini.' : 'Anda belum memiliki riwayat perjalanan.' }}
+      </p>
+      <button class="btn-reset" *ngIf="allTrips.length > 0 && selectedFilter !== 'semua'" (click)="setFilter('semua')">
+        <ion-icon name="close-circle-outline"></ion-icon> Reset Filter
+      </button>
+    </div>
+
+    <!-- Trip List -->
+    <ng-container *ngIf="!isLoading && !hasError && filteredTrips.length > 0">
+      <div class="trip-card" *ngFor="let trip of filteredTrips" (click)="openTripDetail(trip)">
+
+        <!-- Card Top -->
+        <div class="card-top">
+          <div class="vehicle-icon-wrap">
+            <img src="assets/motor.png" alt="Motor" *ngIf="trip.vehicle_type?.toLowerCase() === 'motor'" />
+            <img src="assets/mobil.png" alt="Mobil" *ngIf="trip.vehicle_type?.toLowerCase() === 'mobil'" />
+          </div>
+          <div class="card-top-info">
+            <p class="vehicle-label">{{ getVehicleLabel(trip.vehicle_type) }}</p>
+            <p class="card-datetime">{{ formatDate(trip.created_at) }} • {{ formatTime(trip.created_at) }}</p>
+          </div>
+          <div class="card-top-right">
+            <p class="trip-price">{{ formatPrice(trip.final_price) }}</p>
+            <span class="status-badge badge-selesai">Selesai</span>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="card-divider"></div>
+
+        <!-- Route -->
+        <div class="route-section">
+          <div class="route-item">
+            <div class="route-icon-box">
+              <div class="dot-icon blue-dot"><div class="inner-dot"></div></div>
+              <div class="dotted-line"></div>
+            </div>
+            <div class="route-info-box">
+              <p class="route-label">Awal</p>
+              <p class="route-address">{{ trip.pickup_address }}</p>
+            </div>
+          </div>
+          <div class="route-item">
+            <div class="route-icon-box">
+              <ion-icon name="location" class="pin-icon orange-pin"></ion-icon>
+            </div>
+            <div class="route-info-box">
+              <p class="route-label">Tujuan</p>
+              <p class="route-address">{{ trip.dropoff_address }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action -->
+        <div class="card-actions">
+          <button class="btn-bantuan" (click)="openTripDetail(trip); $event.stopPropagation()">
+            <ion-icon name="chatbubble-ellipses-outline"></ion-icon> Butuh Bantuan
+          </button>
+        </div>
+
+      </div>
+    </ng-container>
+
+  </div>
+
+</ion-content>

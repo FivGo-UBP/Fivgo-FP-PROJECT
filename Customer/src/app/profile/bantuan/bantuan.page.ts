@@ -81,7 +81,7 @@ export class BantuanPage implements OnInit {
   }
 
   goToActivities() {
-    this.router.navigate(['/tabs/aktivitas']);
+    this.router.navigate(['/daftar-aktivitas']);
   }
 
   openTripDetail(trip: OrderHistory) {
