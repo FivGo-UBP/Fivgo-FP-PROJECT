@@ -134,6 +134,12 @@ export class ActivityPage implements OnInit {
     this.router.navigate(['/order-detail', trip.id]);
   }
 
+  goToChatbot(trip: OrderHistory) {
+    this.router.navigate(['/chatbot-bantuan'], {
+      queryParams: { order_id: trip.id }
+    });
+  }
+
   formatPrice(price: number): string {
     return 'Rp. ' + price?.toLocaleString('id-ID');
   }

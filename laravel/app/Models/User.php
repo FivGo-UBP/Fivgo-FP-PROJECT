@@ -15,7 +15,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'email', 'phone', 'role', 'phone_verified_at', 'email_verified_at', 'password', 'photo', 'gender', 'wallet_balance'])]
+#[Fillable(['name', 'email', 'phone', 'role', 'is_active', 'rating', 'phone_verified_at', 'email_verified_at', 'password', 'photo', 'gender', 'wallet_balance'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements JWTSubject
 {

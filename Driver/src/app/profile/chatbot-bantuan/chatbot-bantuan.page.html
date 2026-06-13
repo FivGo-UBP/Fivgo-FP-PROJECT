@@ -1,0 +1,262 @@
+<ion-header class="ion-no-border">
+  <div class="chatbot-header">
+    <div class="header-container">
+      <button (click)="goBack()" class="back-btn-dark">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </button>
+      <h1 class="header-title-dark">Pusat Bantuan</h1>
+    </div>
+  </div>
+  
+  <!-- Order Detail Card (Fixed under header) -->
+  <div class="order-summary-card" *ngIf="order">
+    <div class="summary-left">
+      <div class="vehicle-icon-circle">
+        <img src="assets/motor kuning.png" alt="Motor" *ngIf="order.vehicle_type?.toLowerCase() === 'motor'" />
+        <img src="assets/mobil kuning.png" alt="Mobil" *ngIf="order.vehicle_type?.toLowerCase() === 'mobil'" />
+      </div>
+    </div>
+    <div class="summary-middle">
+      <div class="summary-title">Ride to {{ order.dropoff_address }}</div>
+      <div class="summary-time">{{ formatDateTime(order.created_at) }}</div>
+    </div>
+    <div class="summary-right">
+      <div class="summary-price">{{ formatPrice(order.final_price || order.estimated_price || 0) }}</div>
+    </div>
+  </div>
+</ion-header>
+
+<ion-content class="bg-grey" [forceOverscroll]="false">
+  <!-- Chat Messages Feed -->
+  <div class="messages-container" #messageList>
+    <div *ngFor="let msg of messages" [ngClass]="{'msg-bot-row': msg.sender === 'bot', 'msg-user-row': msg.sender === 'user'}">
+      
+      <!-- Chat Bubble -->
+      <div [ngClass]="{'bubble-bot': msg.sender === 'bot', 'bubble-user': msg.sender === 'user'}">
+        <p class="message-text" [innerHTML]="formatMessageText(msg.text)"></p>
+        <span class="message-time" *ngIf="msg.sender === 'user'">{{ msg.time | date:'HH:mm' }}</span>
+      </div>
+
+    </div>
+
+    <!-- Dynamic Option choices matching the tree navigation -->
+    <div class="welcome-options-container" *ngIf="currentState === 'welcome' || currentState === 'choosing_subcategory'">
+      <button 
+        *ngFor="let node of getCurrentChoices()" 
+        class="option-pill-btn" 
+        (click)="selectNode(node)">
+        {{ node.label }}
+      </button>
+    </div>
+
+    <!-- Sending/Loading Indicator -->
+    <div class="msg-bot-row" *ngIf="currentState === 'submitting'">
+      <div class="bubble-bot typing-bubble">
+        <ion-spinner name="dots" color="primary"></ion-spinner>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Bantuan Modal -->
+  <ion-modal [isOpen]="isBantuanModalOpen" (didDismiss)="closeBantuanForm()" class="bantuan-form-modal">
+    <ng-template>
+      <ion-header class="ion-no-border">
+        <ion-toolbar class="modal-toolbar-blue">
+          <ion-buttons slot="start">
+            <ion-button (click)="closeBantuanForm()" class="back-btn-dark-modal">
+              <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-title class="header-title-dark">Pusat Bantuan</ion-title>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="bg-grey">
+        <div class="bantuan-form-wrapper">
+          <h2 class="form-main-title">Anda memerlukan bantuan?</h2>
+
+          <!-- User Email Display Card -->
+          <div class="email-card">
+            <span class="email-label">Alamat e-mail Anda</span>
+            <span class="email-value">{{ userEmail }}</span>
+          </div>
+
+          <!-- ============================================ -->
+          <!-- FORM 1: Keselamatan (keamanan)              -->
+          <!-- ============================================ -->
+          <ng-container *ngIf="activeFormType === 'keamanan'">
+            <div class="form-group">
+              <label class="form-label">Jenis Masalah Keselamatan</label>
+              <div class="custom-select-wrapper">
+                <select [(ngModel)]="formKeamanan.incidentType" class="form-select">
+                  <option value="" disabled selected hidden>Pilih jenis masalah</option>
+                  <option value="Penumpang mengganggu konsentrasi berkendara">Penumpang mengganggu konsentrasi berkendara</option>
+                  <option value="Terjadi kecelakaan fisik">Terjadi kecelakaan fisik</option>
+                  <option value="Pelecehan / Tindakan kasar dari penumpang">Pelecehan / Tindakan kasar dari penumpang</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
+                <ion-icon name="chevron-down-outline" class="select-arrow-icon"></ion-icon>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Ceritakan masalah keselamatan Anda</label>
+              <textarea
+                [(ngModel)]="formKeamanan.description"
+                class="form-textarea"
+                placeholder="Deskripsikan kejadian minimal 35 karakter..."
+                maxlength="1500">
+              </textarea>
+              <div class="textarea-helper">
+                <span class="min-char-hint">min. 35 karakter</span>
+                <span class="char-counter">{{ formKeamanan.description.length }} / 1500 karakter</span>
+              </div>
+            </div>
+
+            <div class="consent-container">
+              <ion-checkbox [(ngModel)]="formKeamanan.isAgreed" mode="md" class="blue-checkbox"></ion-checkbox>
+              <span class="checkbox-text">
+                Dengan ini Saya memberikan persetujuan untuk pengumpulan, penggunaan, pemrosesan, dan pengungkapan data pribadi saya untuk layanan dukungan dan bantuan, serta tujuan lain yang wajar sesuai dengan Pemberitahuan Privasi FivGo (<a href="https://www.fivgo.com/id/terms-policies/privacy-notice/" target="_blank">https://www.fivgo.com/id/terms-policies/privacy-notice/</a>)
+              </span>
+            </div>
+          </ng-container>
+
+          <!-- ============================================ -->
+          <!-- FORM 2: Barang Tertinggal (barang_tertinggal) -->
+          <!-- ============================================ -->
+          <ng-container *ngIf="activeFormType === 'barang_tertinggal'">
+            <div class="form-group">
+              <label class="form-label">Jenis Barang yang Tertinggal</label>
+              <div class="custom-select-wrapper">
+                <select [(ngModel)]="formBarangTertinggal.itemType" class="form-select">
+                  <option value="" disabled selected hidden>Pilih jenis barang</option>
+                  <option value="Handphone / Smartphone">Handphone / Smartphone</option>
+                  <option value="Dompet / Uang Tunai">Dompet / Uang Tunai</option>
+                  <option value="Tas / Dokumen penting">Tas / Dokumen penting</option>
+                  <option value="Helm / Pakaian pribadi">Helm / Pakaian pribadi</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
+                <ion-icon name="chevron-down-outline" class="select-arrow-icon"></ion-icon>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Deskripsikan barang & kronologi kejadian</label>
+              <textarea
+                [(ngModel)]="formBarangTertinggal.description"
+                class="form-textarea"
+                placeholder="Deskripsikan barang Anda minimal 35 karakter..."
+                maxlength="1500">
+              </textarea>
+              <div class="textarea-helper">
+                <span class="min-char-hint">min. 35 karakter</span>
+                <span class="char-counter">{{ formBarangTertinggal.description.length }} / 1500 karakter</span>
+              </div>
+            </div>
+
+            <div class="consent-container">
+              <ion-checkbox [(ngModel)]="formBarangTertinggal.isAgreed" mode="md" class="blue-checkbox"></ion-checkbox>
+              <span class="checkbox-text">
+                Dengan ini Saya memberikan persetujuan untuk pengumpulan, penggunaan, pemrosesan, dan pengungkapan data pribadi saya untuk layanan dukungan dan bantuan, serta tujuan lain yang wajar sesuai dengan Pemberitahuan Privasi FivGo (<a href="https://www.fivgo.com/id/terms-policies/privacy-notice/" target="_blank">https://www.fivgo.com/id/terms-policies/privacy-notice/</a>)
+              </span>
+            </div>
+          </ng-container>
+
+          <!-- ============================================ -->
+          <!-- FORM 3: Perilaku Penumpang (driver_kendaraan) -->
+          <!-- ============================================ -->
+          <ng-container *ngIf="activeFormType === 'driver_kendaraan'">
+            <div class="form-group">
+              <label class="form-label">Keluhan Mengenai Penumpang</label>
+              <div class="custom-select-wrapper">
+                <select [(ngModel)]="formDriverKendaraan.issueType" class="form-select">
+                  <option value="" disabled selected hidden>Pilih keluhan</option>
+                  <option value="Penumpang bersikap tidak sopan / kasar">Penumpang bersikap tidak sopan / kasar</option>
+                  <option value="Penumpang mengotori / merusak kendaraan">Penumpang mengotori / merusak kendaraan</option>
+                  <option value="Jumlah penumpang melebihi kapasitas kendaraan">Jumlah penumpang melebihi kapasitas kendaraan</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
+                <ion-icon name="chevron-down-outline" class="select-arrow-icon"></ion-icon>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Ceritakan kronologi keluhan Anda</label>
+              <textarea
+                [(ngModel)]="formDriverKendaraan.description"
+                class="form-textarea"
+                placeholder="Ceritakan kejadian minimal 35 karakter..."
+                maxlength="1500">
+              </textarea>
+              <div class="textarea-helper">
+                <span class="min-char-hint">min. 35 karakter</span>
+                <span class="char-counter">{{ formDriverKendaraan.description.length }} / 1500 karakter</span>
+              </div>
+            </div>
+
+            <div class="consent-container">
+              <ion-checkbox [(ngModel)]="formDriverKendaraan.isAgreed" mode="md" class="blue-checkbox"></ion-checkbox>
+              <span class="checkbox-text">
+                Dengan ini Saya memberikan persetujuan untuk pengumpulan, penggunaan, pemrosesan, dan pengungkapan data pribadi saya untuk layanan dukungan dan bantuan, serta tujuan lain yang wajar sesuai dengan Pemberitahuan Privasi FivGo (<a href="https://www.fivgo.com/id/terms-policies/privacy-notice/" target="_blank">https://www.fivgo.com/id/terms-policies/privacy-notice/</a>)
+              </span>
+            </div>
+          </ng-container>
+
+          <!-- ============================================ -->
+          <!-- FORM 4: Masalah Pembayaran (batal_jalan)     -->
+          <!-- ============================================ -->
+          <ng-container *ngIf="activeFormType === 'batal_jalan'">
+            <div class="form-group">
+              <label class="form-label">Jenis Masalah Pembayaran</label>
+              <div class="custom-select-wrapper">
+                <select [(ngModel)]="formBatalJalan.cancelReason" class="form-select">
+                  <option value="" disabled selected hidden>Pilih jenis masalah</option>
+                  <option value="Salah pilih metode pembayaran">Salah pilih metode pembayaran</option>
+                  <option value="Gagal bayar non-tunai oleh penumpang">Gagal bayar non-tunai oleh penumpang</option>
+                  <option value="Penumpang kurang / lupa membayar">Penumpang kurang / lupa membayar</option>
+                  <option value="Tarif tidak sesuai aplikasi">Tarif tidak sesuai aplikasi</option>
+                  <option value="Promo tidak terpotong">Promo tidak terpotong</option>
+                  <option value="Metode pembayaran terpotong ganda">Metode pembayaran terpotong ganda</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
+                <ion-icon name="chevron-down-outline" class="select-arrow-icon"></ion-icon>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Ceritakan kendala pembayaran Anda</label>
+              <textarea
+                [(ngModel)]="formBatalJalan.description"
+                class="form-textarea"
+                placeholder="Ceritakan kronologi kendala pembayaran minimal 35 karakter..."
+                maxlength="1500">
+              </textarea>
+              <div class="textarea-helper">
+                <span class="min-char-hint">min. 35 karakter</span>
+                <span class="char-counter">{{ formBatalJalan.description.length }} / 1500 karakter</span>
+              </div>
+            </div>
+
+            <div class="consent-container">
+              <ion-checkbox [(ngModel)]="formBatalJalan.isAgreed" mode="md" class="blue-checkbox"></ion-checkbox>
+              <span class="checkbox-text">
+                Dengan ini Saya memberikan persetujuan untuk pengumpulan, penggunaan, pemrosesan, dan pengungkapan data pribadi saya untuk layanan dukungan dan bantuan, serta tujuan lain yang wajar sesuai dengan Pemberitahuan Privasi FivGo (<a href="https://www.fivgo.com/id/terms-policies/privacy-notice/" target="_blank">https://www.fivgo.com/id/terms-policies/privacy-notice/</a>)
+              </span>
+            </div>
+          </ng-container>
+
+          <!-- Submit Button -->
+          <ion-button
+            [disabled]="!isFormValid()"
+            class="submit-form-btn-blue"
+            expand="block"
+            shape="round"
+            (click)="submitBantuanForm()">
+            Kirim
+          </ion-button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+</ion-content>

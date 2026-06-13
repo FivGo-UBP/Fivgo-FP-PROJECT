@@ -43,4 +43,16 @@ export class FormService {
 
     return this.http.post<any>(`${this.apiUrl}/form-pengajuan`, formData);
   }
+
+  /**
+   * Kirim laporan masalah driver
+   */
+  submitLaporanMasalah(data: {
+    nama: string;
+    telepon: string;
+    kategori: string;
+    deskripsi: string;
+  }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/laporan-masalah`, data);
+  }
 }

@@ -323,20 +323,41 @@ class WebAdminController extends Controller
         ]);
     }
 
+    public function toggleUserStatus(Request $request, string $id)
+    {
+        $this->ensureAdmin();
+
+        $user = User::findOrFail($id);
+        $user->is_active = ! $user->is_active;
+        $user->save();
+
+        $statusText = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
+        return back()->with('status', "Akun {$user->name} berhasil {$statusText}.");
+    }
+
     private function usersPage(Request $request, string $role, string $title, string $active)
     {
-        $users = User::with('driverProfile')
-            ->where('role', $role)
+        $users = User::query()
+            ->with('driverProfile')
+            ->where('users.role', $role)
             ->when($request->filled('q'), function ($query) use ($request) {
                 $search = '%' . $request->string('q') . '%';
 
                 $query->where(function ($query) use ($search) {
                     $query
-                        ->where('name', 'like', $search)
-                        ->orWhere('email', 'like', $search)
-                        ->orWhere('phone', 'like', $search)
-                        ->orWhere('id', 'like', $search);
+                        ->where('users.name', 'like', $search)
+                        ->orWhere('users.email', 'like', $search)
+                        ->orWhere('users.phone', 'like', $search)
+                        ->orWhere('users.id', 'like', $search);
                 });
+            })
+            ->when($role === 'customer' && $request->filled('status'), function ($query) use ($request) {
+                $status = $request->string('status');
+                if ($status === 'active') {
+                    $query->where('users.is_active', 1);
+                } elseif ($status === 'inactive') {
+                    $query->where('users.is_active', 0);
+                }
             })
             ->when($role === 'driver' && $request->filled('status'), function ($query) use ($request) {
                 $query->whereHas('driverProfile', fn ($query) => $query->where('status', $request->string('status')));
@@ -344,8 +365,20 @@ class WebAdminController extends Controller
             ->when($role === 'driver' && $request->filled('vehicle_type'), function ($query) use ($request) {
                 $query->whereHas('driverProfile', fn ($query) => $query->where('vehicle_type', $request->string('vehicle_type')));
             })
-            ->latest()
-            ->paginate(12)
+            ->when($request->filled('sort_rating'), function ($query) use ($role, $request) {
+                $direction = $request->string('sort_rating') === 'desc' ? 'desc' : 'asc';
+                if ($role === 'driver') {
+                    $query->leftJoin('driver_profiles', 'users.id', '=', 'driver_profiles.user_id')
+                        ->select('users.*')
+                        ->orderByRaw('CASE WHEN driver_profiles.rating IS NULL THEN 1 ELSE 0 END, driver_profiles.rating ' . $direction);
+                } else {
+                    $query->select('users.*')
+                        ->orderByRaw('CASE WHEN users.rating IS NULL THEN 1 ELSE 0 END, users.rating ' . $direction);
+                }
+            }, function ($query) {
+                $query->select('users.*')->latest('users.created_at');
+            })
+            ->paginate(10)
             ->withQueryString();
 
         return view('admin.users', [

@@ -1158,7 +1158,11 @@
 }
 
 .login-row {
-    display: fle2px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    color: var(--admin-text);
+    font-size: 11px;
     font-weight: 700;
     margin-top: 6px;
 }
@@ -1171,12 +1175,16 @@
 
 .login-row a:hover {
     color: #3730a3;
-    text-decoration: underline: flex-end;
-    gap: 16px;
-    color: var(--admin-text);
-    font-size: 11px;
-    font-weight: 700;
-    margin-top: 46px;
+    text-decoration: underline;
+}
+
+.primary-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    gap: 10px;
+    padding: 0 18px;
     margin-top: 32px;
     border-radius: 7px;
     background: linear-gradient(135deg, #1f3f99 0%, #192e6f 100%);
@@ -1327,5 +1335,461 @@
     .admin-alert {
         font-size: 12px;
         padding: 12px 14px;
+    }
+}
+
+
+
+/* ---- Sidebar ---- */
+.admin-sidebar {
+    background: #1a2462;
+    border-right-color: #131b52;
+}
+
+.admin-brand {
+    color: #ffffff;
+}
+
+.admin-brand-mark {
+    border-color: rgba(245, 158, 11, 0.5);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.admin-brand-name {
+    color: #ffffff;
+}
+
+.admin-nav-item {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.admin-nav-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    transform: translateX(2px);
+}
+
+.admin-nav-item.is-active {
+    background: #f59e0b;
+    color: #ffffff;
+}
+
+.admin-nav-icon {
+    /* icon color inherits from nav item */
+}
+
+.admin-profile {
+    border-top-color: rgba(255, 255, 255, 0.15);
+}
+
+.admin-profile strong {
+    color: #ffffff;
+}
+
+.admin-profile small {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.admin-avatar {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+/* ---- Topbar ---- */
+.admin-topbar {
+    background: rgba(255, 255, 255, 0.96);
+    border-bottom-color: #e2e8f0;
+}
+
+.admin-topbar h1 {
+    color: #0f172a;
+}
+
+/* ---- Primary Buttons (orange) ---- */
+.admin-export-button,
+.primary-button {
+    background: #f59e0b;
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+    color: #ffffff;
+}
+
+.admin-export-button:hover,
+.primary-button:hover {
+    background: #d97706;
+    box-shadow: 0 12px 28px rgba(245, 158, 11, 0.4);
+    transform: translateY(-1px);
+}
+
+/* ---- Segmented Tabs active ---- */
+.segmented-tabs a.is-active {
+    background: #f59e0b;
+    color: #ffffff;
+}
+
+/* ---- Search / Filter focus ring (blue) ---- */
+.search-field input:focus,
+.filter-form select:focus,
+.form-field input:focus {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
+}
+
+/* ---- Icon button border ---- */
+.icon-button {
+    border-color: #e2e8f0;
+}
+
+/* ---- Mini avatar in table ---- */
+.mini-avatar {
+    background: rgba(245, 158, 11, 0.12);
+    color: #b45309;
+}
+
+/* ---- Status pills keep existing colors ---- */
+
+/* FivGo Redesign Custom Styles */
+
+.fivgo-tabs-container {
+    margin-bottom: 24px;
+}
+
+.fivgo-toolbar-card {
+    background: #ffffff;
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: var(--admin-shadow);
+}
+
+.fivgo-filter-form {
+    width: 100%;
+}
+
+.fivgo-filter-inputs {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    width: 100%;
+}
+
+.fivgo-search-wrapper {
+    position: relative;
+    flex: 1 1 360px;
+    min-width: 280px;
+}
+
+.fivgo-search-icon {
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+}
+
+.fivgo-search-icon svg {
+    width: 20px;
+    height: 20px;
+    color: #94a3b8;
+}
+
+.fivgo-search-input {
+    width: 100%;
+    height: 48px;
+    padding: 0 16px 0 48px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1e293b;
+    font-size: 14px;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.fivgo-search-input::placeholder {
+    color: #64748b;
+}
+
+.fivgo-search-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.fivgo-btn-cari {
+    height: 48px;
+    background: #f59e0b;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 0 28px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.fivgo-btn-cari:hover {
+    background: #d97706;
+    transform: translateY(-1px);
+}
+
+.fivgo-btn-cari:active {
+    transform: translateY(0);
+}
+
+.fivgo-select-wrapper {
+    position: relative;
+    width: 200px;
+}
+
+.fivgo-select {
+    width: 100%;
+    height: 48px;
+    padding: 0 40px 0 16px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1e293b;
+    font-size: 14px;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%23475569' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.fivgo-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Table Redesign */
+.fivgo-table-card {
+    background: #ffffff;
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: var(--admin-shadow);
+    margin-top: 24px;
+}
+
+.fivgo-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.fivgo-table th {
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: capitalize;
+    text-align: left;
+    padding: 16px 20px;
+    border-bottom: 1.5px solid #cbd5e1;
+}
+
+.fivgo-table th:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.fivgo-table th:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.fivgo-table td {
+    padding: 18px 20px;
+    color: #1e293b;
+    font-size: 14px;
+    font-weight: 500;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.fivgo-table tr:hover td {
+    background: #f8fafc;
+}
+
+.fivgo-name-cell {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+/* Status Pills */
+.fivgo-btn-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 9999px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    min-width: 110px;
+}
+
+.fivgo-btn-status.btn-nonaktifkan {
+    background: #ef4444;
+    color: #ffffff;
+}
+
+.fivgo-btn-status.btn-nonaktifkan:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+.fivgo-btn-status.btn-aktifkan {
+    background: #1e3a8a;
+    color: #ffffff;
+}
+
+.fivgo-btn-status.btn-aktifkan:hover {
+    background: #1e40af;
+    transform: translateY(-1px);
+}
+
+/* Badge Kerja for Drivers */
+.fivgo-badge-kerja {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 6px;
+    min-width: 80px;
+    text-align: center;
+}
+
+.fivgo-badge-kerja.status-online {
+    background: #86efac;
+    color: #166534;
+}
+
+.fivgo-badge-kerja.status-offline {
+    background: #fca5a5;
+    color: #991b1b;
+}
+
+/* Ratings */
+.fivgo-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #334155;
+}
+
+.star-gold {
+    color: #fbbf24;
+    font-size: 15px;
+}
+
+/* Detail Button */
+.fivgo-btn-detail {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.fivgo-btn-detail:hover {
+    background: #cbd5e1;
+    color: #1e293b;
+    transform: translateX(2px);
+}
+
+.fivgo-btn-detail svg.arrow-icon {
+    width: 14px;
+    height: 14px;
+}
+
+/* Custom Pagination */
+.fivgo-pagination-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 32px;
+}
+
+.fivgo-pagination {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.fivgo-pagination .page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.fivgo-pagination .page-link:hover:not(.is-disabled) {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.fivgo-pagination .page-link.is-active {
+    background: #1e3a8a;
+    border-color: #1e3a8a;
+    color: #ffffff;
+}
+
+.fivgo-pagination .page-link.is-disabled {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    color: #cbd5e1;
+    cursor: not-allowed;
+}
+
+.fivgo-pagination .nav-arrow {
+    width: 18px;
+    height: 18px;
+}
+
+/* Responsive adjustment */
+@media (max-width: 860px) {
+    .fivgo-filter-inputs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .fivgo-select-wrapper {
+        width: 100%;
+    }
+    
+    .fivgo-btn-cari {
+        width: 100%;
     }
 }

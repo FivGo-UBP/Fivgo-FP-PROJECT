@@ -322,4 +322,40 @@ ion-content {
       }
     }
   }
+
+  .card-divider {
+    height: 1px;
+    background: #f1f5f9;
+    margin: 12px 0;
+  }
+
+  .card-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+
+  .btn-bantuan {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: linear-gradient(135deg, #3B81D1, #1a5db5);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(59, 129, 209, 0.3);
+    font-family: inherit;
+    transition: all 0.2s ease;
+
+    ion-icon {
+      font-size: 14px;
+    }
+    &:active {
+      transform: scale(0.95);
+    }
+  }
 }

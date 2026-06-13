@@ -75,7 +75,8 @@ const routes: Routes = [
   {
     path: 'transaction-detail/:id',
     loadChildren: () => import('./beranda/transaction-detail/transaction-detail.module').then( m => m.TransactionDetailPageModule)
-  },  {
+  },
+  {
     path: 'keamanan',
     loadChildren: () => import('./profile/keamanan/keamanan.module').then( m => m.KeamananPageModule)
   },
@@ -98,8 +99,15 @@ const routes: Routes = [
   {
     path: 'laporan-masalah',
     loadChildren: () => import('./profile/laporan-masalah/laporan-masalah.module').then( m => m.LaporanMasalahPageModule)
+  },
+  {
+    path: 'chatbot-bantuan',
+    loadChildren: () => import('./profile/chatbot-bantuan/chatbot-bantuan.module').then( m => m.ChatbotBantuanPageModule)
+  },
+  {
+    path: 'daftar-aktivitas',
+    loadChildren: () => import('./profile/daftar-aktivitas/daftar-aktivitas.module').then( m => m.DaftarAktivitasPageModule)
   }
-
 ];
 
 @NgModule({

@@ -24,6 +24,7 @@ Route::prefix('admin')->name('admin.')->controller(WebAdminController::class)->g
         Route::get('analytics', 'analytics')->name('analytics');
         Route::get('customers', 'customers')->name('customers');
         Route::get('drivers', 'drivers')->name('drivers');
+        Route::post('users/{id}/toggle-status', 'toggleUserStatus')->name('users.toggle-status');
         Route::get('verification', 'verification')->name('verification');
         Route::get('orders', 'orders')->name('orders');
         Route::get('promo', 'promo')->name('promo');

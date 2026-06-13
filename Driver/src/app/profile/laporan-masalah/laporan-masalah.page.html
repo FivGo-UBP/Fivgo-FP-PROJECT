@@ -28,8 +28,28 @@
         <p>Memperbarui laporan...</p>
       </div>
 
+      <!-- Reports List State -->
+      <div class="reports-list" *ngIf="!isLoading && laporanHistory.length > 0">
+        <div class="report-card" *ngFor="let item of laporanHistory; let i = index" [class.expanded]="item.isExpanded">
+          <div class="card-header" (click)="toggleExpand(i)">
+            <div class="header-left">
+              <span class="report-tag" [ngClass]="getCategoryTagClass(item.kategori)">
+                {{ getCategoryLabel(item.kategori) }}
+              </span>
+              <span class="report-date">{{ formatDateTime(item.tanggal) }}</span>
+            </div>
+            <ion-icon [name]="item.isExpanded ? 'chevron-up-outline' : 'chevron-down-outline'" class="card-arrow"></ion-icon>
+          </div>
+
+          <div class="card-body">
+            <h4 class="report-title">{{ getReportTitle(item.kategori) }}</h4>
+            <div class="report-description" [innerHTML]="formatDescription(item.deskripsi)"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- Empty State -->
-      <div class="empty-state" *ngIf="!isLoading">
+      <div class="empty-state" *ngIf="!isLoading && laporanHistory.length === 0">
         <div class="document-icon-wrapper">
           <!-- Document SVG -->
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="document-svg">
