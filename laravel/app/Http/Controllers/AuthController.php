@@ -94,6 +94,10 @@ class AuthController extends Controller
             ]);
         }
 
+        // Update session ID for single-device login
+        $user->current_session_id = \Illuminate\Support\Str::uuid()->toString();
+        $user->save();
+
         // Generate token using JWT
         $token = auth('api')->login($user);
 
@@ -151,6 +155,10 @@ class AuthController extends Controller
             $user->update(['email_verified_at' => now()]);
         }
 
+        // Update session ID for single-device login
+        $user->current_session_id = \Illuminate\Support\Str::uuid()->toString();
+        $user->save();
+
         $token = auth('api')->login($user);
 
         return $this->respondWithToken($token, $user, false);
@@ -164,13 +172,18 @@ class AuthController extends Controller
         ]);
 
         $credentials = $request->only('email', 'password');
-        $credentials['role'] = 'admin';
 
-        if (! $token = auth('api')->attempt($credentials)) {
+        $user = User::where('email', $request->email)->where('role', 'admin')->first();
+        
+        if (!$user || !\Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Email atau password salah'], 401);
         }
 
-        $user = auth('api')->user();
+        // Update session ID for single-device login
+        $user->current_session_id = \Illuminate\Support\Str::uuid()->toString();
+        $user->save();
+
+        $token = auth('api')->login($user);
 
         return response()->json([
             'token' => $token,
@@ -184,9 +197,14 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $user = $request->user();
+        $user = auth('api')->user(); // Get authenticated user properly
         if ($user && $user->role === 'driver' && $user->driverProfile) {
             $user->driverProfile->update(['status' => 'offline']);
+        }
+
+        if ($user) {
+            $user->current_session_id = null;
+            $user->save();
         }
 
         auth('api')->logout();

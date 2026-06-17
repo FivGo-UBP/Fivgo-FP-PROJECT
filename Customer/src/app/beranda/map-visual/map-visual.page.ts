@@ -107,6 +107,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
   lastUserLngLat: number[] | null = null;
   isMapPanned: boolean = false;
   private driverMarker: any = null;
+  private driverAnimationId: any = null;
   private pickupMarker: any = null;
   private dropoffMarker: any = null;
 
@@ -197,6 +198,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.stopSearch();
     this.stopWatchingUserLocation();
     this.disconnectTrackingWebsocket();
+    this.clearDriverMarker();
   }
 
   connectTrackingWebsocket(orderId: string) {
@@ -495,10 +497,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.searchElapsed = 0;
     this.driverEtaText = 'Menghitung...';
 
-    if (this.driverMarker) {
-      this.driverMarker.remove();
-      this.driverMarker = null;
-    }
+    this.clearDriverMarker();
 
     this.isPageActive = true;
     this.currentY = 100;
@@ -608,16 +607,18 @@ export class MapVisualPage implements OnInit, OnDestroy {
       this.cdr.detectChanges();
     });
 
-    setTimeout(() => {
-      if (this.map) this.map.resize();
-    }, 300);
+    setTimeout(() => { if (this.map) this.map.resize(); }, 100);
+    setTimeout(() => { if (this.map) this.map.resize(); }, 300);
+    setTimeout(() => { if (this.map) this.map.resize(); }, 500);
+    setTimeout(() => { if (this.map) this.map.resize(); }, 800);
 
     this.map.on('load', () => {
       this.pickupMarker = this.addMarker(this.startCoord, 'start');
       this.dropoffMarker = this.addMarker(this.destCoord, 'dest');
       this.fetchPrices(this.startCoord, this.destCoord);
       this.drawRoute(this.startCoord, this.destCoord);
-      setTimeout(() => { this.map.resize(); }, 100);
+      setTimeout(() => { if (this.map) this.map.resize(); }, 100);
+      setTimeout(() => { if (this.map) this.map.resize(); }, 300);
       this.startWatchingUserLocation();
     });
   }
@@ -1546,10 +1547,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
             this.isDriverArrived = true;
             this.isInJourney = true;
             // Reset marker agar fitBounds terjadi lagi untuk rute baru (driver → tujuan)
-            if (this.driverMarker) {
-              this.driverMarker.remove();
-              this.driverMarker = null;
-            }
+            this.clearDriverMarker();
             this.updateDriverMapAndETA(order);
           } else if (order.status === 'started' && this.isInJourney) {
             // Dalam perjalanan — tracking terus-menerus
@@ -1581,10 +1579,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
               this.isInJourney = false;
               this.isSearchingDriver = true;
               
-              if (this.driverMarker) {
-                this.driverMarker.remove();
-                this.driverMarker = null;
-              }
+              this.clearDriverMarker();
               this.disconnectTrackingWebsocket();
               
               this.showToast('Driver membatalkan pesanan. Mencari driver baru...', 'warning');
@@ -1747,10 +1742,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
       }, 50);
     }, 350);
     
-    if (this.driverMarker) {
-      this.driverMarker.remove();
-      this.driverMarker = null;
-    }
+    this.clearDriverMarker();
     this.hideDropoffMarkerUntilJourneyStarts();
   }
 
@@ -1818,10 +1810,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.searchProgress = 0;
     this.searchElapsed = 0;
     
-    if (this.driverMarker) {
-      this.driverMarker.remove();
-      this.driverMarker = null;
-    }
+    this.clearDriverMarker();
     this.hideDropoffMarkerUntilJourneyStarts();
   }
 
@@ -1889,6 +1878,74 @@ export class MapVisualPage implements OnInit, OnDestroy {
     }
   }
 
+  private clearDriverMarker() {
+    if (this.driverAnimationId) {
+      cancelAnimationFrame(this.driverAnimationId);
+      this.driverAnimationId = null;
+    }
+    if (this.driverMarker) {
+      this.driverMarker.remove();
+      this.driverMarker = null;
+    }
+  }
+
+  private animateDriverMarker(targetLng: number, targetLat: number, targetHeading?: number) {
+    if (!this.driverMarker) return;
+
+    if (this.driverAnimationId) {
+      cancelAnimationFrame(this.driverAnimationId);
+      this.driverAnimationId = null;
+    }
+
+    const startPosition = this.driverMarker.getLngLat();
+    const startLng = startPosition.lng;
+    const startLat = startPosition.lat;
+
+    // Ambil rotasi marker saat ini atau default ke 0
+    let startHeading = this.driverMarker.getRotation() || 0;
+    let endHeading = targetHeading !== undefined ? targetHeading : startHeading;
+
+    // Normalisasi perbedaan rotasi untuk wrap-around (misal 350 derajat ke 10 derajat)
+    let headingDiff = endHeading - startHeading;
+    while (headingDiff < -180) headingDiff += 360;
+    while (headingDiff > 180) headingDiff -= 360;
+
+    const dist = Math.sqrt(Math.pow(targetLng - startLng, 2) + Math.pow(targetLat - startLat, 2));
+    
+    // Jika perubahannya sangat kecil, set langsung tanpa animasi
+    if (dist < 0.000005 && Math.abs(headingDiff) < 1) {
+      this.driverMarker.setLngLat([targetLng, targetLat]);
+      this.driverMarker.setRotation(endHeading);
+      return;
+    }
+
+    const duration = 1500; // Durasi animasi 1.5 detik (menyeimbangkan responsivitas dan kehalusan)
+    const startTime = performance.now();
+
+    const frame = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Interpolasi linear koordinat
+      const currentLng = startLng + (targetLng - startLng) * progress;
+      const currentLat = startLat + (targetLat - startLat) * progress;
+
+      // Interpolasi linear rotasi
+      const currentHeading = startHeading + headingDiff * progress;
+
+      this.driverMarker.setLngLat([currentLng, currentLat]);
+      this.driverMarker.setRotation((currentHeading + 360) % 360);
+
+      if (progress < 1) {
+        this.driverAnimationId = requestAnimationFrame(frame);
+      } else {
+        this.driverAnimationId = null;
+      }
+    };
+
+    this.driverAnimationId = requestAnimationFrame(frame);
+  }
+
   updateDriverMapAndETA(order: ActiveOrder) {
     if (!this.map || !order.driver?.current_lat || !order.driver?.current_lng || !this.isPageActive) return;
 
@@ -1909,7 +1966,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
         .setLngLat([dLng, dLat])
         .addTo(this.map);
     } else {
-      this.driverMarker.setLngLat([dLng, dLat]);
+      this.animateDriverMarker(dLng, dLat, order.driver.heading ?? undefined);
     }
 
     // Tentukan start & dest berdasarkan fase:

@@ -76,9 +76,9 @@ export class HomePage implements OnInit, OnDestroy {
 
   ionViewDidEnter() {
     if (this.map) {
-      setTimeout(() => {
-        this.map.resize();
-      }, 200);
+      setTimeout(() => { if (this.map) this.map.resize(); }, 100);
+      setTimeout(() => { if (this.map) this.map.resize(); }, 300);
+      setTimeout(() => { if (this.map) this.map.resize(); }, 500);
     }
   }
 
@@ -101,7 +101,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   async loadMap() {
     try {
-      const coordinates = await Geolocation.getCurrentPosition();
+      const coordinates = await Geolocation.getCurrentPosition({ timeout: 3000, enableHighAccuracy: true });
       const lat = coordinates.coords.latitude;
       const lon = coordinates.coords.longitude;
       this.currentLat = lat;
@@ -132,9 +132,9 @@ export class HomePage implements OnInit, OnDestroy {
     });
 
     this.map.on('load', () => {
-      setTimeout(() => {
-        if (this.map) this.map.resize();
-      }, 100);
+      setTimeout(() => { if (this.map) this.map.resize(); }, 100);
+      setTimeout(() => { if (this.map) this.map.resize(); }, 300);
+      setTimeout(() => { if (this.map) this.map.resize(); }, 500);
 
       // Ambil tipe kendaraan driver untuk marker yang sesuai
       const userStr = localStorage.getItem('user');
@@ -163,9 +163,8 @@ export class HomePage implements OnInit, OnDestroy {
         .addTo(this.map);
     });
 
-    setTimeout(() => {
-      if (this.map) this.map.resize();
-    }, 500);
+    setTimeout(() => { if (this.map) this.map.resize(); }, 600);
+    setTimeout(() => { if (this.map) this.map.resize(); }, 1000);
   }
 
   checkForActiveOrderOnStartup() {
@@ -518,7 +517,8 @@ export class HomePage implements OnInit, OnDestroy {
 
   getCustomerRating(): string {
     const r = this.incomingOrder?.customer?.rating;
-    return r ? r.toFixed(1) : '4.8';
+    if (!r) return '4.8';
+    return typeof r === 'number' ? r.toFixed(1) : parseFloat(r as any).toFixed(1);
   }
 
   formatPrice(price: number): string {

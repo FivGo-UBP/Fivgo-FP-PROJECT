@@ -44,6 +44,7 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
 
   private map: any = null;
   private driverMarker: any = null;
+  private driverAnimationId: any = null;
   private pickupMarker: any = null;
   private dropoffMarker: any = null;
   private mapReady: boolean = false;
@@ -86,6 +87,7 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
   ngOnDestroy() {
     this.stopPolling();
     this.stopNavigationTracking();
+    this.clearDriverMarker();
     if (this.map) { this.map.remove(); this.map = null; }
   }
 
@@ -110,6 +112,8 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
   ionViewDidEnter() {
     if (this.map) {
       setTimeout(() => this.map.resize(), 100);
+      setTimeout(() => this.map.resize(), 300);
+      setTimeout(() => this.map.resize(), 500);
     }
   }
 
@@ -141,14 +145,18 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    // Default coordinates (Jakarta) as initial center before GPS / order loads
-    let initLat = -6.175392;
-    let initLng = 106.827153;
-
-    if (this.lastDriverLat !== null && this.lastDriverLng !== null) {
-      initLat = this.lastDriverLat;
-      initLng = this.lastDriverLng;
+    // Parallel fetch of actual GPS coordinates FIRST to avoid jumping from Jakarta
+    try {
+      const pos = await Geolocation.getCurrentPosition({ timeout: 3000 });
+      this.lastDriverLat = pos.coords.latitude;
+      this.lastDriverLng = pos.coords.longitude;
+    } catch (e) {
+      console.warn('GPS tidak tersedia atau timeout untuk penentuan posisi awal:', e);
     }
+
+    // Default coordinates (Jakarta) as fallback
+    let initLat = this.lastDriverLat !== null ? this.lastDriverLat : -6.175392;
+    let initLng = this.lastDriverLng !== null ? this.lastDriverLng : 106.827153;
 
     const container = document.getElementById('driver-active-map');
     if (!container) {
@@ -169,9 +177,9 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
 
     this.map.on('load', () => {
       this.mapReady = true;
-      setTimeout(() => {
-        if (this.map) this.map.resize();
-      }, 100);
+      setTimeout(() => { if (this.map) this.map.resize(); }, 100);
+      setTimeout(() => { if (this.map) this.map.resize(); }, 300);
+      setTimeout(() => { if (this.map) this.map.resize(); }, 500);
       
       if (this.order) {
         this.setupMapForOrder(this.order);
@@ -179,28 +187,8 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
     });
 
     // Additional resize triggers
-    setTimeout(() => {
-      if (this.map) this.map.resize();
-    }, 500);
-
-    // Parallel fetch of actual GPS coordinates to center map
-    try {
-      const pos = await Geolocation.getCurrentPosition({ timeout: 5000 });
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      this.lastDriverLat = lat;
-      this.lastDriverLng = lng;
-      
-      if (this.map) {
-        this.map.setCenter([lng, lat]);
-      }
-      
-      if (this.order && this.mapReady) {
-        this.setupMapForOrder(this.order);
-      }
-    } catch (e) {
-      console.warn('GPS tidak tersedia atau timeout untuk penentuan posisi awal:', e);
-    }
+    setTimeout(() => { if (this.map) this.map.resize(); }, 600);
+    setTimeout(() => { if (this.map) this.map.resize(); }, 1000);
 
     this.startNavigationTracking();
   }
@@ -215,7 +203,7 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
     const finalDriverLng = this.lastDriverLng !== null ? this.lastDriverLng : (pickupLng - 0.005);
 
     // Reset markers if they already exist
-    if (this.driverMarker) { this.driverMarker.remove(); this.driverMarker = null; }
+    this.clearDriverMarker();
     if (this.pickupMarker) { this.pickupMarker.remove(); this.pickupMarker = null; }
     if (this.dropoffMarker) { this.dropoffMarker.remove(); this.dropoffMarker = null; }
 
@@ -402,7 +390,7 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
     const finalDriverLng = this.lastDriverLng !== null ? this.lastDriverLng : pickupLng;
 
     if (this.driverMarker) {
-      this.driverMarker.setLngLat([finalDriverLng, finalDriverLat]);
+      this.animateDriverMarker(finalDriverLng, finalDriverLat, this.lastDriverHeading);
     }
 
     // Tambah marker tujuan
@@ -469,9 +457,7 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
 
         this.zone.run(() => {
           // Pindahkan marker driver secara halus
-          if (this.driverMarker) {
-            this.driverMarker.setLngLat([lng, lat]);
-          }
+          this.animateDriverMarker(lng, lat, heading);
 
           // Animasi Mapbox mengikuti pergerakan driver (flat, utara di atas seperti customer)
           // Menghilangkan paksaan zoom agar tingkat zoom rute dari fitBounds tetap dipertahankan
@@ -495,6 +481,74 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
       await Geolocation.clearWatch({ id: this.watchId });
       this.watchId = null;
     }
+  }
+
+  private clearDriverMarker() {
+    if (this.driverAnimationId) {
+      cancelAnimationFrame(this.driverAnimationId);
+      this.driverAnimationId = null;
+    }
+    if (this.driverMarker) {
+      this.driverMarker.remove();
+      this.driverMarker = null;
+    }
+  }
+
+  private animateDriverMarker(targetLng: number, targetLat: number, targetHeading?: number) {
+    if (!this.driverMarker) return;
+
+    if (this.driverAnimationId) {
+      cancelAnimationFrame(this.driverAnimationId);
+      this.driverAnimationId = null;
+    }
+
+    const startPosition = this.driverMarker.getLngLat();
+    const startLng = startPosition.lng;
+    const startLat = startPosition.lat;
+
+    // Ambil rotasi marker saat ini atau default ke 0
+    let startHeading = this.driverMarker.getRotation() || 0;
+    let endHeading = targetHeading !== undefined ? targetHeading : startHeading;
+
+    // Normalisasi perbedaan rotasi untuk wrap-around (misal 350 derajat ke 10 derajat)
+    let headingDiff = endHeading - startHeading;
+    while (headingDiff < -180) headingDiff += 360;
+    while (headingDiff > 180) headingDiff -= 360;
+
+    const dist = Math.sqrt(Math.pow(targetLng - startLng, 2) + Math.pow(targetLat - startLat, 2));
+    
+    // Jika perubahannya sangat kecil, set langsung tanpa animasi
+    if (dist < 0.000005 && Math.abs(headingDiff) < 1) {
+      this.driverMarker.setLngLat([targetLng, targetLat]);
+      this.driverMarker.setRotation(endHeading);
+      return;
+    }
+
+    const duration = 1500; // Durasi animasi 1.5 detik
+    const startTime = performance.now();
+
+    const frame = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Interpolasi linear koordinat
+      const currentLng = startLng + (targetLng - startLng) * progress;
+      const currentLat = startLat + (targetLat - startLat) * progress;
+
+      // Interpolasi linear rotasi
+      const currentHeading = startHeading + headingDiff * progress;
+
+      this.driverMarker.setLngLat([currentLng, currentLat]);
+      this.driverMarker.setRotation((currentHeading + 360) % 360);
+
+      if (progress < 1) {
+        this.driverAnimationId = requestAnimationFrame(frame);
+      } else {
+        this.driverAnimationId = null;
+      }
+    };
+
+    this.driverAnimationId = requestAnimationFrame(frame);
   }
 
   updateNavigationInstruction(lat: number, lng: number) {
@@ -721,7 +775,11 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
 
   getCustomerPhoto(): string { return this.order?.customer?.photo || 'assets/Profile-Default.jpeg'; }
   getCustomerName(): string { return this.order?.customer?.name || 'Pelanggan'; }
-  getCustomerRating(): string { const r = this.order?.customer?.rating; return r ? r.toFixed(1) : '4.8'; }
+  getCustomerRating(): string { 
+    const r = this.order?.customer?.rating; 
+    if (!r) return '4.8';
+    return typeof r === 'number' ? r.toFixed(1) : parseFloat(r as any).toFixed(1);
+  }
   formatPrice(price: number | null | undefined): string { if (!price) return 'Rp 0'; return 'Rp ' + price.toLocaleString('id-ID'); }
   getPaymentLabel(): string { const m = this.order?.payment_method || 'tunai'; return m === 'tunai' ? 'Tunai' : `Non Tunai : ${this.formatPaymentMethod(m)}`; }
 
