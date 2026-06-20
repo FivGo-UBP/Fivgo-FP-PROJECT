@@ -223,10 +223,70 @@ class WebAdminController extends Controller
         $this->ensureAdmin();
 
         $customer = User::where('role', 'customer')->findOrFail($id);
-        // You may want to add logic to delete related records if not using cascade deletes
         $customer->delete();
 
         return back()->with('status', 'Akun customer berhasil dihapus.');
+    }
+
+    public function showDriver($id)
+    {
+        $this->ensureAdmin();
+
+        $driver = User::with('driverProfile')->where('role', 'driver')->findOrFail($id);
+
+        return view('admin.driver-detail', [
+            'active' => 'drivers',
+            'title' => 'Pengguna > Driver > Lihat Detail > Edit Profil',
+            'driver' => $driver,
+        ]);
+    }
+
+    public function updateDriver(Request $request, $id)
+    {
+        $this->ensureAdmin();
+
+        $driver = User::with('driverProfile')->where('role', 'driver')->findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'email' => 'required|email|max:255',
+            'vehicle_brand' => 'required|string|max:255',
+            'plate_number' => 'required|string|max:20',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $driver->update([
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'email' => $request->email,
+        ]);
+
+        if ($request->hasFile('profile_picture')) {
+            $file = $request->file('profile_picture');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('assets/driver/profile_pictures'), $filename);
+            $driver->update(['profile_picture' => $filename]);
+        }
+
+        if ($driver->driverProfile) {
+            $driver->driverProfile->update([
+                'vehicle_brand' => $request->vehicle_brand,
+                'plate_number' => $request->plate_number,
+            ]);
+        }
+
+        return back()->with('status', 'Profil driver berhasil diperbarui.');
+    }
+
+    public function destroyDriver($id)
+    {
+        $this->ensureAdmin();
+
+        $driver = User::where('role', 'driver')->findOrFail($id);
+        $driver->delete();
+
+        return back()->with('status', 'Akun driver berhasil dihapus.');
     }
 
     public function verification()
@@ -252,10 +312,10 @@ class WebAdminController extends Controller
         $this->ensureAdmin();
 
         $orders = Order::with(['customer', 'driver'])
-            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
-            ->when($request->filled('vehicle_type'), fn ($query) => $query->where('vehicle_type', $request->string('vehicle_type')))
+            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->input('status')))
+            ->when($request->filled('vehicle_type'), fn ($query) => $query->where('vehicle_type', $request->input('vehicle_type')))
             ->when($request->filled('q'), function ($query) use ($request) {
-                $search = '%' . $request->string('q') . '%';
+                $search = '%' . $request->input('q') . '%';
 
                 $query->where(function ($query) use ($search) {
                     $query
@@ -274,6 +334,20 @@ class WebAdminController extends Controller
             'title' => 'Order',
             'orders' => $orders,
             'statusCounts' => $this->orderStatusCounts(),
+        ]);
+    }
+
+    public function showOrder($id)
+    {
+        $this->ensureAdmin();
+
+        $order = Order::with(['customer', 'driver.driverProfile'])->findOrFail($id);
+
+        return view('admin.order-detail', [
+            'active' => 'orders',
+            'title' => 'Lihat Detail',
+            'order' => $order,
+            'mapboxToken' => config('services.mapbox.token'),
         ]);
     }
 
@@ -349,6 +423,57 @@ class WebAdminController extends Controller
         ]);
     }
 
+    public function createDriver()
+    {
+        $this->ensureAdmin();
+
+        return view('admin.driver-create', [
+            'active' => 'drivers',
+            'title' => 'Tambah Akun'
+        ]);
+    }
+
+    public function storeDriver(Request $request)
+    {
+        $this->ensureAdmin();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'dob' => 'nullable|date',
+            'gender' => 'nullable|in:male,female',
+            'city' => 'nullable|string',
+            'phone' => 'required|string',
+            'emergency_phone' => 'nullable|string',
+            'vehicle_type' => 'required|in:motorcycle,car',
+            'vehicle_plate' => 'required|string',
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => bcrypt('password123'),
+            'role' => 'driver',
+            'phone' => $request->phone,
+            'is_active' => true,
+        ]);
+
+        DriverProfile::create([
+            'user_id' => $user->id,
+            'birth_date' => $request->dob,
+            'gender' => $request->gender,
+            'address' => $request->city,
+            'emergency_contact' => $request->emergency_phone,
+            'vehicle_type' => $request->vehicle_type,
+            'vehicle_plate_number' => $request->vehicle_plate,
+            'rating' => 5.0,
+            'is_online' => false,
+            'status' => 'offline',
+        ]);
+
+        return redirect()->route('admin.drivers')->with('status', 'Akun driver berhasil dibuat!');
+    }
+
     public function toggleUserStatus(Request $request, string $id)
     {
         $this->ensureAdmin();
@@ -367,7 +492,7 @@ class WebAdminController extends Controller
             ->with('driverProfile')
             ->where('users.role', $role)
             ->when($request->filled('q'), function ($query) use ($request) {
-                $search = '%' . $request->string('q') . '%';
+                $search = '%' . $request->input('q') . '%';
 
                 $query->where(function ($query) use ($search) {
                     $query
@@ -378,7 +503,7 @@ class WebAdminController extends Controller
                 });
             })
             ->when($role === 'customer' && $request->filled('status'), function ($query) use ($request) {
-                $status = $request->string('status');
+                $status = $request->input('status');
                 if ($status === 'active') {
                     $query->where('users.is_active', 1);
                 } elseif ($status === 'inactive') {
@@ -386,13 +511,13 @@ class WebAdminController extends Controller
                 }
             })
             ->when($role === 'driver' && $request->filled('status'), function ($query) use ($request) {
-                $query->whereHas('driverProfile', fn ($query) => $query->where('status', $request->string('status')));
+                $query->whereHas('driverProfile', fn ($query) => $query->where('status', $request->input('status')));
             })
             ->when($role === 'driver' && $request->filled('vehicle_type'), function ($query) use ($request) {
-                $query->whereHas('driverProfile', fn ($query) => $query->where('vehicle_type', $request->string('vehicle_type')));
+                $query->whereHas('driverProfile', fn ($query) => $query->where('vehicle_type', $request->input('vehicle_type')));
             })
             ->when($request->filled('sort_rating'), function ($query) use ($role, $request) {
-                $direction = $request->string('sort_rating') === 'desc' ? 'desc' : 'asc';
+                $direction = $request->input('sort_rating') === 'desc' ? 'desc' : 'asc';
                 if ($role === 'driver') {
                     $query->leftJoin('driver_profiles', 'users.id', '=', 'driver_profiles.user_id')
                         ->select('users.*')

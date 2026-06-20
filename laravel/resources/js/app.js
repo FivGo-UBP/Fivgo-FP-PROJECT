@@ -1,6 +1,16 @@
 import './bootstrap';
 import carDriverMarkerUrl from '../images/mobil driver.png';
 import motorDriverMarkerUrl from '../images/Motor driver.png';
+import carKuningUrl from '../images/mobil kuning.png';
+import motorKuningUrl from '../images/motor kuning.png';
+
+// Explicitly register them to the window or just let Vite bundle them
+window.fivgoAssets = {
+    carDriverMarkerUrl,
+    motorDriverMarkerUrl,
+    carKuningUrl,
+    motorKuningUrl
+};
 
 document.addEventListener('DOMContentLoaded', () => {
     const layout = document.querySelector('[data-admin-layout]');

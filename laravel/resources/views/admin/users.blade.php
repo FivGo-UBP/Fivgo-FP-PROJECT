@@ -4,43 +4,91 @@
     {{ $role === 'driver' ? 'Kelola akun driver, rating, kendaraan, dan status operasional.' : 'Kelola data pelanggan, kontak, dan status verifikasi.' }}
 @endsection
 
+@section('actions')
+    @if($role === 'driver')
+        <a href="{{ route('admin.drivers.create') }}" class="admin-export-button" style="background:#f59e0b; color:#ffffff; border:none; border-radius:8px; font-weight:600; cursor:pointer; padding:0 16px; box-shadow:0 4px 6px -1px rgba(245, 158, 11, 0.2); text-decoration:none; display:inline-flex; align-items:center;">
+            + Tambah Akun
+        </a>
+    @endif
+@endsection
+
 @section('content')
 
 
-        <form class="filter-form is-wide" method="GET" action="{{ request()->url() }}" style="background:#ffffff; padding:24px; border-radius:16px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); display:flex; flex-wrap:nowrap; overflow-x:auto; gap:16px; align-items:center;">
-            <label class="search-field-modern">
+        <form class="filter-form is-wide" method="GET" action="{{ request()->url() }}" style="background:#ffffff; padding:24px; border-radius:16px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); display:flex; flex-wrap:nowrap; gap:16px; align-items:center;">
+            <label class="search-field-modern" style="margin:0;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
                 <input
                     type="search"
                     name="q"
                     value="{{ request('q') }}"
                     placeholder="Cari nama, email, atau ID {{ $role }} ..."
+                    style="margin:0; box-sizing:border-box;"
                 >
             </label>
 
-            <button type="submit" class="primary-button" style="background:var(--admin-yellow); color:#ffffff; border:none; min-height:46px; border-radius:8px; font-weight:700;">
+            <button type="submit" style="background:var(--admin-yellow); color:#ffffff; border:none; height:46px; margin:0; box-sizing:border-box; padding:0 24px; border-radius:8px; font-weight:700; cursor:pointer; box-shadow:none;">
                 Cari
             </button>
-            
+
+
             @if ($role === 'customer')
-                <select name="status" onchange="this.form.submit()" style="min-height:46px; border:1px solid var(--admin-border); border-radius:8px; padding:0 16px; font-weight:600; color:var(--admin-text); background:#ffffff;">
-                    <option value="">Status Akun</option>
-                    <option value="active"   @selected(request('status') === 'active')>Aktif</option>
-                    <option value="inactive" @selected(request('status') === 'inactive')>Nonaktif</option>
-                </select>
+                <div class="custom-select-wrapper">
+                    <input type="hidden" name="status" id="statusInput" value="{{ request('status') }}">
+                    <button type="button" class="custom-select-btn" onclick="toggleDropdown('statusMenu')">
+                        Status Akun
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div id="statusMenu" class="custom-select-menu hidden">
+                        <div class="custom-option {{ request('status') === 'active' ? 'is-selected' : '' }}" onclick="selectOption('statusInput', 'active', 'statusMenu')">
+                            Aktif
+                            @if(request('status') === 'active') <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg> @endif
+                        </div>
+                        <div class="custom-option {{ request('status') === 'inactive' ? 'is-selected' : '' }}" onclick="selectOption('statusInput', 'inactive', 'statusMenu')">
+                            Nonaktif
+                            @if(request('status') === 'inactive') <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg> @endif
+                        </div>
+                    </div>
+                </div>
             @else
-                <select name="vehicle_type" onchange="this.form.submit()" style="min-height:46px; border:1px solid var(--admin-border); border-radius:8px; padding:0 16px; font-weight:600; color:var(--admin-text); background:#ffffff;">
-                    <option value="">Kategori Kendaraan</option>
-                    <option value="motor" @selected(request('vehicle_type') === 'motor')>Motor</option>
-                    <option value="mobil" @selected(request('vehicle_type') === 'mobil')>Mobil</option>
-                </select>
+                <div class="custom-select-wrapper">
+                    <input type="hidden" name="vehicle_type" id="vehicleInput" value="{{ request('vehicle_type') }}">
+                    <button type="button" class="custom-select-btn" onclick="toggleDropdown('vehicleMenu')">
+                        Kategori Kendaraan
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div id="vehicleMenu" class="custom-select-menu hidden">
+                        <div class="custom-option {{ request('vehicle_type') === 'motor' ? 'is-selected' : '' }}" onclick="selectOption('vehicleInput', 'motor', 'vehicleMenu')">
+                            Motor
+                            @if(request('vehicle_type') === 'motor') <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg> @endif
+                        </div>
+                        <div class="custom-option {{ request('vehicle_type') === 'mobil' ? 'is-selected' : '' }}" onclick="selectOption('vehicleInput', 'mobil', 'vehicleMenu')">
+                            Mobil
+                            @if(request('vehicle_type') === 'mobil') <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg> @endif
+                        </div>
+                    </div>
+                </div>
             @endif
 
-            <select name="sort_rating" onchange="this.form.submit()" style="min-height:46px; border:1px solid var(--admin-border); border-radius:8px; padding:0 16px; font-weight:600; color:var(--admin-text); background:#ffffff;">
-                <option value="">Urutkan Rating</option>
-                <option value="desc" @selected(request('sort_rating') === 'desc')>Rating Terbaik</option>
-                <option value="asc"  @selected(request('sort_rating') === 'asc')>Rating Terendah</option>
-            </select>
+            <div class="custom-select-wrapper">
+                <input type="hidden" name="sort_rating" id="sortInput" value="{{ request('sort_rating') }}">
+                <button type="button" class="custom-select-btn" onclick="toggleDropdown('sortMenu')">
+                    Urutkan Rating
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div id="sortMenu" class="custom-select-menu hidden">
+                    <div class="custom-option {{ request('sort_rating') === 'desc' ? 'is-selected' : '' }}" onclick="selectOption('sortInput', 'desc', 'sortMenu')">
+                        Tertinggi
+                        @if(request('sort_rating') === 'desc') <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg> @endif
+                    </div>
+                    <div class="custom-option {{ request('sort_rating') === 'asc' ? 'is-selected' : '' }}" onclick="selectOption('sortInput', 'asc', 'sortMenu')">
+                        Terendah
+                        @if(request('sort_rating') === 'asc') <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg> @endif
+                    </div>
+                </div>
+            </div>
+
+
         </form>
 
     {{-- Table --}}
@@ -95,42 +143,23 @@
                                     <span style="color:#f59e0b;font-size:14px;">★</span>
                                 </td>
 
-                                {{-- Status Akun (Toggle) --}}
+                                {{-- Status Akun (Label) --}}
                                 <td>
-                                    <form action="{{ route('admin.users.toggle-status', $user->id) }}" method="POST">
-                                        @csrf
-                                        @if ($user->is_active)
-                                            <button type="submit" class="secondary-button"
-                                                style="background:#ef4444;color:#fff;border:none;border-radius:999px;min-width:110px;min-height:34px;font-size:12px;">
-                                                Nonaktifkan
-                                            </button>
-                                        @else
-                                            <button type="submit" class="secondary-button"
-                                                style="background:#1e3a8a;color:#fff;border:none;border-radius:999px;min-width:110px;min-height:34px;font-size:12px;">
-                                                Aktifkan
-                                            </button>
-                                        @endif
-                                    </form>
+                                    @if ($user->is_active)
+                                        <span class="status-pill status-online">Aktif</span>
+                                    @else
+                                        <span class="status-pill status-offline">Nonaktif</span>
+                                    @endif
                                 </td>
 
                             @else
-                                {{-- Status Akun (Toggle) --}}
+                                {{-- Status Akun (Label) --}}
                                 <td>
-                                    <form id="toggleFormCus_{{ $user->id }}" action="{{ route('admin.users.toggle-status', $user->id) }}" method="POST">
-                                        @csrf
-                                        @if ($user->is_active)
-                                            <button type="button" class="secondary-button"
-                                                style="background:#ef4444;color:#fff;border:none;border-radius:999px;min-width:110px;min-height:34px;font-size:12px;cursor:pointer;"
-                                                onclick="openToggleModal('{{ $user->id }}', '{{ $user->name }}')">
-                                                Nonaktifkan
-                                            </button>
-                                        @else
-                                            <button type="submit" class="secondary-button"
-                                                style="background:#1e3a8a;color:#fff;border:none;border-radius:999px;min-width:110px;min-height:34px;font-size:12px;cursor:pointer;">
-                                                Aktifkan
-                                            </button>
-                                        @endif
-                                    </form>
+                                    @if ($user->is_active)
+                                        <span class="status-pill status-online">Aktif</span>
+                                    @else
+                                        <span class="status-pill status-offline">Nonaktif</span>
+                                    @endif
                                 </td>
 
                                 {{-- Rating --}}
@@ -143,17 +172,25 @@
                             {{-- Aksi --}}
                             <td style="text-align:center;">
                                 <div style="display:flex; gap:8px; justify-content:center; align-items:center;">
-                                    <a href="{{ $role === 'customer' ? route('admin.customers.show', $user->id) : '#' }}" class="ghost-button"
+                                    
+                                    <a href="{{ $role === 'customer' ? route('admin.customers.show', $user->id) : route('admin.drivers.show', $user->id) }}" class="ghost-button"
                                         style="background:#f1f5f9; border:none; padding:6px 12px; min-height:28px; font-size:11px; border-radius:6px;">
                                         Lihat Detail
                                         <span style="font-size:12px; margin-left:4px;">→</span>
                                     </a>
+                                    
                                     @if ($role === 'customer')
-                                    <button type="button" class="icon-button"
-                                        style="border:none; color:#ef4444; width:28px; height:28px; min-height:28px; background:transparent;"
-                                        onclick="openDeleteModal('{{ $user->id }}')">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                                    </button>
+                                        <button type="button" class="icon-button"
+                                            style="border:none; color:#ef4444; width:28px; height:28px; min-height:28px; background:transparent;"
+                                            onclick="openDeleteModal('{{ $user->id }}', 'customers')">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                                        </button>
+                                    @else
+                                        <button type="button" class="icon-button"
+                                            style="border:none; color:#ef4444; width:28px; height:28px; min-height:28px; background:transparent;"
+                                            onclick="openDeleteModal('{{ $user->id }}', 'drivers')">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                                        </button>
                                     @endif
                                 </div>
                             </td>
@@ -238,11 +275,9 @@
     </div>
 
     <script>
-        function openDeleteModal(userId) {
-            const modal = document.getElementById('deleteModal');
-            const form = document.getElementById('deleteForm');
-            form.action = `/admin/customers/${userId}`;
-            modal.classList.remove('hidden');
+        function openDeleteModal(id, type) {
+            document.getElementById('deleteForm').action = "{{ url('admin') }}/" + type + "/" + id;
+            document.getElementById('deleteModal').classList.remove('hidden');
         }
 
         function closeDeleteModal() {
@@ -268,5 +303,34 @@
             const modal = document.getElementById('toggleModal');
             modal.classList.add('hidden');
         }
+
+        // Custom Dropdown Logic
+        function toggleDropdown(id) {
+            document.querySelectorAll('.custom-select-menu').forEach(el => {
+                if (el.id !== id) el.classList.add('hidden');
+            });
+            document.getElementById(id).classList.toggle('hidden');
+        }
+
+        function selectOption(inputId, value, menuId) {
+            const input = document.getElementById(inputId);
+            
+            // If clicking the already selected option, clear it
+            if (input.value === value) {
+                input.value = '';
+            } else {
+                input.value = value;
+            }
+            
+            document.getElementById(menuId).classList.add('hidden');
+            input.closest('form').submit();
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.custom-select-wrapper')) {
+                document.querySelectorAll('.custom-select-menu').forEach(el => el.classList.add('hidden'));
+            }
+        });
     </script>
 @endsection

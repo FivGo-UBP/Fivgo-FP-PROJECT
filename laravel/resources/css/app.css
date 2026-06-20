@@ -1681,6 +1681,69 @@
     margin-bottom: 24px;
 }
 
+/* Custom Dropdown CSS */
+.custom-select-wrapper {
+    position: relative;
+    user-select: none;
+}
+
+.custom-select-btn {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0 16px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    font-weight: 500;
+    color: #334155;
+    cursor: pointer;
+    min-width: 180px;
+}
+
+.custom-select-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 6px;
+    background: #ffffff;
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    padding: 6px;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+    z-index: 50;
+    min-width: 100%;
+}
+
+.custom-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--admin-text);
+    cursor: pointer;
+    transition: background 150ms;
+    white-space: nowrap;
+}
+
+.custom-option:hover {
+    background: #f1f5f9;
+}
+
+.custom-option.is-selected {
+    background: #eef2ff;
+    color: #1e3a8a;
+}
+
+.custom-option.is-selected svg {
+    color: #3b82f6;
+}
+
 .fivgo-toolbar-card {
     background: #ffffff;
     border: 1px solid var(--admin-border);

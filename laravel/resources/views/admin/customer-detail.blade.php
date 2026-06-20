@@ -7,23 +7,41 @@
 
     <div class="profile-detail-card">
         <div class="profile-avatar-wrap">
-            <img src="{{ asset('assets/customer/profile_pictures/' . ($customer->profile_picture ?? 'default.jpg')) }}" 
+            <img src="{{ $customer->profile_picture ? asset('assets/customer/profile_pictures/' . $customer->profile_picture) : 'https://ui-avatars.com/api/?name=' . urlencode($customer->name) . '&background=e2e8f0&color=475569&size=128' }}" 
                  alt="Profile Picture" 
-                 onerror="this.src='{{ asset('assets/admin/logo-fivgo.png') }}'">
+                 onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($customer->name) }}&background=e2e8f0&color=475569&size=128'">
             <div class="profile-rating-badge">
                 {{ number_format((float) ($customer->rating ?? 5.0), 1) }}
                 <span style="color:#f59e0b; font-size:16px;">★</span>
             </div>
         </div>
 
-        <div class="profile-info">
-            <h2>
-                {{ $customer->name }}
-                <span style="font-size:12px; padding:4px 12px; background:{{ $customer->is_active ? '#1e3a8a' : '#ef4444' }}; color:#fff; border-radius:999px; font-weight:700;">
-                    {{ $customer->is_active ? 'Aktif' : 'Nonaktif' }}
-                </span>
-            </h2>
-            <p>ID#CUS-{{ substr($customer->id, 0, 4) }}</p>
+        <div class="profile-info" style="flex:1;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+                <div>
+                    <h2>
+                        {{ $customer->name }}
+                    </h2>
+                    <p>ID#CUS-{{ substr($customer->id, 0, 4) }}</p>
+                </div>
+                <form action="{{ route('admin.users.toggle-status', $customer->id) }}" method="POST" style="margin:0;">
+                    @csrf
+                    @if ($customer->is_active)
+                        <button type="button"
+                            style="background:#ef4444;color:#fff;border:none;border-radius:999px;padding:0 24px;min-height:40px;font-size:13px;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:8px;"
+                            onclick="if(confirm('Yakin ingin menonaktifkan pengguna ini?')) this.form.submit()">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
+                            Nonaktifkan
+                        </button>
+                    @else
+                        <button type="submit"
+                            style="background:#1e3a8a;color:#fff;border:none;border-radius:999px;padding:0 24px;min-height:40px;font-size:13px;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:8px;">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+                            Aktifkan
+                        </button>
+                    @endif
+                </form>
+            </div>
 
             <div class="profile-blocks">
                 <div class="info-block">
@@ -56,9 +74,13 @@
 
         @forelse ($orders as $order)
             <div class="order-item-row">
-                <img src="{{ asset('assets/' . strtolower($order->vehicle_type) . ' driver.png') }}" 
+                @php
+                    $vehicleImage = strtolower($order->vehicle_type) === 'motor' ? 'motor kuning.png' : 'mobil kuning.png';
+                @endphp
+                <img src="{{ Vite::asset('resources/images/' . $vehicleImage) }}" 
                      alt="{{ $order->vehicle_type }}" 
                      class="order-item-icon"
+                     style="background: transparent; object-fit: contain;"
                      onerror="this.src='{{ asset('assets/admin/logo-fivgo.png') }}'">
                 
                 <div class="order-item-details">

@@ -124,10 +124,12 @@
 
                 <div class="topbar-actions">
                     @yield('actions')
-                    <button class="admin-export-button" type="button">
-                        {!! $svg('download', 'button-icon') !!}
-                        <span>Ekspor pdf</span>
-                    </button>
+                    @if(isset($active) && in_array($active, ['dashboard', 'analytics']))
+                        <button class="admin-export-button" type="button">
+                            {!! $svg('download', 'button-icon') !!}
+                            <span>Ekspor pdf</span>
+                        </button>
+                    @endif
                     <form method="POST" action="{{ route('admin.logout') }}">
                         @csrf
                         <button class="icon-button" type="submit" aria-label="Keluar">
