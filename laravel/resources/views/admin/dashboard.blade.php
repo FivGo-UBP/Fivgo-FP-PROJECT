@@ -10,7 +10,7 @@
                     <p>{{ $metric['label'] }}</p>
                     <strong>{{ $metric['value'] }}</strong>
                 </div>
-                <span class="metric-icon is-{{ $metric['tone'] }}" data-icon="{{ $metric['icon'] }}"></span>
+                <span class="metric-icon is-yellow" data-icon="{{ $metric['icon'] }}"></span>
             </article>
         @endforeach
 
@@ -25,13 +25,6 @@
     </section>
 
     <section class="dashboard-map card-surface">
-        <div class="map-header">
-            <div>
-                <h2>Monitoring Order Aktif</h2>
-                <p>Lokasi operasional ditampilkan sebagai simulasi visual dari order yang sedang berjalan.</p>
-            </div>
-            <a class="ghost-button" href="{{ route('admin.monitoring') }}">Buka Monitoring</a>
-        </div>
 
         <div
             class="admin-map mapbox-admin-map"
@@ -46,47 +39,4 @@
         </div>
     </section>
 
-    <section class="table-card">
-        <div class="section-heading">
-            <div>
-                <h2>Order Terbaru</h2>
-                <p>Daftar ringkas pesanan terakhir yang masuk ke sistem.</p>
-            </div>
-            <a class="ghost-button" href="{{ route('admin.orders') }}">Lihat semua</a>
-        </div>
-
-        <div class="table-scroll">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Customer</th>
-                        <th>Driver</th>
-                        <th>Rute</th>
-                        <th>Status</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($recentOrders as $order)
-                        <tr>
-                            <td>#{{ substr($order->id, 0, 8) }}</td>
-                            <td>{{ $order->customer?->name ?: 'Customer FivGo' }}</td>
-                            <td>{{ $order->driver?->name ?: '-' }}</td>
-                            <td>
-                                <span class="route-cell">{{ $order->pickup_address }}</span>
-                                <small>{{ $order->dropoff_address }}</small>
-                            </td>
-                            <td><span class="status-pill status-{{ $order->status }}">{{ strtoupper($order->status) }}</span></td>
-                            <td>Rp {{ number_format($order->final_price ?? $order->estimated_price, 0, ',', '.') }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="empty-table">Belum ada order.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </section>
 @endsection

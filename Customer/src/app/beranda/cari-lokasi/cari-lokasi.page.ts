@@ -48,6 +48,16 @@ export class CariLokasiPage {
 
   async getCurrentLocation() {
     try {
+      let perm = await Geolocation.checkPermissions();
+      if (perm.location !== 'granted') {
+        perm = await Geolocation.requestPermissions();
+      }
+      if (perm.location !== 'granted') {
+        this.currentLocation = 'Izin lokasi ditolak';
+        this.cdr.detectChanges();
+        return;
+      }
+
       const position = await Geolocation.getCurrentPosition({
         enableHighAccuracy: true,
         timeout: 10000,
@@ -171,17 +181,23 @@ export class CariLokasiPage {
     let finalJemputLat = this.currentLat;
     let finalJemputLng = this.currentLng;
 
-    if (this.currentLocation.toLowerCase() === 'lokasi saat ini') {
+    if (this.currentLocation.toLowerCase() === 'lokasi saat ini' || this.currentLocation.toLowerCase() === 'lokasi tidak diketahui') {
       try {
-        const position = await Geolocation.getCurrentPosition({
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0
-        });
-        finalJemputLat = position.coords.latitude;
-        finalJemputLng = position.coords.longitude;
-        this.currentLat = finalJemputLat;
-        this.currentLng = finalJemputLng;
+        let perm = await Geolocation.checkPermissions();
+        if (perm.location !== 'granted') {
+          perm = await Geolocation.requestPermissions();
+        }
+        if (perm.location === 'granted') {
+          const position = await Geolocation.getCurrentPosition({
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+          });
+          finalJemputLat = position.coords.latitude;
+          finalJemputLng = position.coords.longitude;
+          this.currentLat = finalJemputLat;
+          this.currentLng = finalJemputLng;
+        }
       } catch (error) {
         console.warn('Gagal mendapatkan lokasi terbaru sebelum navigasi di cari-lokasi, menggunakan cache:', error);
       }

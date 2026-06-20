@@ -8,7 +8,15 @@ Route::get('/login', function () {
 })->name('login');
 
 Route::get('/', function () {
-    return redirect()->route('admin.dashboard');
+    return view('landing.index');
+});
+
+Route::get('/kebijakan-privasi', function () {
+    return view('landing.kebijakan-privasi');
+});
+
+Route::get('/syarat-ketentuan', function () {
+    return view('landing.syarat-ketentuan');
 });
 
 Route::prefix('admin')->name('admin.')->controller(WebAdminController::class)->group(function () {
@@ -23,6 +31,8 @@ Route::prefix('admin')->name('admin.')->controller(WebAdminController::class)->g
         Route::get('monitoring', 'monitoring')->name('monitoring');
         Route::get('analytics', 'analytics')->name('analytics');
         Route::get('customers', 'customers')->name('customers');
+        Route::get('customers/{id}', 'showCustomer')->name('customers.show');
+        Route::delete('customers/{id}', 'destroyCustomer')->name('customers.destroy');
         Route::get('drivers', 'drivers')->name('drivers');
         Route::post('users/{id}/toggle-status', 'toggleUserStatus')->name('users.toggle-status');
         Route::get('verification', 'verification')->name('verification');

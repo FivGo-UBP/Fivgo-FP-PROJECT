@@ -193,14 +193,40 @@ class WebAdminController extends Controller
     {
         $this->ensureAdmin();
 
-        return $this->usersPage($request, 'customer', 'Pengguna Customer', 'customers');
+        return $this->usersPage($request, 'customer', 'Pengguna > Customer', 'customers');
     }
 
     public function drivers(Request $request)
     {
         $this->ensureAdmin();
 
-        return $this->usersPage($request, 'driver', 'Pengguna Driver', 'drivers');
+        return $this->usersPage($request, 'driver', 'Pengguna > Driver', 'drivers');
+    }
+
+    public function showCustomer($id)
+    {
+        $this->ensureAdmin();
+
+        $customer = User::where('role', 'customer')->findOrFail($id);
+        $orders = Order::where('customer_id', $id)->latest()->get();
+
+        return view('admin.customer-detail', [
+            'active' => 'customer-detail',
+            'title' => 'Pengguna > Customer > Lihat Detail',
+            'customer' => $customer,
+            'orders' => $orders,
+        ]);
+    }
+
+    public function destroyCustomer($id)
+    {
+        $this->ensureAdmin();
+
+        $customer = User::where('role', 'customer')->findOrFail($id);
+        // You may want to add logic to delete related records if not using cascade deletes
+        $customer->delete();
+
+        return back()->with('status', 'Akun customer berhasil dihapus.');
     }
 
     public function verification()

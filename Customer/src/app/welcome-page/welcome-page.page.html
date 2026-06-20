@@ -163,10 +163,11 @@
         </div>
 
         <div class="modal-footer">
-          <div class="checkbox-container">
-            <ion-checkbox [disabled]="!hasReadToBottom" [(ngModel)]="isAgreed" mode="md" class="privacy-checkbox">
-              <span class="checkbox-text">Saya menyetujui Kebijakan Privasi & Ketentuan Layanan</span>
-            </ion-checkbox>
+          <div class="checkbox-container" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <ion-checkbox [disabled]="!hasReadToBottom" [(ngModel)]="isAgreed" mode="md" class="privacy-checkbox"></ion-checkbox>
+            <span class="checkbox-text" style="font-size: 12.5px; color: #374151; line-height: 1.4;">
+              Saya menyetujui Kebijakan Privasi & Ketentuan Layanan
+            </span>
           </div>
 
           <ion-button

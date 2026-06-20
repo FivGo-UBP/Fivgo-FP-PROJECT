@@ -17,6 +17,11 @@ export const locationGuard: CanActivateFn = async (route, state) => {
       return true;
     }
 
+    // Bypass jika pengguna sebelumnya menekan "Cari Lokasi Sendiri"
+    if (localStorage.getItem('skipLocationGuard') === 'true') {
+      return true;
+    }
+
     let check = await Geolocation.checkPermissions();
     
     if (check.location === 'granted') {

@@ -89,5 +89,14 @@ export class AktivasiLokasiPage implements OnInit {
     }
   }
 
+  openSettings() {
+    // Tombol darurat jika popup GPS gagal muncul, buka pengaturan lokasi Android
+    try {
+      this.diagnostic.switchToLocationSettings();
+    } catch (error) {
+      alert('Tolong nyalakan Lokasi (GPS) Anda secara manual di menu Pengaturan HP.');
+    }
+  }
+
 }
 

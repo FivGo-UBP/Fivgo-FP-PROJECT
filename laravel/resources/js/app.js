@@ -61,7 +61,7 @@ async function initializeAdminMaps() {
         map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
 
         map.on('load', () => {
-            addOrderRoutes(map, routes);
+            addOrderRoutes(mapboxgl, map, routes);
             addMapMarkers(mapboxgl, map, points);
             fitMapToPoints(mapboxgl, map, points, center);
 
@@ -84,25 +84,53 @@ function parseMapPayload(payload) {
     }
 }
 
-function addOrderRoutes(map, routes) {
+async function addOrderRoutes(mapboxgl, map, routes) {
     if (routes.length === 0) {
         return;
+    }
+
+    const features = [];
+    const token = mapboxgl.accessToken;
+
+    for (const route of routes) {
+        try {
+            const start = route.coordinates[0];
+            const end = route.coordinates[1];
+            const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[0]},${start[1]};${end[0]},${end[1]}?geometries=geojson&access_token=${token}`;
+            
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.routes && data.routes.length > 0) {
+                features.push({
+                    type: 'Feature',
+                    properties: { status: route.status, id: route.id },
+                    geometry: data.routes[0].geometry
+                });
+            } else {
+                // Fallback lurus
+                features.push({
+                    type: 'Feature',
+                    properties: { status: route.status, id: route.id },
+                    geometry: { type: 'LineString', coordinates: route.coordinates }
+                });
+            }
+        } catch (error) {
+            console.error('Gagal mengambil rute:', error);
+            // Fallback lurus
+            features.push({
+                type: 'Feature',
+                properties: { status: route.status, id: route.id },
+                geometry: { type: 'LineString', coordinates: route.coordinates }
+            });
+        }
     }
 
     map.addSource('assigned-order-routes', {
         type: 'geojson',
         data: {
             type: 'FeatureCollection',
-            features: routes.map((route) => ({
-                type: 'Feature',
-                properties: {
-                    status: route.status,
-                },
-                geometry: {
-                    type: 'LineString',
-                    coordinates: route.coordinates,
-                },
-            })),
+            features: features,
         },
     });
 

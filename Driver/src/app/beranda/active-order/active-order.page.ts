@@ -436,21 +436,8 @@ export class ActiveOrderPage implements OnInit, OnDestroy, AfterViewInit {
           error: (err) => console.error('[DriverDebug] Gagal sinkronisasi lokasi ke server:', err)
         });
 
-        // Gambar ulang rute dinamis (yellow polyline) throttled minimal 5 detik sekali
-        if (this.order) {
-          const now = Date.now();
-          if (now - this.lastRouteUpdate > 5000) {
-            this.lastRouteUpdate = now;
-            
-            const isStarted = this.order.status === 'started';
-            const targetLat = isStarted ? parseFloat(this.order.dropoff_lat as any) : parseFloat(this.order.pickup_lat as any);
-            const targetLng = isStarted ? parseFloat(this.order.dropoff_lng as any) : parseFloat(this.order.pickup_lng as any);
-            
-            if (targetLat && targetLng) {
-              this.drawRouteTomTom(lat, lng, targetLat, targetLng, this.order.vehicle_type || 'motor', this.order.status, false);
-            }
-          }
-        }
+        // Rute dinamis tidak lagi digambar ulang setiap 5 detik agar jalur tidak melompat-lompat.
+        // Rute hanya digambar saat pertama kali masuk halaman atau saat fase order berubah (di fungsi lain).
 
         // Jika peta belum siap atau halaman tidak aktif, jangan perbarui tampilan peta/instruksi
         if (!this.map || !this.mapReady || !this.isPageActive) return;

@@ -55,6 +55,16 @@ export class PilihPenjemputanPage implements OnInit {
   
   async getCurrentLocation() {
     try {
+      let perm = await Geolocation.checkPermissions();
+      if (perm.location !== 'granted') {
+        perm = await Geolocation.requestPermissions();
+      }
+      if (perm.location !== 'granted') {
+        this.currentLocationName = 'Izin lokasi ditolak';
+        this.cdr.detectChanges();
+        return;
+      }
+
       const position = await Geolocation.getCurrentPosition({
         enableHighAccuracy: true,
         timeout: 10000,
@@ -193,6 +203,16 @@ export class PilihPenjemputanPage implements OnInit {
     this.currentLocationName = 'Mencari lokasi terbaru...';
     this.cdr.detectChanges();
     try {
+      let perm = await Geolocation.checkPermissions();
+      if (perm.location !== 'granted') {
+        perm = await Geolocation.requestPermissions();
+      }
+      if (perm.location !== 'granted') {
+        this.currentLocationName = 'Izin lokasi ditolak';
+        this.cdr.detectChanges();
+        return;
+      }
+
       const position = await Geolocation.getCurrentPosition({
         enableHighAccuracy: true,
         timeout: 10000,
@@ -200,14 +220,41 @@ export class PilihPenjemputanPage implements OnInit {
       });
       this.currentLat = position.coords.latitude;
       this.currentLng = position.coords.longitude;
+
+      this.tomtomService.reverseGeocode(this.currentLat, this.currentLng).subscribe({
+        next: (res: any) => {
+          let locationName = 'Lokasi Saat Ini';
+          if (res && res.addresses && res.addresses.length > 0) {
+            const addr = res.addresses[0];
+            if (addr.poi && addr.poi.name) {
+              locationName = addr.poi.name;
+            } else if (addr.address && addr.address.streetName) {
+              locationName = addr.address.streetName;
+            } else if (addr.address && addr.address.freeformAddress) {
+              locationName = addr.address.freeformAddress.split(',')[0].trim();
+            }
+          }
+          this.currentLocationName = locationName;
+          
+          localStorage.setItem('tempJemputName', locationName);
+          localStorage.setItem('tempJemputLat', this.currentLat.toString());
+          localStorage.setItem('tempJemputLng', this.currentLng.toString());
+          
+          this.router.navigate(['/cari-lokasi']);
+        },
+        error: (err) => {
+          console.error('Error reverse geocoding in selectCurrentLocation', err);
+          localStorage.setItem('tempJemputName', 'Lokasi Saat Ini');
+          localStorage.setItem('tempJemputLat', this.currentLat.toString());
+          localStorage.setItem('tempJemputLng', this.currentLng.toString());
+          this.router.navigate(['/cari-lokasi']);
+        }
+      });
     } catch (error) {
       console.error('Error getting fresh location in selectCurrentLocation:', error);
+      this.currentLocationName = 'Gagal mendapatkan lokasi';
+      this.cdr.detectChanges();
     }
-    localStorage.setItem('tempJemputName', 'Lokasi Saat Ini');
-    localStorage.setItem('tempJemputLat', this.currentLat.toString());
-    localStorage.setItem('tempJemputLng', this.currentLng.toString());
-    
-    this.router.navigate(['/cari-lokasi']);
   }
 
   loadSavedLocations() {

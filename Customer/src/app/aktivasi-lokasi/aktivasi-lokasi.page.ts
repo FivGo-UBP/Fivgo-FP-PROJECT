@@ -89,5 +89,11 @@ export class AktivasiLokasiPage implements OnInit {
     }
   }
 
+  skipLocation() {
+    // Pengguna memilih untuk mencari lokasi sendiri secara manual, abaikan paksaan GPS sementara
+    localStorage.setItem('skipLocationGuard', 'true');
+    this.router.navigateByUrl('/tabs/beranda', { replaceUrl: true });
+  }
+
 }
 

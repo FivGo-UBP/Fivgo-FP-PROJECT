@@ -1946,12 +1946,15 @@ export class MapVisualPage implements OnInit, OnDestroy {
     this.driverAnimationId = requestAnimationFrame(frame);
   }
 
+  drawnRoutePhase: string | null = null;
+
   updateDriverMapAndETA(order: ActiveOrder) {
     if (!this.map || !order.driver?.current_lat || !order.driver?.current_lng || !this.isPageActive) return;
 
     const dLat = parseFloat(order.driver.current_lat as any);
     const dLng = parseFloat(order.driver.current_lng as any);
     const isInStartedPhase = order.status === 'started';
+    const phase = isInStartedPhase ? 'to_dropoff' : 'to_pickup';
 
     // Pertama kali: buat marker driver & fitBounds agar peta berpindah ke rute baru
     const isFirstCall = !this.driverMarker;
@@ -1969,15 +1972,7 @@ export class MapVisualPage implements OnInit, OnDestroy {
       this.animateDriverMarker(dLng, dLat, order.driver.heading ?? undefined);
     }
 
-    // Tentukan start & dest berdasarkan fase:
-    // accepted/arrived = driver menuju pickup
-    // started = driver menuju tujuan
-    let start = [dLng, dLat];
-    let dest = this.startCoord;
-
     if (isInStartedPhase) {
-      start = [dLng, dLat];
-      dest = this.destCoord;
       this.ensureDropoffMarker();
       // Remove pickup marker when trip has started!
       if (this.pickupMarker) {
@@ -1988,8 +1983,11 @@ export class MapVisualPage implements OnInit, OnDestroy {
       this.hideDropoffMarkerUntilJourneyStarts();
     }
 
-    // Draw route and update ETA
-    this.tomtomService.calculateRoute(start[1], start[0], dest[1], dest[0], order.vehicle_type || this.selectedVehicle).subscribe({
+    // Hitung ETA selalu update (menggunakan posisi driver saat ini)
+    const etaStart = [dLng, dLat];
+    const etaDest = isInStartedPhase ? this.destCoord : this.startCoord;
+
+    this.tomtomService.calculateRoute(etaStart[1], etaStart[0], etaDest[1], etaDest[0], order.vehicle_type || this.selectedVehicle).subscribe({
       next: (res: any) => {
         if (res.routes && res.routes.length > 0) {
           const routeData = this.selectPreferredRoute(res.routes);
@@ -1997,9 +1995,24 @@ export class MapVisualPage implements OnInit, OnDestroy {
 
           const travelMinutes = Math.ceil(routeData.summary.travelTimeInSeconds / 60);
           this.driverEtaText = `${travelMinutes} Menit`;
-          // fitBounds hanya pada panggilan pertama agar peta reposisi ke rute driver→pickup/tujuan
-          // Meneruskan response 'res' agar tidak perlu memanggil API ulang di dalam drawRoute
-          this.drawRoute(start, dest, isFirstCall, res);
+
+          // HANYA gambar ulang rute jika fase berubah atau baru pertama kali,
+          // agar jalur oranye tidak melompat-lompat (jitter) saat update lokasi
+          if (this.drawnRoutePhase !== phase) {
+            this.drawnRoutePhase = phase;
+            // Agar rute lebih stabil, saat started kita gambar dari titik penjemputan ke tujuan.
+            // Saat accepted, dari lokasi awal driver (saat ini) ke penjemputan.
+            const drawStart = isInStartedPhase ? this.startCoord : etaStart;
+            const drawDest = etaDest;
+
+            this.tomtomService.calculateRoute(drawStart[1], drawStart[0], drawDest[1], drawDest[0], order.vehicle_type || this.selectedVehicle).subscribe({
+              next: (drawRes: any) => {
+                if (drawRes.routes && drawRes.routes.length > 0) {
+                  this.drawRoute(drawStart, drawDest, isFirstCall, drawRes);
+                }
+              }
+            });
+          }
         }
       }
     });
