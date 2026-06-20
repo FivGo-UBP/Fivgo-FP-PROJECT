@@ -13,7 +13,7 @@
         ['route' => 'admin.monitoring', 'active' => 'monitoring', 'label' => 'Monitoring', 'icon' => 'monitor'],
         ['route' => 'admin.analytics', 'active' => 'analytics', 'label' => 'Analitik', 'icon' => 'analytics'],
         ['route' => 'admin.customers', 'active' => 'customers', 'label' => 'Pengguna', 'icon' => 'users'],
-        ['route' => 'admin.verification', 'active' => 'verification', 'label' => 'Verifikasi Driver', 'icon' => 'shield'],
+        ['route' => 'admin.verification', 'active' => 'verification', 'label' => 'Pembaruan Data Driver', 'icon' => 'shield'],
         ['route' => 'admin.orders', 'active' => 'orders', 'label' => 'Order', 'icon' => 'order'],
         ['route' => 'admin.promo', 'active' => 'promo', 'label' => 'Promo', 'icon' => 'tag'],
         ['route' => 'admin.reports.customer', 'active' => 'reports', 'label' => 'Laporan', 'icon' => 'report'],
@@ -146,7 +146,7 @@
                 <div class="topbar-actions">
                     @yield('actions')
                     @if(isset($active) && in_array($active, ['dashboard', 'analytics']))
-                        <button class="admin-export-button" type="button">
+                        <button class="admin-export-button" type="button" onclick="window.print()">
                             {!! $svg('download', 'button-icon') !!}
                             <span>Ekspor pdf</span>
                         </button>

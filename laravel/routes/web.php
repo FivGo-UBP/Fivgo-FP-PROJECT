@@ -43,6 +43,8 @@ Route::prefix('admin')->name('admin.')->controller(WebAdminController::class)->g
         
         Route::post('users/{id}/toggle-status', 'toggleUserStatus')->name('users.toggle-status');
         Route::get('verification', 'verification')->name('verification');
+        Route::post('verification/{id}/approve', 'approveProfileUpdate')->name('verification.approve');
+        Route::post('verification/{id}/reject', 'rejectProfileUpdate')->name('verification.reject');
         Route::get('orders', 'orders')->name('orders');
         Route::get('orders/{id}', 'showOrder')->name('orders.show');
         Route::get('promo', 'promo')->name('promo');

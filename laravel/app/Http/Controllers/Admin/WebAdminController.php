@@ -289,22 +289,101 @@ class WebAdminController extends Controller
         return back()->with('status', 'Akun driver berhasil dihapus.');
     }
 
-    public function verification()
+    public function verification(\Illuminate\Http\Request $request)
     {
         $this->ensureAdmin();
 
-        $documents = DriverDocument::with('user')
-            ->latest()
-            ->paginate(12);
+        $query = \App\Models\ProfileUpdateRequest::with('user')->latest();
+        
+        $type = $request->query('type');
+        if ($type && in_array($type, ['foto', 'telepon', 'kendaraan', 'delete'])) {
+            $query->where('type', $type);
+        }
+
+        $documents = $query->paginate(12)->withQueryString();
 
         return view('admin.verification', [
             'active' => 'verification',
-            'title' => 'Verifikasi Driver',
+            'title' => 'Pembaruan Data Driver',
             'documents' => $documents,
-            'pendingCount' => DriverDocument::where('status', 'pending')->count(),
-            'approvedCount' => DriverDocument::where('status', 'approved')->count(),
-            'rejectedCount' => DriverDocument::where('status', 'rejected')->count(),
+            'currentType' => $type,
+            'pendingCount' => \App\Models\ProfileUpdateRequest::where('status', 'pending')->count(),
+            'approvedCount' => \App\Models\ProfileUpdateRequest::where('status', 'approved')->count(),
+            'rejectedCount' => \App\Models\ProfileUpdateRequest::where('status', 'rejected')->count(),
         ]);
+    }
+
+    public function approveProfileUpdate($id)
+    {
+        $this->ensureAdmin();
+        $updateRequest = \App\Models\ProfileUpdateRequest::findOrFail($id);
+
+        if ($updateRequest->status !== 'pending') {
+            return back()->with('error', 'Status pengajuan sudah diproses sebelumnya.');
+        }
+
+        $user = $updateRequest->user;
+        $newData = $updateRequest->new_data;
+
+        if ($updateRequest->type === 'foto' && isset($newData['photo'])) {
+            // Hapus prefix assets/pengajuan/ saat menyimpan ke database jika dibutuhkan
+            // Tapi karena kita mengambil URL lewat getPhotoAttribute, lebih baik simpan relative pathnya
+            $user->update(['photo' => $newData['photo']]);
+        } elseif ($updateRequest->type === 'telepon' && isset($newData['telepon'])) {
+            $user->update(['phone' => $newData['telepon']]);
+        } elseif ($updateRequest->type === 'kendaraan') {
+            if ($user->driverProfile) {
+                $user->driverProfile->update([
+                    'vehicle_type' => $newData['tipe_kendaraan'] ?? $user->driverProfile->vehicle_type,
+                    'plate_number' => $newData['plat_kendaraan'] ?? $user->driverProfile->plate_number,
+                ]);
+            }
+        } elseif ($updateRequest->type === 'delete') {
+            // Untuk delete, kita nonaktifkan akun
+            $user->update(['is_active' => false]);
+            if ($user->driverProfile) {
+                $user->driverProfile->update(['status' => 'offline']);
+            }
+        }
+
+        $updateRequest->update(['status' => 'approved']);
+
+        // Kirim Notifikasi ke Driver
+        \App\Models\Notification::create([
+            'user_id' => $user->id,
+            'title'   => 'Pengajuan Disetujui',
+            'message' => 'Pengajuan pembaruan data (' . strtoupper($updateRequest->type) . ') Anda telah disetujui.',
+            'is_read' => false,
+        ]);
+
+        return back()->with('status', 'Pengajuan berhasil disetujui.');
+    }
+
+    public function rejectProfileUpdate(Request $request, $id)
+    {
+        $this->ensureAdmin();
+        $updateRequest = \App\Models\ProfileUpdateRequest::findOrFail($id);
+
+        if ($updateRequest->status !== 'pending') {
+            return back()->with('error', 'Status pengajuan sudah diproses sebelumnya.');
+        }
+
+        $notes = $request->input('notes', $updateRequest->notes);
+
+        $updateRequest->update([
+            'status' => 'rejected',
+            'notes' => $notes,
+        ]);
+
+        // Kirim Notifikasi ke Driver
+        \App\Models\Notification::create([
+            'user_id' => $updateRequest->user_id,
+            'title'   => 'Pengajuan Ditolak',
+            'message' => 'Pengajuan pembaruan data (' . strtoupper($updateRequest->type) . ') Anda ditolak. Catatan: ' . $notes,
+            'is_read' => false,
+        ]);
+
+        return back()->with('status', 'Pengajuan berhasil ditolak.');
     }
 
     public function orders(Request $request)

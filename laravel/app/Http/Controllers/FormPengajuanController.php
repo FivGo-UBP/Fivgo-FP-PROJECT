@@ -15,19 +15,19 @@ class FormPengajuanController extends Controller
     public function submit(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'jenis_pengajuan' => 'required|in:foto,telepon,kendaraan',
+            'jenis_pengajuan' => 'required|in:foto,telepon,kendaraan,update,delete',
             'nama'            => 'required|string|max:100',
             'telepon'         => 'required|string|max:20',
             'catatan'         => 'nullable|string|max:1000',
             // foto profil
-            'foto'            => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+            'foto'            => 'nullable|file|mimes:jpg,jpeg,png|max:5120',
             // ganti telepon
             'telepon_lama'    => 'nullable|string|max:20',
             'telepon_baru'    => 'nullable|string|max:20',
             // ganti kendaraan
             'tipe_kendaraan'  => 'nullable|string|max:100',
             'plat_kendaraan'  => 'nullable|string|max:20',
-            'stnk'            => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'stnk'            => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
         if ($validator->fails()) {
@@ -43,62 +43,114 @@ class FormPengajuanController extends Controller
         $catatan       = $request->input('catatan', '-');
         $attachments   = [];
 
-        // Handle file uploads
+        // Handle file uploads directly to public/assets/pengajuan
         $fotoPath = null;
         if ($request->hasFile('foto')) {
-            $fotoPath = $request->file('foto')->store('pengajuan/foto', 'local');
-            $attachments[] = ['path' => Storage::path($fotoPath), 'name' => $request->file('foto')->getClientOriginalName()];
+            $file = $request->file('foto');
+            $filename = time() . '_foto_' . $file->getClientOriginalName();
+            $file->move(public_path('assets/pengajuan'), $filename);
+            $fotoPath = 'assets/pengajuan/' . $filename;
+            $attachments[] = ['path' => public_path($fotoPath), 'name' => $filename];
         }
 
         $stnkPath = null;
         if ($request->hasFile('stnk')) {
-            $stnkPath = $request->file('stnk')->store('pengajuan/stnk', 'local');
-            $attachments[] = ['path' => Storage::path($stnkPath), 'name' => $request->file('stnk')->getClientOriginalName()];
+            $file = $request->file('stnk');
+            $filename = time() . '_stnk_' . $file->getClientOriginalName();
+            $file->move(public_path('assets/pengajuan'), $filename);
+            $stnkPath = 'assets/pengajuan/' . $filename;
+            $attachments[] = ['path' => public_path($stnkPath), 'name' => $filename];
         }
 
-        // Build email body berdasarkan jenis pengajuan
+        // Cari user. Karena route public, cari dari user() (jika ada token) atau berdasarkan telepon
+        $user = $request->user('api');
+        if (!$user) {
+            $teleponCari = $request->input('telepon_lama', $telepon);
+            $user = \App\Models\User::where('phone', $teleponCari)->where('role', 'driver')->first();
+        }
+
+        if ($user) {
+            $oldData = [];
+            $newData = [];
+
+            if ($jenis === 'foto') {
+                $oldData['photo'] = $user->photo;
+                $newData['photo'] = $fotoPath;
+            } elseif ($jenis === 'telepon') {
+                $oldData['telepon'] = $request->input('telepon_lama', $user->phone);
+                $newData['telepon'] = $request->input('telepon_baru');
+            } elseif ($jenis === 'kendaraan') {
+                $profile = $user->driverProfile;
+                $oldData['tipe_kendaraan'] = $profile ? $profile->vehicle_type : null;
+                $oldData['plat_kendaraan'] = $profile ? $profile->plate_number : null;
+                $newData['tipe_kendaraan'] = $request->input('tipe_kendaraan');
+                $newData['plat_kendaraan'] = $request->input('plat_kendaraan');
+                $newData['stnk'] = $stnkPath;
+            } elseif ($jenis === 'delete' || $jenis === 'update') {
+                $jenis = 'delete';
+                $newData['reason'] = $request->input('alasan');
+            }
+
+            \App\Models\ProfileUpdateRequest::create([
+                'user_id' => $user->id,
+                'type' => $jenis,
+                'old_data' => $oldData,
+                'new_data' => $newData,
+                'status' => 'pending',
+                'notes' => $catatan,
+            ]);
+        }
+
+        // Build email body
         $jenisLabel = match ($jenis) {
             'foto'      => 'Ganti Foto Profil',
             'telepon'   => 'Ganti Nomor Telepon',
             'kendaraan' => 'Ganti Kendaraan',
+            'delete'    => 'Hapus Akun',
             default     => $jenis,
         };
 
         $detailHtml = $this->buildDetailHtml($jenis, $request, $nama, $telepon, $catatan);
 
-        // Save to reports database
+        // Save to reports database (legacy fallback / tracking)
         $admin = \App\Models\User::where('role', 'admin')->first();
-        $reportedId = $admin ? $admin->id : $request->user()->id;
+        $reportedId = $admin ? $admin->id : ($user ? $user->id : null);
 
-        $desc = "Nama: " . $nama . "\nNomor Hp: " . $telepon;
-        if ($jenis === 'telepon') {
-            $desc .= "\nNomor Lama: " . $request->input('telepon_lama', '-') . "\nNomor Baru: " . $request->input('telepon_baru', '-');
-        }
-        if ($jenis === 'kendaraan') {
-            $desc .= "\nKendaraan: " . $request->input('tipe_kendaraan', '-') . "\nPlat: " . $request->input('plat_kendaraan', '-');
-        }
-        $desc .= "\nCatatan: " . $catatan;
+        if ($user) {
+            $desc = "Nama: " . $nama . "\nNomor Hp: " . $telepon;
+            if ($jenis === 'telepon') {
+                $desc .= "\nNomor Lama: " . $request->input('telepon_lama', '-') . "\nNomor Baru: " . $request->input('telepon_baru', '-');
+            }
+            if ($jenis === 'kendaraan') {
+                $desc .= "\nKendaraan: " . $request->input('tipe_kendaraan', '-') . "\nPlat: " . $request->input('plat_kendaraan', '-');
+            }
+            $desc .= "\nCatatan: " . $catatan;
 
-        \App\Models\Report::create([
-            'type' => 'formulir',
-            'reporter_id' => $request->user()->id,
-            'reported_id' => $reportedId,
-            'reason' => 'Pengajuan: ' . $jenisLabel,
-            'description' => $desc,
-            'status' => 'open',
-        ]);
+            \App\Models\Report::create([
+                'type' => 'formulir',
+                'reporter_id' => $user->id,
+                'reported_id' => $reportedId,
+                'reason' => 'Pengajuan: ' . $jenisLabel,
+                'description' => $desc,
+                'status' => 'open',
+            ]);
+        }
 
         // Kirim email
-        Mail::html($detailHtml, function ($message) use ($jenisLabel, $attachments) {
-            $message->to('fivgoubp@gmail.com')
-                    ->subject("[FivGo Driver] Pengajuan: {$jenisLabel}");
+        try {
+            Mail::html($detailHtml, function ($message) use ($jenisLabel, $attachments) {
+                $message->to('fivgoubp@gmail.com')
+                        ->subject("[FivGo Driver] Pengajuan: {$jenisLabel}");
 
-            foreach ($attachments as $att) {
-                if (file_exists($att['path'])) {
-                    $message->attach($att['path'], ['as' => $att['name']]);
+                foreach ($attachments as $att) {
+                    if (file_exists($att['path'])) {
+                        $message->attach($att['path'], ['as' => $att['name']]);
+                    }
                 }
-            }
-        });
+            });
+        } catch (\Exception $e) {
+            // Abaikan error email di lokal jika tidak terkonfigurasi
+        }
 
         return response()->json([
             'message' => 'Pengajuan berhasil dikirim. Tim kami akan memproses dalam 1-3 hari kerja.',
