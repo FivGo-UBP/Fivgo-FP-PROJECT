@@ -55,9 +55,72 @@ class LaporanMasalahController extends Controller
         </div>
         ";
 
-        Mail::html($htmlBody, function ($message) use ($kategori) {
+        // Deteksi role pelapor dari request (driver app mengirim reporter_role='driver')
+        $reporterRoleHint = $request->input('reporter_role', 'customer');
+
+        // Save to reports database
+        // Cari user yang phone nya sama DAN role nya sesuai hint terlebih dahulu (menghindari bentrokan nomor hp kembar customer/driver)
+        $reporter = \App\Models\User::where('phone', $telepon)
+            ->where('role', $reporterRoleHint)
+            ->first();
+
+        if (!$reporter) {
+            // Jika tidak ketemu dengan role hint tersebut, coba cari berdasarkan phone saja
+            $reporter = \App\Models\User::where('phone', $telepon)->first();
+        }
+
+        if (!$reporter) {
+            // Gunakan role hint dari request jika masih tidak ditemukan
+            $reporter = \App\Models\User::where('role', $reporterRoleHint)->first();
+        }
+        
+        $orderId = null;
+        if (preg_match('/-\s*Order\s*ID:\s*([a-f\d\-]+)/i', $deskripsi, $matches)) {
+            $orderId = trim($matches[1]);
+        }
+
+        $order = null;
+        if ($orderId) {
+            $order = \App\Models\Order::find($orderId);
+        }
+
+        $admin = \App\Models\User::where('role', 'admin')->first();
+        
+        $reporterId = $reporter ? $reporter->id : ($admin ? $admin->id : null);
+        
+        if ($order) {
+            if ($reporter && $reporter->role === 'driver') {
+                $reportedId = $order->customer_id ?: ($admin ? $admin->id : null);
+            } else {
+                $reportedId = $order->driver_id ?: ($admin ? $admin->id : null);
+            }
+        } else {
+            $reportedId = $admin ? $admin->id : ($reporter ? $reporter->id : null);
+        }
+
+        if ($reporterId && $reportedId) {
+            // Gunakan field `type` dari request jika ada, jika tidak fallback ke deteksi string lama
+            if ($request->has('type') && in_array($request->input('type'), ['formulir', 'biasa'])) {
+                $reportType = $request->input('type');
+            } else {
+                $reportType = str_contains($kategori, '(Formulir)') ? 'formulir' : 'biasa';
+            }
+
+            \App\Models\Report::create([
+                'type' => $reportType,
+                'reporter_id' => $reporterId,
+                'reported_id' => $reportedId,
+                'order_id' => $order ? $order->id : null,
+                'reason' => $kategori,
+                'description' => "Nama: " . $nama . "\nNomor Hp: " . $telepon . "\nDeskripsi: " . $deskripsi,
+                'status' => 'open',
+            ]);
+        }
+
+        Mail::html($htmlBody, function ($message) use ($kategori, $reporterRoleHint) {
+            $roleLabel = $reporterRoleHint === 'driver' ? 'Driver' : 'Customer';
             $message->to('fivgoubp@gmail.com')
-                    ->subject("[FivGo Customer] Laporan Masalah: {$kategori}");
+                    ->subject("[FivGo {$roleLabel}] Laporan Masalah: {$kategori}");
         });
 
         return response()->json([

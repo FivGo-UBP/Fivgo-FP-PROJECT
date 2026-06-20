@@ -16,7 +16,7 @@
         ['route' => 'admin.verification', 'active' => 'verification', 'label' => 'Verifikasi Driver', 'icon' => 'shield'],
         ['route' => 'admin.orders', 'active' => 'orders', 'label' => 'Order', 'icon' => 'order'],
         ['route' => 'admin.promo', 'active' => 'promo', 'label' => 'Promo', 'icon' => 'tag'],
-        ['route' => 'admin.reports', 'active' => 'reports', 'label' => 'Laporan', 'icon' => 'report'],
+        ['route' => 'admin.reports.customer', 'active' => 'reports', 'label' => 'Laporan', 'icon' => 'report'],
         ['route' => 'admin.messages', 'active' => 'messages', 'label' => 'Pesan', 'icon' => 'message'],
         ['route' => 'admin.withdrawals', 'active' => 'withdrawals', 'label' => 'Penarikan Saldo', 'icon' => 'wallet'],
     ];
@@ -88,6 +88,27 @@
                                 </div>
                             </div>
                         </div>
+                    @elseif($item['route'] === 'admin.reports.customer')
+                        @php
+                            $isReportsMenu = in_array($active, ['reports-customer', 'reports-driver']);
+                        @endphp
+                        <div class="admin-nav-group">
+                            <a
+                                class="admin-nav-item {{ $isReportsMenu ? 'is-active' : '' }}"
+                                href="#"
+                                onclick="event.preventDefault(); this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.submenu-arrow').innerText = this.nextElementSibling.classList.contains('hidden') ? '▼' : '▲';"
+                            >
+                                {!! $svg($item['icon'], 'admin-nav-icon') !!}
+                                <span style="flex:1">{{ $item['label'] }}</span>
+                                <span class="submenu-arrow" style="margin-right:14px; font-size:10px;">{{ $isReportsMenu ? '▲' : '▼' }}</span>
+                            </a>
+                            <div class="admin-nav-submenu {{ $isReportsMenu ? '' : 'hidden' }}">
+                                <div class="submenu-items">
+                                    <a href="{{ route('admin.reports.customer') }}" class="{{ $active === 'reports-customer' ? 'submenu-active' : '' }}">Customer</a>
+                                    <a href="{{ route('admin.reports.driver') }}" class="{{ $active === 'reports-driver' ? 'submenu-active' : '' }}">Driver</a>
+                                </div>
+                            </div>
+                        </div>
                     @else
                         <a
                             class="admin-nav-item {{ $active === $item['active'] ? 'is-active' : '' }}"
@@ -130,12 +151,14 @@
                             <span>Ekspor pdf</span>
                         </button>
                     @endif
+                    @if(empty($hideExit))
                     <form method="POST" action="{{ route('admin.logout') }}">
                         @csrf
                         <button class="icon-button" type="submit" aria-label="Keluar">
                             {!! $svg('logout', 'button-icon') !!}
                         </button>
                     </form>
+                    @endif
                 </div>
             </header>
 

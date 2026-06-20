@@ -127,13 +127,82 @@
     </div>
 
     <!-- Report Button -->
-    <button class="btn-report">
+    <button class="btn-report" (click)="openReportModal()" *ngIf="detail.customer && detail.status === 'completed'">
       <ion-icon name="alert-circle-outline"></ion-icon>
       Laporkan Customer
     </button>
-    <p class="report-info">
+    <p class="report-info" *ngIf="detail.customer && detail.status === 'completed'">
       Pelaporan hanya tersedia maksimal 3 hari setelah perjalanan selesai.
     </p>
 
   </div>
+
+  <!-- ── Laporkan Customer Modal ── -->
+  <ion-modal [isOpen]="isReportModalOpen" (didDismiss)="closeReportModal()">
+    <ng-template>
+      <ion-header class="ion-no-border">
+        <ion-toolbar style="--background: #ffffff; --color: #0f172a; min-height: 56px;">
+          <ion-buttons slot="start">
+            <ion-button (click)="closeReportModal()" style="--color: #ffffff;">
+              <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-title style="font-weight: 700; font-size: 16px;">Laporkan Customer</ion-title>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content style="--background: #f8fafc;">
+        <div style="padding: 20px;">
+          <h2 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 16px;">Laporkan Masalah Customer</h2>
+          
+          <div style="background: #ffffff; border-radius: 12px; padding: 16px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03); border: 1px solid #f1f5f9;">
+            <div style="display: flex; align-items: center; gap: 12px;" *ngIf="detail && detail.customer">
+              <img [src]="detail?.customer?.photo || 'https://i.pravatar.cc/150?u=customer'" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;" onerror="this.src='https://i.pravatar.cc/150?u=customer'">
+              <div>
+                <p style="font-weight: 700; color: #1e293b; margin: 0; font-size: 14px;">{{ detail?.customer?.name }}</p>
+                <p style="font-size: 12px; color: #64748b; margin: 2px 0 0;">{{ detail?.customer?.phone || '-' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Group: Alasan -->
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 8px;">Pilih Alasan Laporan</label>
+            <div style="position: relative; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; display: flex; align-items: center;">
+              <select [(ngModel)]="reportForm.reason" style="width: 100%; border: 0; background: transparent; outline: none; font-size: 14px; color: #1e293b;">
+                <option value="" disabled selected hidden>Pilih jenis alasan</option>
+                <option value="Customer tidak sopan atau berkata kasar">Customer tidak sopan atau berkata kasar</option>
+                <option value="Customer bertindak membahayakan / merusak barang">Customer bertindak membahayakan / merusak barang</option>
+                <option value="Customer menolak membayar / membayar kurang">Customer menolak membayar / membayar kurang</option>
+                <option value="Customer meminta melanggar lalu lintas / membahayakan">Customer meminta melanggar lalu lintas / membahayakan</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Form Group: Deskripsi -->
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 8px;">Ceritakan Kejadian</label>
+            <textarea
+              [(ngModel)]="reportForm.description"
+              placeholder="Deskripsikan secara lengkap kejadian yang Anda alami..."
+              style="width: 100%; height: 150px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; font-size: 14px; color: #1e293b; outline: none; resize: none; border-color: #e2e8f0;"
+              maxlength="1000">
+            </textarea>
+          </div>
+
+          <!-- Submit Button -->
+          <ion-button
+            [disabled]="!isReportFormValid() || isSubmittingReport"
+            expand="block"
+            shape="round"
+            style="--background: #ea580c; --color: #ffffff; font-weight: 700; height: 48px; margin-top: 24px;"
+            (click)="submitReport()">
+            <ion-spinner name="crescent" *ngIf="isSubmittingReport" style="margin-right: 8px;"></ion-spinner>
+            Kirim Laporan
+          </ion-button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>

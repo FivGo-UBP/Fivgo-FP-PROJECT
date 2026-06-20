@@ -1,0 +1,80 @@
+<ion-header class="ion-no-border">
+  <div class="chat-active-header">
+    <button class="back-btn-custom" (click)="goBack()">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </button>
+    <div class="chat-profile">
+      <img src="assets/Customer-Service.png" class="chat-avatar" style="background-color: #ffebd2;">
+      <div class="chat-details">
+        <h2 class="chat-name">Customer Service</h2>
+        <p class="chat-vehicle">Online</p>
+      </div>
+    </div>
+  </div>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="bg-light">
+  <div class="loading-container" *ngIf="isLoading">
+    <ion-spinner name="crescent" color="warning"></ion-spinner>
+    <p>Memuat pesan...</p>
+  </div>
+
+  <div class="message-list" #messageList *ngIf="!isLoading">
+    <div *ngIf="messages.length === 0" class="empty-chat">
+      <ion-icon name="chatbubbles-outline" class="empty-icon"></ion-icon>
+      <p>Belum ada pesan. Mulai obrolan dengan Customer Service kami!</p>
+    </div>
+
+    <div
+      *ngFor="let msg of messages"
+      class="message-wrapper"
+      [class.mine]="isMine(msg)"
+      [class.theirs]="!isMine(msg)"
+    >
+      <div class="bubble">
+        <!-- Image message -->
+        <img *ngIf="msg.image_url" [src]="msg.image_url" class="bubble-image" (click)="openImage(msg.image_url)">
+        <!-- Text message -->
+        <p class="bubble-text" *ngIf="msg.message">{{ msg.message }}</p>
+        <span class="bubble-time">{{ msg.created_at | date:'HH:mm' }}</span>
+      </div>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer class="chat-footer ion-no-border">
+  <!-- Image Preview -->
+  <div class="image-preview-bar" *ngIf="imagePreviewUrl">
+    <div class="preview-wrapper">
+      <img [src]="imagePreviewUrl" class="preview-img">
+      <button class="remove-preview-btn" (click)="removeImage()">
+        <ion-icon name="close-circle" class="remove-icon"></ion-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Hidden file input -->
+  <input #fileInput type="file" accept="image/*" style="display:none" (change)="onFileSelected($event)">
+
+  <div class="input-row">
+    <!-- Attach button -->
+    <button class="attach-btn" (click)="openFilePicker()" [disabled]="isSending">
+      <ion-icon name="add-outline"></ion-icon>
+    </button>
+
+    <!-- Text input -->
+    <div class="input-wrapper">
+      <ion-input
+        [(ngModel)]="newMessage"
+        placeholder="Ketik pesan..."
+        class="msg-input"
+        (keyup.enter)="sendMessage()"
+      ></ion-input>
+    </div>
+
+    <!-- Send button -->
+    <button class="send-btn-round" (click)="sendMessage()" [disabled]="(!newMessage.trim() && !selectedImage) || isSending">
+      <ion-icon name="send"></ion-icon>
+    </button>
+  </div>
+</ion-footer>

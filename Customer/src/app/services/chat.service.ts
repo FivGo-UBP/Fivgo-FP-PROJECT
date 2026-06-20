@@ -60,12 +60,49 @@ export class ChatService implements OnDestroy {
       });
   }
 
+  connectSupport(userId: string, token: string) {
+    if (this.echo && this.currentOrderId === 'support_' + userId) return;
+
+    this.disconnect();
+    this.currentOrderId = 'support_' + userId;
+
+    (window as any).Pusher = Pusher;
+
+    this.echo = new Echo({
+      broadcaster: (environment.reverb as any).broadcaster || 'reverb',
+      key: environment.reverb.key,
+      cluster: (environment.reverb as any).cluster || undefined,
+      wsHost: (environment.reverb as any).broadcaster === 'pusher' ? undefined : environment.reverb.host,
+      wsPort: (environment.reverb as any).broadcaster === 'pusher' ? undefined : environment.reverb.port,
+      wssPort: (environment.reverb as any).broadcaster === 'pusher' ? undefined : environment.reverb.port,
+      forceTLS: environment.reverb.scheme === 'https',
+      enabledTransports: ['ws', 'wss'],
+      authEndpoint: `${environment.apiUrl}/broadcasting/auth`,
+      auth: {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    });
+
+    this.echo.private(`chat.support.${userId}`)
+      .listen('.MessageSent', (data: ChatMessage) => {
+        const current = this.messagesSubject.getValue();
+        if (current.some(m => m.id === data.id)) return;
+        this.messagesSubject.next([...current, data]);
+      });
+  }
+
   loadConversations() {
     return this.http.get<{ data: any[] }>(`${environment.apiUrl}/chats`);
   }
 
   loadMessages(orderId: string) {
     return this.http.get<{ data: ChatMessage[] }>(`${environment.apiUrl}/chats/${orderId}`);
+  }
+
+  loadSupportMessages() {
+    return this.http.get<{ data: ChatMessage[] }>(`${environment.apiUrl}/chats/support/messages`);
   }
 
   /**
@@ -80,6 +117,14 @@ export class ChatService implements OnDestroy {
     return this.http.post<ChatMessage>(`${environment.apiUrl}/chats`, formData);
   }
 
+  sendSupportMessage(message: string, imageFile?: File | null) {
+    const formData = new FormData();
+    if (message.trim()) formData.append('message', message);
+    if (imageFile) formData.append('image', imageFile, imageFile.name);
+
+    return this.http.post<ChatMessage>(`${environment.apiUrl}/chats/support/messages`, formData);
+  }
+
   pushMessage(msg: ChatMessage) {
     const current = this.messagesSubject.getValue();
     if (current.some(m => m.id === msg.id)) return;
@@ -92,7 +137,12 @@ export class ChatService implements OnDestroy {
 
   disconnect() {
     if (this.echo && this.currentOrderId) {
-      this.echo.leave(`chat.${this.currentOrderId}`);
+      if (this.currentOrderId.startsWith('support_')) {
+        const userId = this.currentOrderId.split('_')[1];
+        this.echo.leave(`chat.support.${userId}`);
+      } else {
+        this.echo.leave(`chat.${this.currentOrderId}`);
+      }
       this.echo.disconnect();
     }
     this.echo = null;

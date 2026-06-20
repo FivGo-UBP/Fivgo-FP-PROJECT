@@ -331,6 +331,7 @@ class DriverController extends Controller
         ]);
 
         $report = Report::create([
+            'type' => 'formulir',
             'reporter_id' => $request->user()->id,
             'reported_id' => $validated['customer_id'],
             'order_id' => $validated['order_id'],

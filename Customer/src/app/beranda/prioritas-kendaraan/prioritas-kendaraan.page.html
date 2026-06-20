@@ -32,40 +32,66 @@
         </div>
       </div>
     </div>
-    <h3 class="section-title">buat setiap perjalanan selalu</h3>
-    <div class="horizontal-scroll">
-      <div class="promo-img-card">
-        <img src="https://i.pinimg.com/736x/eb/64/9d/eb649d28c347f75d5b746ea5efdddd33.jpg" alt="keamanan 1" />
-      </div>
-      <div class="promo-img-card">
-        <img src="https://i.pinimg.com/736x/eb/64/9d/eb649d28c347f75d5b746ea5efdddd33.jpg" alt="keamanan 2" />
-      </div>
-      <div class="promo-img-card">
-        <img src="https://i.pinimg.com/736x/eb/64/9d/eb649d28c347f75d5b746ea5efdddd33.jpg" alt="keamanan 3" />
-      </div>
-      <div class="promo-img-card">
-        <img src="https://i.pinimg.com/736x/eb/64/9d/eb649d28c347f75d5b746ea5efdddd33.jpg" alt="keamanan 4" />
-      </div>
-      <div class="promo-img-card">
-        <img src="https://i.pinimg.com/736x/3f/82/ee/3f82ee0a7af7ebce1bc9fb94c25eb4f3.jpg" alt="keamanan 5" />
-      </div>
-    </div>
     <h3 class="section-title">Promo</h3>
     <div class="horizontal-scroll">
-      <div class="promo-img-card">
-        <img src="https://i.pinimg.com/736x/eb/64/9d/eb649d28c347f75d5b746ea5efdddd33.jpg" alt="promo 1" />
+      <div class="promo-img-card" *ngFor="let promo of promotions" (click)="openPromo(promo)" style="cursor: pointer;">
+        <img [src]="promo.image" [alt]="promo.title" />
       </div>
-      <div class="promo-img-card">
-        <img src="https://i.pinimg.com/736x/eb/64/9d/eb649d28c347f75d5b746ea5efdddd33.jpg" alt="promo 2" />
+      <div class="promo-empty-text" *ngIf="promotions.length === 0" style="padding: 10px 0; color: #8c8c8c; font-size: 14px;">
+        {{ isIndonesian ? 'Tidak ada promo aktif' : 'No active promotions available' }}
       </div>
-      <div class="promo-img-card">
-        <img src="https://i.pinimg.com/736x/eb/64/9d/eb649d28c347f75d5b746ea5efdddd33.jpg" alt="promo 3" />
+    </div>
+  </div>
+
+  <!-- Promotion Detail Bottom Sheet -->
+  <div class="bottom-sheet-overlay" *ngIf="selectedPromo">
+    <div class="bottom-sheet-backdrop" (click)="selectedPromo = null"></div>
+    <div class="bottom-sheet-card">
+      <div class="drag-handle"></div>
+      
+      <div class="sheet-header">
+        <h3 class="sheet-title">{{ isIndonesian ? 'Detail Promosi' : 'Promotion Details' }}</h3>
+        <ion-icon name="close-circle" class="btn-close" (click)="selectedPromo = null"></ion-icon>
       </div>
-      <div class="promo-img-card">
-        <img src="https://i.pinimg.com/736x/eb/64/9d/eb649d28c347f75d5b746ea5efdddd33.jpg" alt="promo 4" />
+
+      <div class="sheet-banner-img">
+        <img [src]="selectedPromo.image" [alt]="selectedPromo.title" />
       </div>
-      <div class="promo-img-card">
-        <img src="https://i.pinimg.com/736x/3f/82/ee/3f82ee0a7af7ebce1bc9fb94c25eb4f3.jpg" alt="promo 5" />
+
+      <div class="sheet-body-content">
+        <h2 class="promo-title">{{ isIndonesian ? selectedPromo.title : selectedPromo.titleEn }}</h2>
+        <!-- Progress / Status Misi -->
+        <div class="promo-progress-banner" *ngIf="getPromoProgressMessage(selectedPromo.code)" 
+             [style.background-color]="isPromoLocked(selectedPromo.code) ? '#fef2f2' : '#f0fdf4'"
+             [style.border]="isPromoLocked(selectedPromo.code) ? '1px solid #fee2e2' : '1px solid #dcfce7'"
+             style="padding: 12px; border-radius: 8px; margin-top: 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <ion-icon [name]="isPromoLocked(selectedPromo.code) ? 'alert-circle' : 'checkmark-circle'" 
+                    [style.color]="isPromoLocked(selectedPromo.code) ? '#ef4444' : '#22c55e'" style="font-size: 20px;"></ion-icon>
+          <span [style.color]="isPromoLocked(selectedPromo.code) ? '#b91c1c' : '#15803d'" style="font-size: 14px; font-weight: 500;">
+            {{ getPromoProgressMessage(selectedPromo.code) }}
+          </span>
+        </div>
+
+        <!-- Terms and Conditions -->
+        <h4 class="terms-title" style="margin-top: 20px;">{{ isIndonesian ? 'Syarat & Ketentuan' : 'Terms & Conditions' }}</h4>
+        <ul class="terms-list">
+          <li *ngFor="let term of (isIndonesian ? selectedPromo.terms : selectedPromo.termsEn)">
+            {{ term }}
+          </li>
+        </ul>
+      </div>
+
+      <div class="sheet-footer">
+        <button class="btn-use" [disabled]="isPromoLocked(selectedPromo.code)" (click)="usePromo(selectedPromo)"
+                [style.opacity]="isPromoLocked(selectedPromo.code) ? '0.6' : '1'"
+                [style.background]="isPromoLocked(selectedPromo.code) ? '#9ca3af' : ''">
+          <ng-container *ngIf="!isPromoLocked(selectedPromo.code)">
+            {{ isIndonesian ? 'Gunakan Promo' : 'Use Promo' }}
+          </ng-container>
+          <ng-container *ngIf="isPromoLocked(selectedPromo.code)">
+            {{ selectedPromo.code === 'FIVGOMOTOR10X' ? (isIndonesian ? 'Misi Belum Selesai' : 'Mission Incomplete') : (isIndonesian ? 'Khusus Pengguna Baru' : 'New Users Only') }}
+          </ng-container>
+        </button>
       </div>
     </div>
   </div>

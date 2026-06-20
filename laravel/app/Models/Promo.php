@@ -10,7 +10,8 @@ class Promo extends Model
     protected $fillable = [
         'code', 'title', 'description', 'discount_percent', 'max_discount', 
         'quota', 'used_count', 'start_date', 'end_date', 'is_active',
-        'min_order_amount', 'limit_per_user', 'applicable_vehicles'
+        'min_order_amount', 'limit_per_user', 'applicable_vehicles',
+        'type', 'image'
     ];
     
     protected function casts(): array {

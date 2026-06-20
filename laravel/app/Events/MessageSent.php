@@ -32,6 +32,14 @@ class MessageSent implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
+        if (empty($this->chat->order_id)) {
+            $sender = \App\Models\User::find($this->chat->sender_id);
+            $userId = ($sender && $sender->role === 'admin') ? $this->chat->receiver_id : $this->chat->sender_id;
+            return [
+                new PrivateChannel('chat.support.' . $userId),
+            ];
+        }
+
         return [
             new PrivateChannel('chat.' . $this->chat->order_id),
         ];
@@ -56,6 +64,7 @@ class MessageSent implements ShouldBroadcastNow
             'sender_id' => $this->chat->sender_id,
             'receiver_id' => $this->chat->receiver_id,
             'message' => $this->chat->message,
+            'image_url' => $this->chat->image_url,
             'created_at' => $this->chat->created_at->toIso8601String(),
         ];
     }

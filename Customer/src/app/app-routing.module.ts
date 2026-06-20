@@ -145,6 +145,10 @@ const routes: Routes = [
     path: 'daftar-aktivitas',
     loadChildren: () => import('./profile/daftar-aktivitas/daftar-aktivitas.module').then( m => m.DaftarAktivitasPageModule)
   },
+  {
+    path: 'cs-chat',
+    loadChildren: () => import('./profile/cs-chat/cs-chat.module').then( m => m.CsChatPageModule)
+  },
 
 ];
 

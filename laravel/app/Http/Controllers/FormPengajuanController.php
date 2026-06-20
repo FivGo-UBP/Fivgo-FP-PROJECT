@@ -66,6 +66,28 @@ class FormPengajuanController extends Controller
 
         $detailHtml = $this->buildDetailHtml($jenis, $request, $nama, $telepon, $catatan);
 
+        // Save to reports database
+        $admin = \App\Models\User::where('role', 'admin')->first();
+        $reportedId = $admin ? $admin->id : $request->user()->id;
+
+        $desc = "Nama: " . $nama . "\nNomor Hp: " . $telepon;
+        if ($jenis === 'telepon') {
+            $desc .= "\nNomor Lama: " . $request->input('telepon_lama', '-') . "\nNomor Baru: " . $request->input('telepon_baru', '-');
+        }
+        if ($jenis === 'kendaraan') {
+            $desc .= "\nKendaraan: " . $request->input('tipe_kendaraan', '-') . "\nPlat: " . $request->input('plat_kendaraan', '-');
+        }
+        $desc .= "\nCatatan: " . $catatan;
+
+        \App\Models\Report::create([
+            'type' => 'formulir',
+            'reporter_id' => $request->user()->id,
+            'reported_id' => $reportedId,
+            'reason' => 'Pengajuan: ' . $jenisLabel,
+            'description' => $desc,
+            'status' => 'open',
+        ]);
+
         // Kirim email
         Mail::html($detailHtml, function ($message) use ($jenisLabel, $attachments) {
             $message->to('fivgoubp@gmail.com')

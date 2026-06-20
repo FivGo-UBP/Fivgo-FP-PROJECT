@@ -140,4 +140,14 @@ export class OrderService {
       account_name: accountName
     });
   }
+
+  reportCustomer(data: {
+    customer_id: string;
+    order_id: string;
+    reason: string;
+    description?: string;
+  }): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/drivers/report-customer`, data);
+  }
 }
+  

@@ -153,4 +153,13 @@ export class OrderService {
   initiateTopUp(amount: number, method: string): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/wallet/topup`, { amount, method });
   }
+
+  reportDriver(data: {
+    driver_id: string;
+    order_id: string;
+    reason: string;
+    description?: string;
+  }): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/customers/report-driver`, data);
+  }
 }

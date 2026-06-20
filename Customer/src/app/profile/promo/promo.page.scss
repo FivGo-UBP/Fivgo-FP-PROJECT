@@ -105,12 +105,41 @@ ion-content.bg-light-grey {
   width: 100%;
   height: 140px;
   background-color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
+}
+
+.promo-img-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  ion-icon {
+    font-size: 48px;
+    color: #cbd5e1;
+  }
+}
+
+.promo-discount-chip {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.4);
 }
 
 .promo-badge {
@@ -149,11 +178,58 @@ ion-content.bg-light-grey {
   }
 
   p {
-    margin: 0;
+    margin: 0 0 8px;
     font-size: 0.85rem;
     color: #64748b;
     line-height: 1.45;
   }
+}
+
+.promo-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-top: 4px;
+  ion-icon {
+    font-size: 0.85rem;
+  }
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 14px;
+  p { color: #64748b; font-size: 0.9rem; margin: 0; }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 8px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  p { color: #64748b; font-size: 0.9rem; margin: 0; text-align: center; }
+}
+
+.btn-retry {
+  margin-top: 10px;
+  padding: 8px 24px;
+  border-radius: 20px;
+  border: 1.5px solid #f97316;
+  background: transparent;
+  color: #f97316;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
 }
 
 /* Progress bar inside card */
@@ -287,12 +363,25 @@ ion-content.bg-light-grey {
   }
 }
 
+.sheet-banner-placeholder {
+  width: 100%;
+  height: 180px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  margin-bottom: 18px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  ion-icon { font-size: 56px; color: #cbd5e1; }
+}
+
 .sheet-body-content {
   margin-bottom: 24px;
   flex: 1;
 
   .promo-title {
-    margin: 0 0 12px;
+    margin: 0 0 8px;
     font-size: 1.25rem;
     font-weight: 800;
     color: #0f172a;
@@ -317,6 +406,37 @@ ion-content.bg-light-grey {
       margin-bottom: 8px;
     }
   }
+}
+
+.promo-detail-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #fff7ed, #ffedd5);
+  border: 1px solid #fed7aa;
+  color: #ea580c;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  margin-bottom: 4px;
+  ion-icon { font-size: 0.9rem; }
+}
+
+.promo-code-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1.5px dashed #cbd5e1;
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 10px;
+  margin-top: 16px;
+  letter-spacing: 1px;
+  ion-icon { font-size: 1rem; color: #94a3b8; }
 }
 
 .sheet-footer {

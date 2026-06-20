@@ -20,6 +20,8 @@ export class FormService {
     telepon: string;
     kategori: string;
     deskripsi: string;
+    type?: string;
+    reporter_role?: string;
   }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/laporan-masalah`, data);
   }

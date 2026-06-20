@@ -109,6 +109,8 @@ Route::middleware('auth:api')->group(function () {
 
     // Chat Endpoints
     Route::prefix('chats')->group(function () {
+        Route::get('support/messages', [ChatController::class, 'listSupportMessages']);
+        Route::post('support/messages', [ChatController::class, 'sendSupportMessage']);
         Route::get('/', [ChatController::class, 'getConversations']);
         Route::get('{order_id}', [ChatController::class, 'listMessages']);
         Route::post('/', [ChatController::class, 'sendMessage']);

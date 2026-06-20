@@ -160,4 +160,79 @@ class ChatController extends Controller
 
         return response()->json(['data' => $conversations]);
     }
+
+    public function listSupportMessages(Request $request)
+    {
+        $userId = $request->user()->id;
+        $admin = \App\Models\User::where('role', 'admin')->first();
+
+        if (!$admin) {
+            return response()->json(['data' => []]);
+        }
+
+        $adminId = $admin->id;
+
+        $chats = Chat::whereNull('order_id')
+            ->where(function ($q) use ($userId, $adminId) {
+                $q->where(function ($sub) use ($userId, $adminId) {
+                    $sub->where('sender_id', $userId)->where('receiver_id', $adminId);
+                })->orWhere(function ($sub) use ($userId, $adminId) {
+                    $sub->where('sender_id', $adminId)->where('receiver_id', $userId);
+                });
+            })
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        // Mark as read (incoming messages from admin to user)
+        Chat::whereNull('order_id')
+            ->where('sender_id', $adminId)
+            ->where('receiver_id', $userId)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        return response()->json(['data' => $chats]);
+    }
+
+    public function sendSupportMessage(Request $request)
+    {
+        $validated = $request->validate([
+            'message'  => 'nullable|string',
+            'image'    => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
+        ]);
+
+        if (empty($validated['message']) && !$request->hasFile('image')) {
+            return response()->json(['message' => 'Message or image is required'], 422);
+        }
+
+        $userId = $request->user()->id;
+        $admin = \App\Models\User::where('role', 'admin')->first();
+
+        if (!$admin) {
+            return response()->json(['message' => 'CS Admin not found'], 400);
+        }
+
+        $imageUrl = null;
+        if ($request->hasFile('image')) {
+            $upload = new UploadApi();
+            $response = $upload->upload($request->file('image')->getRealPath());
+            $imageUrl = $response['secure_url'];
+        }
+
+        $chat = Chat::create([
+            'order_id'    => null,
+            'sender_id'   => $userId,
+            'receiver_id' => $admin->id,
+            'message'     => $validated['message'] ?? '',
+            'image_url'   => $imageUrl,
+            'is_read'     => false,
+        ]);
+
+        try {
+            broadcast(new MessageSent($chat))->toOthers();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Broadcasting failed: ' . $e->getMessage());
+        }
+
+        return response()->json($chat, 201);
+    }
 }

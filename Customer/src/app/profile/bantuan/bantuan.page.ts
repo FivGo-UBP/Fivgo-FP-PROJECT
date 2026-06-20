@@ -98,19 +98,8 @@ export class BantuanPage implements OnInit {
     this.navCtrl.navigateForward('/laporan-masalah');
   }
 
-  sendEmail() {
-    const email = 'support@fivgo.com';
-    const subject = 'Bantuan FivGo Customer';
-    const body = `Halo Tim Dukungan FivGo,
-
-Saya membutuhkan bantuan mengenai...
-
-Detail Akun:
-Nama: ${this.user?.name || '-'}
-Telepon: ${this.user?.phone || '-'}
-Email: ${this.user?.email || '-'}
-`;
-    window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  openCsChat() {
+    this.navCtrl.navigateForward('/cs-chat');
   }
 
   t(key: string): string {

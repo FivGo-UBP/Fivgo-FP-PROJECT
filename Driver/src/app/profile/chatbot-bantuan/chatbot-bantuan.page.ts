@@ -423,14 +423,16 @@ Detail Tambahan dari User: Dilaporkan langsung melalui alur percakapan terpandu 
 ${orderDetailsStr}
     `.trim();
 
-    const kategoriLaporan = `Bantuan Order #${this.order?.id?.substring(0, 8)} - ${mainCategory}`;
+    const kategoriLaporan = mainCategory;
 
     setTimeout(() => {
       this.formService.submitLaporanMasalah({
         nama: this.user?.name || 'Driver Bantuan Chatbot',
         telepon: this.user?.phone || '0000000000',
         kategori: kategoriLaporan,
-        deskripsi: fullDescription
+        deskripsi: fullDescription,
+        type: 'biasa',
+        reporter_role: 'driver'
       }).subscribe({
         next: () => {
           // Ketika laporan terkirim, hilangkan path
@@ -493,16 +495,16 @@ ${orderDetailsStr}
 
   isFormValid(): boolean {
     if (this.activeFormType === 'keamanan') {
-      return !!this.formKeamanan.incidentType && this.formKeamanan.description.trim().length >= 35 && this.formKeamanan.isAgreed;
+      return !!this.formKeamanan.incidentType && this.formKeamanan.description.trim().length >= 35;
     }
     if (this.activeFormType === 'barang_tertinggal') {
-      return !!this.formBarangTertinggal.itemType && this.formBarangTertinggal.description.trim().length >= 35 && this.formBarangTertinggal.isAgreed;
+      return !!this.formBarangTertinggal.itemType && this.formBarangTertinggal.description.trim().length >= 35;
     }
     if (this.activeFormType === 'driver_kendaraan') {
-      return !!this.formDriverKendaraan.issueType && this.formDriverKendaraan.description.trim().length >= 35 && this.formDriverKendaraan.isAgreed;
+      return !!this.formDriverKendaraan.issueType && this.formDriverKendaraan.description.trim().length >= 35;
     }
     if (this.activeFormType === 'batal_jalan') {
-      return !!this.formBatalJalan.cancelReason && this.formBatalJalan.description.trim().length >= 35 && this.formBatalJalan.isAgreed;
+      return !!this.formBatalJalan.cancelReason && this.formBatalJalan.description.trim().length >= 35;
     }
     return false;
   }
@@ -555,14 +557,16 @@ Detail Tambahan (Formulir): ${descriptionText}
 ${orderDetailsStr}
     `.trim();
 
-    const kategoriLaporan = `Bantuan Order #${this.order?.id?.substring(0, 8)} - ${categoryTitle} (Formulir)`;
+    const kategoriLaporan = categoryTitle;
 
     setTimeout(() => {
       this.formService.submitLaporanMasalah({
         nama: this.user?.name || 'Driver Bantuan Chatbot',
         telepon: this.user?.phone || '0000000000',
         kategori: kategoriLaporan,
-        deskripsi: fullDescription
+        deskripsi: fullDescription,
+        type: 'formulir',
+        reporter_role: 'driver'
       }).subscribe({
         next: () => {
           this.selectedPath = [];

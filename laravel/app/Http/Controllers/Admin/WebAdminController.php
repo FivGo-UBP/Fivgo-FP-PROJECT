@@ -355,54 +355,411 @@ class WebAdminController extends Controller
     {
         $this->ensureAdmin();
 
-        return view('admin.operational', [
+        return view('admin.promo', [
             'active' => 'promo',
             'title' => 'Promo',
-            'summary' => [
-                ['label' => 'Promo Aktif', 'value' => Promo::where('is_active', true)->count()],
-                ['label' => 'Total Kuota', 'value' => Promo::sum('quota')],
-                ['label' => 'Terpakai', 'value' => Promo::sum('used_count')],
-            ],
-            'rows' => Promo::latest()->limit(12)->get(),
-            'columns' => ['Kode', 'Judul', 'Diskon', 'Kuota', 'Status'],
-            'type' => 'promo',
+            'promos' => Promo::latest()->get(),
         ]);
     }
 
-    public function reports()
+    public function createPromo()
     {
         $this->ensureAdmin();
 
-        return view('admin.operational', [
-            'active' => 'reports',
-            'title' => 'Laporan',
-            'summary' => [
-                ['label' => 'Laporan Terbuka', 'value' => Report::where('status', 'open')->count()],
-                ['label' => 'Diproses', 'value' => Report::where('status', 'in_progress')->count()],
-                ['label' => 'Selesai', 'value' => Report::where('status', 'resolved')->count()],
-            ],
-            'rows' => Report::with(['reporter', 'reported'])->latest()->limit(12)->get(),
-            'columns' => ['Pelapor', 'Dilaporkan', 'Alasan', 'Status', 'Tanggal'],
-            'type' => 'reports',
+        return view('admin.promo-create', [
+            'active' => 'promo',
+            'title' => 'Promo > Buat Promo Baru',
         ]);
+    }
+
+    public function storePromo(Request $request)
+    {
+        $this->ensureAdmin();
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'type' => 'required|in:event,voucher',
+            'discount_percent' => 'required|integer|min:0|max:100',
+            'end_date' => 'required|date',
+            'start_date' => 'nullable|date',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'code' => 'nullable|string|max:255',
+            'quota' => 'nullable|integer|min:0',
+            'max_discount' => 'nullable|integer|min:0',
+            'min_order_amount' => 'nullable|integer|min:0',
+            'limit_per_user' => 'nullable|integer|min:1',
+        ]);
+
+        $code = $request->code ?: strtoupper(\Illuminate\Support\Str::slug($request->title, ''));
+        
+        $originalCode = $code;
+        $counter = 1;
+        while (Promo::where('code', $code)->exists()) {
+            $code = $originalCode . $counter;
+            $counter++;
+        }
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('assets/promo/images'), $filename);
+            $imagePath = 'assets/promo/images/' . $filename;
+        }
+
+        Promo::create([
+            'type' => $request->type,
+            'code' => $code,
+            'title' => $request->title,
+            'description' => $request->description,
+            'discount_percent' => $request->discount_percent,
+            'max_discount' => $request->max_discount ?? 50000,
+            'min_order_amount' => $request->min_order_amount ?? 0,
+            'limit_per_user' => $request->limit_per_user ?? 1,
+            'quota' => $request->quota ?? 1000,
+            'used_count' => 0,
+            'start_date' => $request->start_date ?: now(),
+            'end_date' => $request->end_date,
+            'is_active' => true,
+            'image' => $imagePath,
+        ]);
+
+        return redirect()->route('admin.promo')->with('status', 'Promo baru berhasil dibuat!');
+    }
+
+    public function editPromo($id)
+    {
+        $this->ensureAdmin();
+
+        $promo = Promo::findOrFail($id);
+
+        return view('admin.promo-create', [
+            'active' => 'promo',
+            'title' => 'Promo > Edit Promo',
+            'promo' => $promo,
+        ]);
+    }
+
+    public function updatePromo(Request $request, $id)
+    {
+        $this->ensureAdmin();
+
+        $promo = Promo::findOrFail($id);
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'type' => 'required|in:event,voucher',
+            'discount_percent' => 'required|integer|min:0|max:100',
+            'end_date' => 'required|date',
+            'start_date' => 'nullable|date',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'code' => 'nullable|string|max:255',
+            'quota' => 'nullable|integer|min:0',
+            'max_discount' => 'nullable|integer|min:0',
+            'min_order_amount' => 'nullable|integer|min:0',
+            'limit_per_user' => 'nullable|integer|min:1',
+        ]);
+
+        $code = $request->code ?: $promo->code;
+        if ($code !== $promo->code) {
+            $originalCode = $code;
+            $counter = 1;
+            while (Promo::where('code', $code)->where('id', '!=', $id)->exists()) {
+                $code = $originalCode . $counter;
+                $counter++;
+            }
+        }
+
+        $data = [
+            'type' => $request->type,
+            'code' => $code,
+            'title' => $request->title,
+            'description' => $request->description,
+            'discount_percent' => $request->discount_percent,
+            'max_discount' => $request->max_discount ?? 50000,
+            'min_order_amount' => $request->min_order_amount ?? 0,
+            'limit_per_user' => $request->limit_per_user ?? 1,
+            'quota' => $request->quota ?? 1000,
+            'start_date' => $request->start_date ?: ($promo->start_date ?: now()),
+            'end_date' => $request->end_date,
+        ];
+
+        if ($request->hasFile('image')) {
+            if ($promo->image && file_exists(public_path($promo->image))) {
+                @unlink(public_path($promo->image));
+            }
+
+            $file = $request->file('image');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('assets/promo/images'), $filename);
+            $data['image'] = 'assets/promo/images/' . $filename;
+        }
+
+        $promo->update($data);
+
+        return redirect()->route('admin.promo')->with('status', 'Promo berhasil diperbarui!');
+    }
+
+    public function destroyPromo($id)
+    {
+        $this->ensureAdmin();
+
+        $promo = Promo::findOrFail($id);
+
+        if ($promo->image && file_exists(public_path($promo->image))) {
+            @unlink(public_path($promo->image));
+        }
+
+        $promo->delete();
+
+        return redirect()->route('admin.promo')->with('status', 'Promo berhasil dihapus!');
+    }
+
+    public function reportsCustomer(Request $request)
+    {
+        return $this->getReportsPage($request, 'customer');
+    }
+
+    public function reportsDriver(Request $request)
+    {
+        return $this->getReportsPage($request, 'driver');
+    }
+
+    private function getReportsPage(Request $request, string $role)
+    {
+        $this->ensureAdmin();
+
+        $segmentType = $request->input('type', 'biasa');
+        $status = $request->input('status');
+        $time = $request->input('time');
+
+        $query = Report::with(['reporter', 'reported.driverProfile'])
+            ->where('type', $segmentType);
+
+        // Filter reports by the reporter's role (customer or driver)
+        $query->where(function ($q) use ($role, $segmentType) {
+            $q->whereHas('reporter', fn ($r) => $r->where('role', $role));
+            if ($segmentType === 'biasa') {
+                $q->orWhereHas('reporter', fn ($r) => $r->where('role', 'admin'));
+            }
+        });
+
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        if ($time) {
+            if ($time === 'day') {
+                $query->whereDate('created_at', today());
+            } elseif ($time === 'week') {
+                $query->where('created_at', '>=', now()->startOfWeek());
+            } elseif ($time === 'month') {
+                $query->where('created_at', '>=', now()->startOfMonth());
+            }
+        }
+
+        $reports = $query->latest()->paginate(10)->withQueryString();
+
+        return view('admin.reports', [
+            'active' => 'reports-' . $role,
+            'title' => 'Laporan > ' . ucfirst($role),
+            'role' => $role,
+            'type' => $segmentType,
+            'reports' => $reports,
+        ]);
+    }
+
+    public function updateReportStatus(Request $request, $id)
+    {
+        $this->ensureAdmin();
+
+        $report = Report::findOrFail($id);
+        $request->validate([
+            'status' => 'required|in:open,in_progress,resolved'
+        ]);
+
+        $report->update([
+            'status' => $request->status,
+        ]);
+
+        return back()->with('status', 'Status laporan berhasil diperbarui.');
+    }
+
+    public function destroyReport($id)
+    {
+        $this->ensureAdmin();
+
+        $report = Report::findOrFail($id);
+        $report->delete();
+
+        return back()->with('status', 'Laporan berhasil dihapus.');
+    }
+
+    public function tindakanReport(Request $request)
+    {
+        $this->ensureAdmin();
+
+        $request->validate([
+            'report_id'   => 'required|exists:reports,id',
+            'action'      => 'required|in:terima,tolak',
+            'message'     => 'required|string|max:500',
+        ]);
+
+        $report = Report::findOrFail($request->report_id);
+
+        if ($request->action === 'terima') {
+            // Terima laporan: update status to in_progress & notify reported user
+            $report->update(['status' => 'in_progress']);
+
+            if ($report->reported_id) {
+                Notification::create([
+                    'user_id' => $report->reported_id,
+                    'title'   => 'Peringatan dari Admin FivGo',
+                    'message' => $request->message,
+                    'is_read' => false,
+                ]);
+            }
+        } else {
+            // Tolak laporan: resolve without notification to reported
+            $report->update(['status' => 'resolved']);
+        }
+
+        return response()->json(['success' => true, 'action' => $request->action]);
     }
 
     public function messages()
     {
         $this->ensureAdmin();
 
-        return view('admin.operational', [
+        return view('admin.messages', [
             'active' => 'messages',
             'title' => 'Pesan',
-            'summary' => [
-                ['label' => 'Pesan Global', 'value' => Notification::whereNull('user_id')->count()],
-                ['label' => 'Belum Dibaca', 'value' => Notification::where('is_read', false)->count()],
-                ['label' => 'Total Pesan', 'value' => Notification::count()],
-            ],
-            'rows' => Notification::latest()->limit(12)->get(),
-            'columns' => ['Judul', 'Pesan', 'Tipe', 'Status', 'Tanggal'],
-            'type' => 'messages',
         ]);
+    }
+
+    public function getConversations(Request $request)
+    {
+        $this->ensureAdmin();
+        $adminId = Auth::id();
+        $role = $request->query('role', 'customer');
+
+        $chats = \App\Models\Chat::whereNull('order_id')
+            ->where(function ($q) use ($adminId) {
+                $q->where('sender_id', $adminId)->orWhere('receiver_id', $adminId);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Group by the other user's ID
+        $grouped = $chats->groupBy(function ($chat) use ($adminId) {
+            return $chat->sender_id === $adminId ? $chat->receiver_id : $chat->sender_id;
+        });
+
+        $conversations = [];
+        foreach ($grouped as $otherUserId => $userChats) {
+            $latestChat = $userChats->first();
+            $otherUser = \App\Models\User::find($otherUserId);
+            if (!$otherUser || $otherUser->role !== $role) {
+                continue;
+            }
+
+            // Calculate unread count for admin (chats where receiver_id is admin and is_read is false)
+            $unreadCount = $userChats->where('receiver_id', $adminId)->where('is_read', false)->count();
+
+            $conversations[] = [
+                'user' => [
+                    'id' => $otherUser->id,
+                    'name' => $otherUser->name,
+                    'photo' => $otherUser->profile_picture ? asset('assets/driver/profile_pictures/' . $otherUser->profile_picture) : ($otherUser->photo ? asset('assets/driver/profile_pictures/' . $otherUser->photo) : null),
+                    'role' => $otherUser->role,
+                    'initials' => collect(explode(' ', $otherUser->name))
+                        ->filter()
+                        ->map(fn ($part) => strtoupper(substr($part, 0, 1)))
+                        ->take(2)
+                        ->join(''),
+                ],
+                'last_message' => $latestChat->message ?: '[Gambar]',
+                'last_message_time' => $latestChat->created_at->format('H.i'),
+                'unread_count' => $unreadCount,
+                'created_at' => $latestChat->created_at,
+            ];
+        }
+
+        // Sort by latest message time
+        usort($conversations, function ($a, $b) {
+            return $b['created_at'] <=> $a['created_at'];
+        });
+
+        return response()->json(['data' => $conversations]);
+    }
+
+    public function getChatMessages(Request $request, $userId)
+    {
+        $this->ensureAdmin();
+        $adminId = Auth::id();
+
+        $chats = \App\Models\Chat::whereNull('order_id')
+            ->where(function ($q) use ($userId, $adminId) {
+                $q->where(function ($sub) use ($userId, $adminId) {
+                    $sub->where('sender_id', $userId)->where('receiver_id', $adminId);
+                })->orWhere(function ($sub) use ($userId, $adminId) {
+                    $sub->where('sender_id', $adminId)->where('receiver_id', $userId);
+                });
+            })
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        // Mark as read
+        \App\Models\Chat::whereNull('order_id')
+            ->where('sender_id', $userId)
+            ->where('receiver_id', $adminId)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        return response()->json(['data' => $chats]);
+    }
+
+    public function adminSendMessage(Request $request)
+    {
+        $this->ensureAdmin();
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'message' => 'nullable|string',
+            'image'   => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:5120',
+        ]);
+
+        if (empty($validated['message']) && !$request->hasFile('image')) {
+            return response()->json(['message' => 'Pesan atau gambar harus diisi.'], 422);
+        }
+
+        $adminId = Auth::id();
+        $userId = $validated['user_id'];
+
+        $imageUrl = null;
+        if ($request->hasFile('image')) {
+            $upload = new \Cloudinary\Api\Upload\UploadApi();
+            $response = $upload->upload($request->file('image')->getRealPath());
+            $imageUrl = $response['secure_url'];
+        }
+
+        $chat = \App\Models\Chat::create([
+            'order_id'    => null,
+            'sender_id'   => $adminId,
+            'receiver_id' => $userId,
+            'message'     => $validated['message'] ?? '',
+            'image_url'   => $imageUrl,
+            'is_read'     => false,
+        ]);
+
+        try {
+            broadcast(new \App\Events\MessageSent($chat))->toOthers();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Broadcasting failed: ' . $e->getMessage());
+        }
+
+        return response()->json($chat, 201);
     }
 
     public function withdrawals()

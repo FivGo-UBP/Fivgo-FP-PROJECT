@@ -4,6 +4,7 @@ import { NavController } from '@ionic/angular';
 import { AuthService, User } from '../../services/auth.service';
 import { LanguageService } from '../../services/language.service';
 import { OrderService } from '../../services/order.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-promo',
@@ -17,71 +18,9 @@ export class PromoPage implements OnInit {
   completedMotorCount: number = 0;
   completedMobilCount: number = 0;
 
-  promotions: any[] = [
-    {
-      id: 1,
-      image: 'assets/promo_10x_motor.png',
-      title: '10x Order FivGO Motor',
-      titleEn: '10x Order FivGO Motor',
-      desc: 'Dapatkan voucher diskon setelah 10x order FivGO Motor diskon Rp10rb*',
-      descEn: 'Get a discount voucher after 10x FivGO Motor orders discount Rp10k*',
-      code: 'FIVGOMOTOR10X',
-      terms: [
-        'Berlaku setelah menyelesaikan 10x pemesanan FivGO Motor.',
-        'Potongan langsung sebesar Rp 10.000.',
-        'Hanya berlaku untuk layanan FivGO Motor.',
-        'Berlaku hingga 31 Desember 2026.'
-      ],
-      termsEn: [
-        'Valid after completing 10x FivGO Motor orders.',
-        'Direct discount of Rp 10,000.',
-        'Only applicable for FivGO Motor service.',
-        'Valid until December 31, 2026.'
-      ]
-    },
-    {
-      id: 2,
-      image: 'assets/promo_mobil.png',
-      title: 'Pertama Kali Naik Fivgo Mobil',
-      titleEn: 'First Ride Fivgo Mobil',
-      desc: 'Pertama kali naik Fivgo mobil mendapatkan voucher diskon Rp8.5rb*',
-      descEn: 'First time riding Fivgo Mobil gets a discount voucher of Rp8.5k*',
-      code: 'FIVGOMOBILBARU',
-      terms: [
-        'Hanya berlaku untuk perjalanan pertama kali menggunakan Fivgo Mobil.',
-        'Potongan langsung sebesar Rp 8.500.',
-        'Hanya berlaku untuk layanan FivgoMobil.',
-        'Berlaku hingga 31 Desember 2026.'
-      ],
-      termsEn: [
-        'Only applicable for first time riding Fivgo Mobil.',
-        'Direct discount of Rp 8,500.',
-        'Only applicable for FivgoMobil service.',
-        'Valid until December 31, 2026.'
-      ]
-    },
-    {
-      id: 3,
-      image: 'assets/promo_motor.png',
-      title: 'Pertama Kali Naik Fivgo Motor',
-      titleEn: 'First Ride Fivgo Motor',
-      desc: 'Pertama kali naik Fivgo motor mendapatkan voucher diskon Rp5rb*',
-      descEn: 'First time riding Fivgo Motor gets a discount voucher of Rp5k*',
-      code: 'FIVGOMOTORBARU',
-      terms: [
-        'Hanya berlaku untuk perjalanan pertama kali menggunakan Fivgo Motor.',
-        'Potongan langsung sebesar Rp 5.000.',
-        'Hanya berlaku untuk layanan FivgoMotor.',
-        'Berlaku hingga 31 Desember 2026.'
-      ],
-      termsEn: [
-        'Only applicable for first time riding Fivgo Motor.',
-        'Direct discount of Rp 5,000.',
-        'Only applicable for FivgoMotor service.',
-        'Valid until December 31, 2026.'
-      ]
-    }
-  ];
+  promotions: any[] = [];
+  isLoading: boolean = true;
+  loadError: boolean = false;
 
   constructor(
     private authService: AuthService,
@@ -99,12 +38,35 @@ export class PromoPage implements OnInit {
         this.fetchOrderCounts();
       }
     });
+    this.loadPromos();
   }
 
   ionViewWillEnter() {
+    this.loadPromos();
     if (this.user) {
       this.fetchOrderCounts();
     }
+  }
+
+  loadPromos() {
+    this.isLoading = true;
+    this.loadError = false;
+    this.orderService.getPromos().subscribe({
+      next: (res) => {
+        this.promotions = (res.data || []).map((p: any) => ({
+          ...p,
+          imageUrl: p.image ? `${environment.apiUrl.replace('/api', '')}/${p.image}` : null,
+        }));
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Gagal memuat promo:', err);
+        this.isLoading = false;
+        this.loadError = true;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   fetchOrderCounts() {
@@ -117,7 +79,7 @@ export class PromoPage implements OnInit {
           this.cdr.detectChanges();
         }
       },
-      error: (err) => console.error('Gagal memuat riwayat order untuk perhitungan misi:', err)
+      error: (err) => console.error('Gagal memuat riwayat order:', err)
     });
   }
 
@@ -138,21 +100,38 @@ export class PromoPage implements OnInit {
   getPromoProgressMessage(promoCode: string): string {
     const code = (promoCode || '').toUpperCase();
     if (code === 'FIVGOMOTOR10X') {
-      return this.isIndonesian 
-        ? `Progres Misi: ${this.completedMotorCount}/10 Order Selesai` 
+      return this.isIndonesian
+        ? `Progres Misi: ${this.completedMotorCount}/10 Order Selesai`
         : `Mission Progress: ${this.completedMotorCount}/10 Completed Orders`;
     }
     if (code === 'FIVGOMOBILBARU') {
-      return this.completedMobilCount > 0 
+      return this.completedMobilCount > 0
         ? (this.isIndonesian ? 'Hanya untuk pengguna baru FivGO Mobil' : 'Only for new FivGO Mobil users')
         : (this.isIndonesian ? 'Berlaku untuk pengguna baru FivGO Mobil' : 'Applicable for new FivGO Mobil users');
     }
     if (code === 'FIVGOMOTORBARU') {
-      return this.completedMotorCount > 0 
+      return this.completedMotorCount > 0
         ? (this.isIndonesian ? 'Hanya untuk pengguna baru FivGO Motor' : 'Only for new FivGO Motor users')
         : (this.isIndonesian ? 'Berlaku untuk pengguna baru FivGO Motor' : 'Applicable for new FivGO Motor users');
     }
     return '';
+  }
+
+  /** Format diskon untuk ditampilkan di kartu */
+  getDiscountLabel(promo: any): string {
+    let label = `Diskon ${promo.discount_percent}%`;
+    if (promo.max_discount) {
+      label += ` (maks. Rp${(promo.max_discount).toLocaleString('id-ID')})`;
+    }
+    return label;
+  }
+
+  /** Format tanggal berlaku */
+  getDateLabel(promo: any): string {
+    if (!promo.end_date) return this.isIndonesian ? 'Selamanya' : 'No expiry';
+    const end = new Date(promo.end_date);
+    const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+    return `s.d. ${end.toLocaleDateString('id-ID', opts)}`;
   }
 
   openPromo(promo: any) {
@@ -163,10 +142,10 @@ export class PromoPage implements OnInit {
     this.selectedPromo = null;
     localStorage.setItem('tempPromoCode', promo.code);
     let service = 'motor';
-    if (promo.code.toUpperCase().includes('MOBIL')) {
+    const code = (promo.code || '').toUpperCase();
+    if (code.includes('MOBIL') || (promo.applicable_vehicles && promo.applicable_vehicles.includes('mobil'))) {
       service = 'mobil';
     }
-    // Set payment preference to non-cash (wallet) to avoid promo block
     localStorage.setItem('selectedPayment', 'wallet');
     this.router.navigate(['/prioritas-kendaraan'], { queryParams: { vehicle: service } });
   }
