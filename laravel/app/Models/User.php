@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Traits\HasCustomId;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Facades\Storage;
@@ -20,7 +20,15 @@ use Illuminate\Support\Facades\Storage;
 class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable, HasUuids;
+    use HasApiTokens, HasFactory, Notifiable, HasCustomId;
+
+    public function idPrefix(): string
+    {
+        return match($this->role) {
+            'driver'   => 'DRIV',
+            default    => 'CUST',
+        };
+    }
 
     public function getJWTIdentifier()
     {

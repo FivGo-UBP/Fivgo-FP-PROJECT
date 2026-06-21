@@ -1,7 +1,7 @@
 @extends('admin.layout')
 
 @section('subtitle')
-    <a href="{{ route('admin.drivers') }}" style="color:#94a3b8; text-decoration:none;">&larr; Pengguna &gt; Driver &gt;</a> <span style="font-weight:600; color:#1e293b;">Tambah Akun</span>
+    <a href="{{ route('admin.drivers') }}" style="color:#cbd5e1; text-decoration:none;">&larr; Pengguna &gt; Driver &gt;</a> <span style="font-weight:600; color:#ffffff;">Tambah Akun</span>
 @endsection
 
 @section('content')
@@ -20,7 +20,7 @@
         </div>
     @endif
 
-    <form action="{{ route('admin.drivers.store') }}" method="POST">
+    <form action="{{ route('admin.drivers.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div style="background:#ffffff; border-radius:16px; padding:32px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
             
@@ -52,6 +52,23 @@
                             <input type="radio" name="gender" value="female" style="display:none;" {{ old('gender') == 'female' ? 'checked' : '' }} onchange="this.closest('div').querySelectorAll('label').forEach(l => l.style.borderColor='#cbd5e1'); this.parentElement.style.borderColor='#1e3a8a';">
                             <span style="font-weight:bold;">♀</span> Wanita
                         </label>
+                    </div>
+                </div>
+                <div>
+                    <label style="display:block; font-size:13px; font-weight:600; color:#475569; margin-bottom:8px;">Foto Profil</label>
+                    <div style="display:flex; align-items:center; gap:20px;">
+                        <img id="photoPreview"
+                             src="https://ui-avatars.com/api/?name=Driver&background=e2e8f0&color=475569&size=200"
+                             alt="Preview Foto"
+                             style="width:88px; height:88px; border-radius:16px; object-fit:cover; border:2px solid #e2e8f0; flex-shrink:0;">
+                        <div style="flex:1;">
+                            <label for="photo" style="display:inline-flex; align-items:center; gap:8px; background:#f1f5f9; border:1px dashed #cbd5e1; border-radius:8px; padding:10px 18px; font-size:13px; font-weight:600; color:#475569; cursor:pointer;" onmouseover="this.style.borderColor='#1e3a8a'; this.style.color='#1e3a8a'" onmouseout="this.style.borderColor='#cbd5e1'; this.style.color='#475569'">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                Pilih Foto
+                            </label>
+                            <input type="file" id="photo" name="photo" accept="image/*" style="display:none;" onchange="previewDriverPhoto(event)">
+                            <p style="font-size:12px; color:#94a3b8; margin:8px 0 0 0;">Format: JPG, PNG, WEBP. Maks 5 MB.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -101,7 +118,7 @@
                 <h2 style="font-size:16px; font-weight:700; margin:0;">Informasi Kendaraan</h2>
             </div>
 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:48px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; margin-bottom:48px;">
                 <div>
                     <label style="display:block; font-size:13px; font-weight:600; color:#475569; margin-bottom:8px;">Jenis Kendaraan</label>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
@@ -114,6 +131,10 @@
                             <span style="font-weight:bold;">🚗</span> Mobil
                         </label>
                     </div>
+                </div>
+                <div>
+                    <label style="display:block; font-size:13px; font-weight:600; color:#475569; margin-bottom:8px;">Merk Kendaraan</label>
+                    <input type="text" name="vehicle_brand" value="{{ old('vehicle_brand') }}" placeholder="Contoh: Honda Vario / Toyota Avanza" style="width:100%; border:1px solid #cbd5e1; border-radius:8px; padding:12px 16px; font-size:14px; outline:none; box-sizing:border-box;" required>
                 </div>
                 <div>
                     <label style="display:block; font-size:13px; font-weight:600; color:#475569; margin-bottom:8px;">Nomor Kendaraan</label>
@@ -131,4 +152,17 @@
             </div>
         </div>
     </form>
+
+    <script>
+        function previewDriverPhoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('photoPreview').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
 @endsection

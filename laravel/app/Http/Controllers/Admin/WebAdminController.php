@@ -251,8 +251,6 @@ class WebAdminController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'required|email|max:255',
-            'vehicle_brand' => 'required|string|max:255',
-            'plate_number' => 'required|string|max:20',
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
@@ -266,14 +264,7 @@ class WebAdminController extends Controller
             $file = $request->file('profile_picture');
             $filename = time() . '_' . $file->getClientOriginalName();
             $file->move(public_path('assets/driver/profile_pictures'), $filename);
-            $driver->update(['profile_picture' => $filename]);
-        }
-
-        if ($driver->driverProfile) {
-            $driver->driverProfile->update([
-                'vehicle_brand' => $request->vehicle_brand,
-                'plate_number' => $request->plate_number,
-            ]);
+            $driver->update(['photo' => asset('assets/driver/profile_pictures/' . $filename)]);
         }
 
         return back()->with('status', 'Profil driver berhasil diperbarui.');
@@ -335,6 +326,7 @@ class WebAdminController extends Controller
             if ($user->driverProfile) {
                 $user->driverProfile->update([
                     'vehicle_type' => $newData['tipe_kendaraan'] ?? $user->driverProfile->vehicle_type,
+                    'vehicle_brand' => $newData['merk_kendaraan'] ?? $newData['vehicle_brand'] ?? $user->driverProfile->vehicle_brand,
                     'plate_number' => $newData['plat_kendaraan'] ?? $user->driverProfile->plate_number,
                 ]);
             }
@@ -751,7 +743,7 @@ class WebAdminController extends Controller
                 'user' => [
                     'id' => $otherUser->id,
                     'name' => $otherUser->name,
-                    'photo' => $otherUser->profile_picture ? asset('assets/driver/profile_pictures/' . $otherUser->profile_picture) : ($otherUser->photo ? asset('assets/driver/profile_pictures/' . $otherUser->photo) : null),
+                    'photo' => $otherUser->photo,
                     'role' => $otherUser->role,
                     'initials' => collect(explode(' ', $otherUser->name))
                         ->filter()
@@ -882,8 +874,17 @@ class WebAdminController extends Controller
             'phone' => 'required|string',
             'emergency_phone' => 'nullable|string',
             'vehicle_type' => 'required|in:motorcycle,car',
+            'vehicle_brand' => 'required|string|max:255',
             'vehicle_plate' => 'required|string',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
+
+        $photoUrl = null;
+        if ($request->hasFile('photo')) {
+            $upload = new \Cloudinary\Api\Upload\UploadApi();
+            $response = $upload->upload($request->file('photo')->getRealPath());
+            $photoUrl = $response['secure_url'];
+        }
 
         $user = User::create([
             'name' => $request->name,
@@ -892,6 +893,7 @@ class WebAdminController extends Controller
             'role' => 'driver',
             'phone' => $request->phone,
             'is_active' => true,
+            'photo' => $photoUrl,
         ]);
 
         DriverProfile::create([
@@ -901,7 +903,8 @@ class WebAdminController extends Controller
             'address' => $request->city,
             'emergency_contact' => $request->emergency_phone,
             'vehicle_type' => $request->vehicle_type,
-            'vehicle_plate_number' => $request->vehicle_plate,
+            'vehicle_brand' => $request->vehicle_brand,
+            'plate_number' => $request->vehicle_plate,
             'rating' => 5.0,
             'is_online' => false,
             'status' => 'offline',
@@ -1032,44 +1035,91 @@ class WebAdminController extends Controller
         foreach ($orders as $order) {
             $orderId = substr($order->id, 0, 8);
 
-            if ($this->hasCoordinates($order->pickup_lat, $order->pickup_lng)) {
-                $points[] = [
-                    'type' => 'pickup',
-                    'label' => 'Pickup #' . $orderId,
-                    'status' => $order->status,
-                    'coordinates' => [(float) $order->pickup_lng, (float) $order->pickup_lat],
-                    'meta' => [
-                        'customer' => $order->customer?->name ?: 'Customer FivGo',
-                        'driver' => $order->driver?->name ?: 'Belum ada driver',
-                        'address' => $order->pickup_address,
-                    ],
-                ];
-            }
+            // Get driver's current GPS position from driverProfile relationship
+            $driverProfile = $order->driver?->driverProfile;
+            $hasDriverGps = $this->hasCoordinates($driverProfile?->current_lat, $driverProfile?->current_lng);
 
-            if ($this->hasCoordinates($order->dropoff_lat, $order->dropoff_lng)) {
-                $points[] = [
-                    'type' => 'dropoff',
-                    'label' => 'Tujuan #' . $orderId,
-                    'status' => $order->status,
-                    'coordinates' => [(float) $order->dropoff_lng, (float) $order->dropoff_lat],
-                    'meta' => [
-                        'customer' => $order->customer?->name ?: 'Customer FivGo',
-                        'driver' => $order->driver?->name ?: 'Belum ada driver',
-                        'address' => $order->dropoff_address,
-                    ],
-                ];
-            }
+            if ($order->status === 'accepted') {
+                // Phase 1: Driver heading to customer — show only pickup marker
+                if ($this->hasCoordinates($order->pickup_lat, $order->pickup_lng)) {
+                    $points[] = [
+                        'type' => 'pickup',
+                        'label' => 'Jemput #' . $orderId,
+                        'status' => $order->status,
+                        'coordinates' => [(float) $order->pickup_lng, (float) $order->pickup_lat],
+                        'meta' => [
+                            'customer' => $order->customer?->name ?: 'Customer FivGo',
+                            'driver' => $order->driver?->name ?: 'Belum ada driver',
+                            'address' => $order->pickup_address,
+                        ],
+                    ];
 
-            if ($this->hasCoordinates($order->pickup_lat, $order->pickup_lng)
-                && $this->hasCoordinates($order->dropoff_lat, $order->dropoff_lng)) {
-                $routes[] = [
-                    'id' => $order->id,
-                    'status' => $order->status,
-                    'coordinates' => [
-                        [(float) $order->pickup_lng, (float) $order->pickup_lat],
-                        [(float) $order->dropoff_lng, (float) $order->dropoff_lat],
-                    ],
-                ];
+                    if ($hasDriverGps) {
+                        $routes[] = [
+                            'id' => $order->id,
+                            'status' => $order->status,
+                            'coordinates' => [
+                                [(float) $driverProfile->current_lng, (float) $driverProfile->current_lat],
+                                [(float) $order->pickup_lng, (float) $order->pickup_lat],
+                            ],
+                        ];
+                    }
+                }
+            } elseif ($order->status === 'started') {
+                // Phase 2: Driver + customer heading to destination — show only dropoff marker
+                if ($this->hasCoordinates($order->dropoff_lat, $order->dropoff_lng)) {
+                    $points[] = [
+                        'type' => 'dropoff',
+                        'label' => 'Tujuan #' . $orderId,
+                        'status' => $order->status,
+                        'coordinates' => [(float) $order->dropoff_lng, (float) $order->dropoff_lat],
+                        'meta' => [
+                            'customer' => $order->customer?->name ?: 'Customer FivGo',
+                            'driver' => $order->driver?->name ?: 'Belum ada driver',
+                            'address' => $order->dropoff_address,
+                        ],
+                    ];
+
+                    if ($hasDriverGps) {
+                        $routes[] = [
+                            'id' => $order->id,
+                            'status' => $order->status,
+                            'coordinates' => [
+                                [(float) $driverProfile->current_lng, (float) $driverProfile->current_lat],
+                                [(float) $order->dropoff_lng, (float) $order->dropoff_lat],
+                            ],
+                        ];
+                    }
+                }
+            } else {
+                // Fallback for other active statuses: show both markers
+                if ($this->hasCoordinates($order->pickup_lat, $order->pickup_lng)) {
+                    $points[] = [
+                        'type' => 'pickup',
+                        'label' => 'Pickup #' . $orderId,
+                        'status' => $order->status,
+                        'coordinates' => [(float) $order->pickup_lng, (float) $order->pickup_lat],
+                        'meta' => [
+                            'customer' => $order->customer?->name ?: 'Customer FivGo',
+                            'driver' => $order->driver?->name ?: 'Belum ada driver',
+                            'address' => $order->pickup_address,
+                        ],
+                    ];
+                }
+
+                if ($this->hasCoordinates($order->dropoff_lat, $order->dropoff_lng)) {
+                    $points[] = [
+                        'type' => 'dropoff',
+                        'label' => 'Tujuan #' . $orderId,
+                        'status' => $order->status,
+                        'coordinates' => [(float) $order->dropoff_lng, (float) $order->dropoff_lat],
+                        'meta' => [
+                            'customer' => $order->customer?->name ?: 'Customer FivGo',
+                            'driver' => $order->driver?->name ?: 'Belum ada driver',
+                            'address' => $order->dropoff_address,
+                        ],
+                    ];
+                }
             }
         }
 

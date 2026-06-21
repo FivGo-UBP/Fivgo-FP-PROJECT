@@ -75,7 +75,7 @@ class LaporanMasalahController extends Controller
         }
         
         $orderId = null;
-        if (preg_match('/-\s*Order\s*ID:\s*([a-f\d\-]+)/i', $deskripsi, $matches)) {
+        if (preg_match('/-\s*Order\s*ID:\s*([A-Za-z0-9\-]+)/i', $deskripsi, $matches)) {
             $orderId = trim($matches[1]);
         }
 

@@ -99,7 +99,8 @@ async function addOrderRoutes(mapboxgl, map, routes) {
         return;
     }
 
-    const features = [];
+    const pickupFeatures = [];   // accepted: driver → pickup (amber)
+    const dropoffFeatures = [];  // started: driver → dropoff (green)
     const token = mapboxgl.accessToken;
 
     for (const route of routes) {
@@ -111,53 +112,75 @@ async function addOrderRoutes(mapboxgl, map, routes) {
             const response = await fetch(url);
             const data = await response.json();
 
-            if (data.routes && data.routes.length > 0) {
-                features.push({
-                    type: 'Feature',
-                    properties: { status: route.status, id: route.id },
-                    geometry: data.routes[0].geometry
-                });
+            const geometry = (data.routes && data.routes.length > 0)
+                ? data.routes[0].geometry
+                : { type: 'LineString', coordinates: route.coordinates };
+
+            const feature = {
+                type: 'Feature',
+                properties: { status: route.status, id: route.id },
+                geometry,
+            };
+
+            if (route.status === 'started') {
+                dropoffFeatures.push(feature);
             } else {
-                // Fallback lurus
-                features.push({
-                    type: 'Feature',
-                    properties: { status: route.status, id: route.id },
-                    geometry: { type: 'LineString', coordinates: route.coordinates }
-                });
+                // 'accepted' and any other active statuses → amber
+                pickupFeatures.push(feature);
             }
         } catch (error) {
             console.error('Gagal mengambil rute:', error);
-            // Fallback lurus
-            features.push({
+            const feature = {
                 type: 'Feature',
                 properties: { status: route.status, id: route.id },
-                geometry: { type: 'LineString', coordinates: route.coordinates }
-            });
+                geometry: { type: 'LineString', coordinates: route.coordinates },
+            };
+            if (route.status === 'started') {
+                dropoffFeatures.push(feature);
+            } else {
+                pickupFeatures.push(feature);
+            }
         }
     }
 
-    map.addSource('assigned-order-routes', {
-        type: 'geojson',
-        data: {
-            type: 'FeatureCollection',
-            features: features,
-        },
-    });
+    // Layer 1: amber — driver heading to pickup (accepted)
+    if (pickupFeatures.length > 0) {
+        map.addSource('routes-to-pickup', {
+            type: 'geojson',
+            data: { type: 'FeatureCollection', features: pickupFeatures },
+        });
+        map.addLayer({
+            id: 'routes-to-pickup-line',
+            type: 'line',
+            source: 'routes-to-pickup',
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: {
+                'line-color': '#f59e0b',
+                'line-width': 4,
+                'line-opacity': 0.85,
+                'line-dasharray': [2, 2],
+            },
+        });
+    }
 
-    map.addLayer({
-        id: 'assigned-order-routes-line',
-        type: 'line',
-        source: 'assigned-order-routes',
-        layout: {
-            'line-cap': 'round',
-            'line-join': 'round',
-        },
-        paint: {
-            'line-color': '#139f5b',
-            'line-width': 4,
-            'line-opacity': 0.78,
-        },
-    });
+    // Layer 2: green — driver + customer heading to dropoff (started)
+    if (dropoffFeatures.length > 0) {
+        map.addSource('routes-to-dropoff', {
+            type: 'geojson',
+            data: { type: 'FeatureCollection', features: dropoffFeatures },
+        });
+        map.addLayer({
+            id: 'routes-to-dropoff-line',
+            type: 'line',
+            source: 'routes-to-dropoff',
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: {
+                'line-color': '#139f5b',
+                'line-width': 4,
+                'line-opacity': 0.85,
+            },
+        });
+    }
 }
 
 function addMapMarkers(mapboxgl, map, points) {

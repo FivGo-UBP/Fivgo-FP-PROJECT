@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Traits\HasCustomId;
 
 class ProfileUpdateRequest extends Model
 {
-    use HasUuids;
+    use HasCustomId;
+    public function idPrefix(): string { return 'REQ'; }
 
     protected $fillable = [
         'user_id',

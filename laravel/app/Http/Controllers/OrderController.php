@@ -300,7 +300,6 @@ class OrderController extends Controller
                                 $customer->increment('wallet_balance', $payment->total_amount);
 
                                 \App\Models\WalletTransaction::create([
-                                    'id' => (string) \Illuminate\Support\Str::uuid(),
                                     'user_id' => $customer->id,
                                     'amount' => $payment->total_amount,
                                     'type' => 'refund',
@@ -424,7 +423,6 @@ class OrderController extends Controller
 
                     // 2. Catat transaksi komisi (debit/minus)
                     \App\Models\WalletTransaction::create([
-                        'id' => (string) \Illuminate\Support\Str::uuid(),
                         'user_id' => $driver->id,
                         'amount' => -$commissionAmount,
                         'type' => 'commission',
@@ -439,7 +437,6 @@ class OrderController extends Controller
                         $driver->increment('wallet_balance', $discountAmount);
 
                         \App\Models\WalletTransaction::create([
-                            'id' => (string) \Illuminate\Support\Str::uuid(),
                             'user_id' => $driver->id,
                             'amount' => $discountAmount,
                             'type' => 'subsidy',
@@ -455,7 +452,6 @@ class OrderController extends Controller
 
                     // 2. Catat transaksi pendapatan (kredit/plus)
                     \App\Models\WalletTransaction::create([
-                        'id' => (string) \Illuminate\Support\Str::uuid(),
                         'user_id' => $driver->id,
                         'amount' => $driverShareAmount,
                         'type' => 'income',
@@ -494,7 +490,6 @@ class OrderController extends Controller
                 $customer->increment('wallet_balance', $payment->total_amount);
                 
                 \App\Models\WalletTransaction::create([
-                    'id' => (string) \Illuminate\Support\Str::uuid(),
                     'user_id' => $customer->id,
                     'amount' => $payment->total_amount,
                     'type' => 'refund',
@@ -514,7 +509,6 @@ class OrderController extends Controller
                     $customer->decrement('wallet_balance', $penaltyAmount);
                     
                     \App\Models\WalletTransaction::create([
-                        'id' => (string) \Illuminate\Support\Str::uuid(),
                         'user_id' => $customer->id,
                         'amount' => -$penaltyAmount,
                         'type' => 'penalty',
@@ -530,7 +524,6 @@ class OrderController extends Controller
                     $order->driver->increment('wallet_balance', $penaltyAmount);
                     
                     \App\Models\WalletTransaction::create([
-                        'id' => (string) \Illuminate\Support\Str::uuid(),
                         'user_id' => $order->driver->id,
                         'amount' => $penaltyAmount,
                         'type' => 'income',

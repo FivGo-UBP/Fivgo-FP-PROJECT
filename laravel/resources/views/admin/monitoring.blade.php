@@ -82,6 +82,45 @@
     .mon-order-status.status-completed { color: #22c55e; }
     .mon-order-status.status-pending { color: #64748b; }
     .mon-order-status.status-cancelled { color: #ef4444; }
+
+    .mon-legend {
+        margin-top: 24px;
+        padding: 14px 16px;
+        background: #f1f5f9;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+    }
+    .mon-legend h4 {
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0 0 10px 0;
+    }
+    .mon-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 6px;
+    }
+    .mon-legend-item:last-child { margin-bottom: 0; }
+    .mon-legend-line {
+        width: 28px;
+        height: 3px;
+        border-radius: 2px;
+        flex-shrink: 0;
+    }
+    .mon-legend-line.is-amber {
+        height: 0;
+        border-top: 3px dashed #f59e0b;
+    }
+    .mon-legend-line.is-green {
+        background: #139f5b;
+    }
     
     .mon-driver-pill {
         background: #1e3a8a;
@@ -139,9 +178,12 @@
                     $statusText = 'Menunggu Driver';
                     $eta = rand(2, 10) . ' Mins';
                     
-                    if ($order->status === 'accepted' || $order->status === 'started') {
+                    if ($order->status === 'accepted') {
                         $statusClass = 'status-pickup';
                         $statusText = 'Menuju ke Lokasi Jemput';
+                    } elseif ($order->status === 'started') {
+                        $statusClass = 'status-dropoff';
+                        $statusText = 'Menuju ke Lokasi Tujuan';
                     } elseif ($order->status === 'completed') {
                         $statusClass = 'status-completed';
                         $statusText = 'Selesai';
@@ -169,44 +211,19 @@
             @empty
                 <p style="color:#64748b; font-size:14px; font-weight:500;">Tidak ada order yang sedang berjalan.</p>
             @endforelse
-            
-            {{-- Mocking the exact items from screenshot if the DB is empty or for visual fidelity --}}
-            @if($activeOrders->isEmpty())
-                <div class="mon-order-card">
-                    <div class="mon-order-header">
-                        <span class="mon-order-id">#ORDE345</span>
-                        <span class="mon-order-status status-pickup">Menuju ke Lokasi Jemput</span>
-                    </div>
-                    <span class="mon-driver-pill">Driver</span>
-                    <h3 class="mon-driver-name">Aji Saipullah</h3>
-                    <div class="mon-eta">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        ETA: 3 Mins
-                    </div>
-                </div>
 
-                <div class="mon-order-card">
-                    <div class="mon-order-header">
-                        <span class="mon-order-id">#IJY2345</span>
-                        <span class="mon-order-status status-dropoff" style="color:#f59e0b;">Menuju ke Alamat Tujuan</span>
-                    </div>
-                    <span class="mon-driver-pill">Driver</span>
-                    <h3 class="mon-driver-name">Alvin Rudiansyah</h3>
-                    <div class="mon-eta">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        ETA: 2 Mins
-                    </div>
+            <div class="mon-legend">
+                <h4>Keterangan Rute</h4>
+                <div class="mon-legend-item">
+                    <span class="mon-legend-line is-amber"></span>
+                    Menuju ke Lokasi Jemput
                 </div>
+                <div class="mon-legend-item">
+                    <span class="mon-legend-line is-green"></span>
+                    Menuju ke Lokasi Tujuan
+                </div>
+            </div>
 
-                <div class="mon-order-card">
-                    <div class="mon-order-header">
-                        <span class="mon-order-id">#IJY2345</span>
-                        <span class="mon-order-status status-completed">Selesai</span>
-                    </div>
-                    <span class="mon-driver-pill">Driver</span>
-                    <h3 class="mon-driver-name">Alvin Rudiansyah</h3>
-                </div>
-            @endif
         </aside>
     </div>
 </div>

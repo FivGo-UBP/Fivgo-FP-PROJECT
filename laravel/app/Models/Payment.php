@@ -1,12 +1,13 @@
 <?php
 namespace App\Models;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Traits\HasCustomId;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Payment extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasCustomId;
+    public function idPrefix(): string { return 'PAY'; }
     protected $fillable = [
         'order_id',
         'method',

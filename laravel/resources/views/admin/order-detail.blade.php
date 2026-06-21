@@ -265,7 +265,7 @@
                             <div class="od-vehicle-info">
                                 {{ $order->driver->driverProfile?->plate_number ?: 'T 1234 YZ' }}
                                 <span class="od-dot"></span>
-                                {{ ucfirst($order->vehicle_type ?: 'Honda Vario') }}
+                                {{ $order->driver->driverProfile?->vehicle_brand ?: ($order->vehicle_type === 'car' ? 'Mobil' : 'Motor') }}
                             </div>
                         @endif
                     </div>

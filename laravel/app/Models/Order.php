@@ -1,12 +1,14 @@
 <?php
 namespace App\Models;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Traits\HasCustomId;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasCustomId;
+
+    public function idPrefix(): string { return 'ORD'; }
     protected $fillable = [
         'customer_id', 'driver_id', 'status', 'vehicle_type', 'pickup_address', 'pickup_lat', 'pickup_lng', 
         'dropoff_address', 'dropoff_lat', 'dropoff_lng', 'estimated_price', 'final_price',
@@ -38,7 +40,6 @@ class Order extends Model
                     $customer->increment('wallet_balance', $payment->total_amount);
 
                     WalletTransaction::create([
-                        'id' => (string) \Illuminate\Support\Str::uuid(),
                         'user_id' => $customer->id,
                         'amount' => $payment->total_amount,
                         'type' => 'refund',

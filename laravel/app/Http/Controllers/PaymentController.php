@@ -46,7 +46,6 @@ class PaymentController extends Controller
 
                 // Create ledger entry in wallet transactions
                 \App\Models\WalletTransaction::create([
-                    'id' => (string) \Illuminate\Support\Str::uuid(),
                     'user_id' => $user->id,
                     'amount' => -$validated['amount'],
                     'type' => 'payment',

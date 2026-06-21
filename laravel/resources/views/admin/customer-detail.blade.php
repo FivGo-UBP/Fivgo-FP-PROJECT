@@ -7,7 +7,7 @@
 
     <div class="profile-detail-card">
         <div class="profile-avatar-wrap">
-            <img src="{{ $customer->profile_picture ? asset('assets/customer/profile_pictures/' . $customer->profile_picture) : 'https://ui-avatars.com/api/?name=' . urlencode($customer->name) . '&background=e2e8f0&color=475569&size=128' }}" 
+            <img src="{{ $customer->photo ?: 'https://ui-avatars.com/api/?name=' . urlencode($customer->name) . '&background=e2e8f0&color=475569&size=128' }}" 
                  alt="Profile Picture" 
                  onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($customer->name) }}&background=e2e8f0&color=475569&size=128'">
             <div class="profile-rating-badge">

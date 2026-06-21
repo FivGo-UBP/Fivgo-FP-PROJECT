@@ -222,8 +222,12 @@
                                 </div>
                             @elseif($req->type === 'kendaraan')
                                 <div class="info-block">
-                                    <label>Tipe Kendaraan</label>
+                                    <label>Jenis Kendaraan</label>
                                     <div>{{ $req->old_data['tipe_kendaraan'] ?? '-' }}</div>
+                                </div>
+                                <div class="info-block">
+                                    <label>Merk Kendaraan</label>
+                                    <div>{{ $req->old_data['merk_kendaraan'] ?? $req->old_data['vehicle_brand'] ?? '-' }}</div>
                                 </div>
                                 <div class="info-block">
                                     <label>Plat Nomor</label>
@@ -249,8 +253,12 @@
                                 </div>
                             @elseif($req->type === 'kendaraan')
                                 <div class="info-block">
-                                    <label style="color: #3b82f6;">Tipe Kendaraan Baru</label>
+                                    <label style="color: #3b82f6;">Jenis Kendaraan Baru</label>
                                     <div style="color: #1e40af;">{{ $req->new_data['tipe_kendaraan'] ?? '-' }}</div>
+                                </div>
+                                <div class="info-block">
+                                    <label style="color: #3b82f6;">Merk Kendaraan Baru</label>
+                                    <div style="color: #1e40af;">{{ $req->new_data['merk_kendaraan'] ?? $req->new_data['vehicle_brand'] ?? '-' }}</div>
                                 </div>
                                 <div class="info-block">
                                     <label style="color: #3b82f6;">Plat Nomor Baru</label>

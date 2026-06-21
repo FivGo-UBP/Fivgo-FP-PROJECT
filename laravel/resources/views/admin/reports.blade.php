@@ -662,7 +662,7 @@
             <tbody>
                 @forelse($reports as $report)
                     @php
-                        $shortId = strtoupper(substr($report->id, 0, 4) . '-' . substr($report->id, 4, 3));
+                        $shortId = strtoupper(substr($report->id, 0, 4) . substr($report->id, 4, 3));
                         // For formulir reports, extract name from description
                         $displayName = $report->reporter?->name ?: 'Anonim';
                         if ($type === 'formulir' && $report->description) {
@@ -671,12 +671,12 @@
                         }
                     @endphp
                     <tr id="report-row-{{ $report->id }}">
-                        <td class="report-id">#LAP {{ $shortId }}</td>
+                        <td class="report-id">#{{ $shortId }}</td>
                         <td>{{ $report->created_at?->translatedFormat('d M Y') ?: '-' }}</td>
                         <td>
                             <div class="reporter-cell">
                                 <div class="reporter-avatar">
-                                    @if($report->reporter && $report->reporter->photo && $type === 'biasa')
+                                    @if($report->reporter && $report->reporter->photo)
                                         <img src="{{ $report->reporter->photo }}" alt="">
                                     @else
                                         <span>{{ strtoupper(substr($displayName, 0, 1)) }}</span>
@@ -721,13 +721,13 @@
                                 'reporter_phone' => $report->reporter?->phone ?: '-',
                                 'reporter_custom_id' => $reporterCustomId,
                                 'reporter_role' => $report->reporter?->role ?: 'customer',
-                                'reporter_photo' => $report->reporter?->photo ?: ($report->reporter?->profile_picture ?: null),
+                                'reporter_photo' => $report->reporter?->photo,
                                 'reported_name' => $report->reported?->name ?: 'System/Admin',
                                 'reported_email' => $report->reported?->email ?: '-',
                                 'reported_phone' => $report->reported?->phone ?: '-',
                                 'reported_custom_id' => $reportedCustomId,
                                 'reported_role' => $report->reported?->role ?: 'admin',
-                                'reported_photo' => $report->reported?->photo ?: ($report->reported?->profile_picture ?: null),
+                                'reported_photo' => $report->reported?->photo,
                                 'reported_rating' => $report->reported?->driverProfile?->rating ?: null
                             ]) }})">
                                 Lihat Detail
@@ -794,7 +794,7 @@
 <div class="modal-overlay" id="detail-modal" onclick="closeDetailModal(event)">
     <div class="modal-box" onclick="event.stopPropagation()" id="modal-box-element">
         <div class="modal-header">
-            <h3 id="modal-title-id">Detail Laporan #LAP 00000</h3>
+            <h3 id="modal-title-id">Detail Laporan #LAP-00000</h3>
             <button class="btn-close-modal" onclick="closeDetailModal(event)">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -813,7 +813,7 @@
                     <h4 class="panel-card-title">Informasi Laporan</h4>
                     <div class="panel-grid-row">
                         <span class="panel-row-label">ID Laporan</span>
-                        <span class="panel-row-val" id="panel-info-id">#LAP 00000</span>
+                        <span class="panel-row-val" id="panel-info-id">#LAP-00000</span>
                     </div>
                     <div class="panel-grid-row">
                         <span class="panel-row-label">Tanggal Laporan</span>
@@ -1020,7 +1020,7 @@
         const jenisMatch = descText.match(/Jenis Masalah \(Level 2\):\s*(.+)/i);
         const detailMatch = descText.match(/Detail Kejadian \(Level 3\):\s*(.+)/i);
         const tambahanMatch = descText.match(/Detail Tambahan dari User:\s*(.+)/i);
-        const orderMatch = descText.match(/-\s*Order\s*ID:\s*([a-f\d\-]+)/i);
+        const orderMatch = descText.match(/-\s*Order\s*ID:\s*([A-Za-z0-9\-]+)/i);
         const tujuanMatch = descText.match(/-\s*Tujuan:\s*(.+)/i);
         const jemputMatch = descText.match(/-\s*Penjemputan:\s*(.+)/i);
         const waktuMatch = descText.match(/-\s*Waktu:\s*(.+)/i);
@@ -1048,7 +1048,7 @@
     }
 
     function openDetailModal(data) {
-        document.getElementById('modal-title-id').innerText = 'Detail Laporan #LAP ' + data.shortId;
+        document.getElementById('modal-title-id').innerText = 'Detail Laporan #' + data.shortId;
 
         const isFormulir = data.type === 'formulir';
         const desc = data.deskripsi || '';
@@ -1086,7 +1086,7 @@
         }
 
         // Set ID & Date
-        document.getElementById('panel-info-id').innerText = '#LAP ' + data.shortId;
+        document.getElementById('panel-info-id').innerText = '#' + data.shortId;
         document.getElementById('panel-info-date').innerText = data.created_at_time;
 
         // Status Badge

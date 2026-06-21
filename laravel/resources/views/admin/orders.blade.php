@@ -264,7 +264,7 @@
             </div>
             
             <div class="order-user-wrap">
-                <div class="order-avatar" style="background-image:url('https://ui-avatars.com/api/?name={{ urlencode($order->customer?->name ?: 'C') }}&background=e2e8f0&color=1e293b')"></div>
+                <div class="order-avatar" style="background-image:url('{{ $order->customer?->photo ?: 'https://ui-avatars.com/api/?name=' . urlencode($order->customer?->name ?: 'C') . '&background=e2e8f0&color=1e293b' }}')"></div>
                 <div class="order-col">
                     <span class="order-col-label">Customer</span>
                     <span class="order-col-val">{{ $order->customer?->name ?: 'Customer FivGo' }}</span>
@@ -272,7 +272,7 @@
             </div>
 
             <div class="order-user-wrap">
-                <div class="order-avatar" style="background-image:url('https://ui-avatars.com/api/?name={{ urlencode($order->driver?->name ?: 'D') }}&background=e2e8f0&color=1e293b')"></div>
+                <div class="order-avatar" style="background-image:url('{{ $order->driver?->photo ?: 'https://ui-avatars.com/api/?name=' . urlencode($order->driver?->name ?: 'D') . '&background=e2e8f0&color=1e293b' }}')"></div>
                 <div class="order-col">
                     <span class="order-col-label">Driver</span>
                     <span class="order-col-val">{{ $order->driver?->name ?: '-' }}</span>

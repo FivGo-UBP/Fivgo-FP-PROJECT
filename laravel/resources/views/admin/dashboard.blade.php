@@ -4,15 +4,35 @@
 
 @section('content')
     <section class="metric-grid dashboard-metrics">
+        @php
+            $iconClasses = [
+                'users'  => 'fi fi-rr-user',
+                'driver' => 'fi fi-rr-driver-man',
+                'order'  => 'fi fi-rr-receipt',
+                'wallet' => 'fi fi-rr-wallet',
+                'check'  => 'fi fi-rr-check',
+                'warning'=> 'fi fi-rr-exclamation',
+            ];
+        @endphp
         @foreach ($metrics as $metric)
+            @php
+                $iconClass = $iconClasses[$metric['icon']] ?? 'fi fi-rr-apps';
+                $toneClass = match($metric['tone'] ?? '') {
+                    'green' => 'is-green',
+                    'blue'  => 'is-blue',
+                    'red'   => 'is-red',
+                    default => 'is-yellow',
+                };
+            @endphp
             <article class="metric-card">
                 <div>
                     <p>{{ $metric['label'] }}</p>
                     <strong>{{ $metric['value'] }}</strong>
                 </div>
-                <span class="metric-icon is-yellow" data-icon="{{ $metric['icon'] }}"></span>
+                <span class="metric-icon {{ $toneClass }}"><i class="{{ $iconClass }}"></i></span>
             </article>
         @endforeach
+
 
         <article class="status-card">
             <h2>Status Pesanan</h2>

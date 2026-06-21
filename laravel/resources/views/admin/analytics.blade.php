@@ -207,7 +207,7 @@
         <!-- Driver sering cancel -->
         <div class="ana-card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2 class="ana-chart-title" style="margin:0;">Driver sering cancle</h2>
+                <h2 class="ana-chart-title" style="margin:0;">Driver sering cancel</h2>
                 <span class="ana-sys-warning">Peringatan sistem</span>
             </div>
             <table class="ana-table">

@@ -41,7 +41,7 @@
             {{-- Profile Avatar Area --}}
             <div style="display:flex; justify-content:center; margin-bottom:40px;">
                 <div style="position:relative; width:120px; height:120px;">
-                    <img src="{{ $driver->profile_picture ? asset('assets/driver/profile_pictures/' . $driver->profile_picture) : 'https://ui-avatars.com/api/?name=' . urlencode($driver->name) . '&background=e2e8f0&color=475569&size=200' }}" 
+                    <img src="{{ $driver->photo ?: 'https://ui-avatars.com/api/?name=' . urlencode($driver->name) . '&background=e2e8f0&color=475569&size=200' }}" 
                          alt="Driver Profile"
                          style="width:100%; height:100%; border-radius:24px; object-fit:cover;"
                          id="avatarPreview"
@@ -105,40 +105,30 @@
             <h3 style="font-size:18px; font-weight:700; color:#1e293b; margin:0 0 24px 0;">Informasi Kendaraan</h3>
 
             {{-- Row 3 --}}
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:40px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; margin-bottom:40px;">
                 <div>
-                    <label style="display:block; font-size:14px; font-weight:600; color:#334155; margin-bottom:8px;">Tipe Kendaraan</label>
-                    <input type="text" name="vehicle_brand" value="{{ old('vehicle_brand', $driver->driverProfile->vehicle_brand ?? '') }}" required
-                           style="width:100%; height:48px; padding:0 16px; border:1px solid #e2e8f0; border-radius:8px; font-size:15px; background:#f8fafc; color:#334155; outline:none; transition:border 0.2s;"
-                           onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e2e8f0'"
-                           placeholder="Contoh: Honda Vario">
-                    @error('vehicle_brand') <span style="color:#ef4444; font-size:12px; margin-top:4px; display:block;">{{ $message }}</span> @enderror
+                    <label style="display:block; font-size:14px; font-weight:600; color:#334155; margin-bottom:8px;">Jenis Kendaraan</label>
+                    <input type="text" value="{{ ($driver->driverProfile->vehicle_type ?? '') == 'car' ? 'Mobil' : 'Motor' }}" disabled
+                           style="width:100%; height:48px; padding:0 16px; border:1px solid #e2e8f0; border-radius:8px; font-size:15px; background:#f8fafc; color:#64748b; outline:none; cursor:not-allowed;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:14px; font-weight:600; color:#334155; margin-bottom:8px;">Merk Kendaraan</label>
+                    <input type="text" value="{{ $driver->driverProfile->vehicle_brand ?? '-' }}" disabled
+                           style="width:100%; height:48px; padding:0 16px; border:1px solid #e2e8f0; border-radius:8px; font-size:15px; background:#f8fafc; color:#64748b; outline:none; cursor:not-allowed;">
                 </div>
                 <div>
                     <label style="display:block; font-size:14px; font-weight:600; color:#334155; margin-bottom:8px;">Plat Nomor Kendaraan</label>
-                    <input type="text" name="plate_number" value="{{ old('plate_number', $driver->driverProfile->plate_number ?? '') }}" required
-                           style="width:100%; height:48px; padding:0 16px; border:1px solid #e2e8f0; border-radius:8px; font-size:15px; background:#f8fafc; color:#334155; outline:none; transition:border 0.2s;"
-                           onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e2e8f0'"
-                           placeholder="Contoh: T 234 AB">
-                    @error('plate_number') <span style="color:#ef4444; font-size:12px; margin-top:4px; display:block;">{{ $message }}</span> @enderror
+                    <input type="text" value="{{ $driver->driverProfile->plate_number ?? '-' }}" disabled
+                           style="width:100%; height:48px; padding:0 16px; border:1px solid #e2e8f0; border-radius:8px; font-size:15px; background:#f8fafc; color:#64748b; outline:none; cursor:not-allowed;">
                 </div>
-            </div>
-
-            {{-- Warning Box --}}
-            <div style="background:#fef3c7; border-radius:12px; padding:16px 20px; display:flex; gap:16px; align-items:center; margin-bottom:32px;">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="min-width:24px;">
-                    <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
-                </svg>
-                <p style="margin:0; color:#d97706; font-size:14.5px; font-weight:500; line-height:1.5;">
-                    Pastikan seluruh informasi yang diperbarui sudah benar dan sesuai dengan data yang berlaku sebelum menyimpan perubahan.
-                </p>
             </div>
 
             {{-- Action Buttons --}}
             <div style="display:flex; justify-content:flex-end; gap:16px;">
                 <a href="{{ route('admin.drivers') }}" 
-                   style="display:flex; align-items:center; justify-content:center; text-decoration:none; width:140px; height:46px; border:1px solid #cbd5e1; border-radius:8px; background:#ffffff; color:#334155; font-size:15px; font-weight:600; transition:background 0.2s;">
-                    Batal
+                   style="display:flex; align-items:center; justify-content:center; text-decoration:none; width:140px; height:46px; border:1px solid #cbd5e1; border-radius:8px; background:#ffffff; color:#334155; font-size:15px; font-weight:600; transition:all 0.2s;"
+                   onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">
+                    Kembali
                 </a>
                 <button type="submit" 
                         style="width:180px; height:46px; border:none; border-radius:8px; background:#1e3a8a; color:#ffffff; font-size:15px; font-weight:600; cursor:pointer; transition:opacity 0.2s;"
